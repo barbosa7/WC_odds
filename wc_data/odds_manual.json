@@ -1,0 +1,5 @@
+{
+  "_comment": "Optional overrides only. Primary source is Oddschecker HTML exports parsed by parse_oddschecker.py.",
+  "outright": {},
+  "group_winner": {}
+}

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Opti WC — Expected Points Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-inner">
+        <div class="brand">
+          <span class="brand-mark">WC</span>
+          <div>
+            <h1>Opti WC</h1>
+            <p class="subtitle">2026 World Cup expected points & stage probabilities</p>
+          </div>
+        </div>
+        <div class="meta" id="meta"></div>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="rankings" role="tab">Rankings</button>
+        <button class="tab" data-tab="teams" role="tab">Team explorer</button>
+        <button class="tab" data-tab="groups" role="tab">Groups</button>
+        <button class="tab" data-tab="calibration" role="tab">Odds vs model</button>
+        <button class="tab" data-tab="matches" role="tab">Match odds</button>
+      </nav>
+    </header>
+
+    <main class="main">
+      <section id="panel-rankings" class="panel active">
+        <div class="grid-2">
+          <div class="card chart-card">
+            <h2>Expected points — top 20</h2>
+            <div class="chart-wrap"><canvas id="chart-points"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <h2>Win probability — top 12</h2>
+            <div class="chart-wrap"><canvas id="chart-winners"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-toolbar">
+            <h2>All teams</h2>
+            <input type="search" id="search-rankings" placeholder="Search team…" />
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="rankings-table">
+              <thead>
+                <tr>
+                  <th data-sort="rank">#</th>
+                  <th data-sort="team">Team</th>
+                  <th data-sort="group">Grp</th>
+                  <th data-sort="expected_points">E[Pts]</th>
+                  <th data-sort="p_champion">P(W)</th>
+                  <th data-sort="p_semi_final">P(SF)</th>
+                  <th data-sort="p_quarter_final">P(QF)</th>
+                  <th data-sort="p_round_of_16">P(R16)</th>
+                  <th data-sort="p_round_of_32">P(R32)</th>
+                  <th data-sort="p_group_1">P(1st)</th>
+                  <th data-sort="p_bonus_goals">P(bonus)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-teams" class="panel">
+        <div class="team-layout">
+          <div class="card team-picker-card">
+            <label for="team-select">Select team</label>
+            <select id="team-select"></select>
+            <div class="team-summary" id="team-summary"></div>
+          </div>
+          <div class="card">
+            <h2>Knockout progression</h2>
+            <div class="chart-wrap tall"><canvas id="chart-funnel"></canvas></div>
+          </div>
+          <div class="card">
+            <h2>Group stage finish</h2>
+            <div class="chart-wrap"><canvas id="chart-group-pos"></canvas></div>
+          </div>
+          <div class="card wide">
+            <h2>Full stage distribution</h2>
+            <div class="chart-wrap tall"><canvas id="chart-stages"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-groups" class="panel">
+        <div class="groups-grid" id="groups-grid"></div>
+      </section>
+
+      <section id="panel-calibration" class="panel">
+        <div class="grid-2">
+          <div class="card chart-card">
+            <h2>Implied win % (Oddschecker) vs simulated P(W)</h2>
+            <p class="hint">Points on the diagonal = model matches the winner market.</p>
+            <div class="chart-wrap tall"><canvas id="chart-calibration"></canvas></div>
+          </div>
+          <div class="card">
+            <h2>Largest gaps (market − simulation)</h2>
+            <div class="table-scroll">
+              <table class="data-table" id="calibration-table">
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>OC odds</th>
+                    <th>Implied</th>
+                    <th>Sim P(W)</th>
+                    <th>Gap</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-matches" class="panel">
+        <div class="card">
+          <div class="card-toolbar">
+            <h2>Group stage match odds (Oddschecker)</h2>
+            <input type="search" id="search-matches" placeholder="Search team…" />
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="matches-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Home</th>
+                  <th>Away</th>
+                  <th>Home</th>
+                  <th>Draw</th>
+                  <th>Away</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span id="footer-sources"></span>
+      <span>Run <code>python build_site.py</code> · Deploy <code>dist/</code> to Netlify</span>
+    </footer>
+  </div>
+
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading simulation data…</p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
