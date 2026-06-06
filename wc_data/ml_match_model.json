@@ -1,0 +1,6 @@
+{
+  "alpha": 0.9,
+  "train_path": "/Users/tomasbarbosa/Desktop/Opti WC/wc_data/kaggle_train.csv",
+  "train_rows": 9097,
+  "features": 27
+}
