@@ -133,6 +133,45 @@ def simulate_group(
     return GroupResult(standings=standings, stats=stats)
 
 
+def simulate_group_ml(
+    teams: list[str],
+    rng: random.Random,
+    matchdays: list[list[list[int]]],
+    predictor,
+    engine,
+    odds_lookup: dict,
+) -> GroupResult:
+    stats = {t: {"gf": 0, "ga": 0, "pts": 0} for t in teams}
+    for md in matchdays:
+        for i, j in md:
+            a, b = teams[i], teams[j]
+            gf_a, gf_b, _ = predictor.simulate_goals(
+                engine, a, b, rng, neutral=True, odds_lookup=odds_lookup,
+            )
+            stats[a]["gf"] += gf_a
+            stats[a]["ga"] += gf_b
+            stats[b]["gf"] += gf_b
+            stats[b]["ga"] += gf_a
+            if gf_a > gf_b:
+                stats[a]["pts"] += 3
+            elif gf_b > gf_a:
+                stats[b]["pts"] += 3
+            else:
+                stats[a]["pts"] += 1
+                stats[b]["pts"] += 1
+
+    standings = sorted(
+        teams,
+        key=lambda t: (
+            -stats[t]["pts"],
+            -(stats[t]["gf"] - stats[t]["ga"]),
+            -stats[t]["gf"],
+            t,
+        ),
+    )
+    return GroupResult(standings=standings, stats=stats)
+
+
 def rank_third_place(group_results: dict[str, GroupResult]) -> list[str]:
     thirds = []
     for g, gr in group_results.items():
@@ -177,90 +216,25 @@ def play_knockout_round(
     return winners, losers
 
 
-def run_single_sim(
-    strengths: dict[str, float],
-    lookup: dict[tuple[str, str], dict[str, float]],
+def play_knockout_round_ml(
+    pairs: list[tuple[str, str]],
+    predictor,
+    engine,
     rng: random.Random,
+) -> tuple[list[str], list[str]]:
+    winners, losers = [], []
+    for a, b in pairs:
+        w, l = predictor.simulate_knockout(engine, a, b, rng)
+        winners.append(w)
+        losers.append(l)
+    return winners, losers
+
+
+def _score_simulation(
+    state: SimState,
+    ranks: dict[str, int],
+    bonus_teams: list[str],
 ) -> dict[str, Any]:
-    tourn = load_json("tournament.json")
-    third_lookup = load_json("third_place_combos.json")["lookup"]
-    state = SimState()
-
-    for g, teams in tourn["groups"].items():
-        state.group_results[g] = simulate_group(
-            teams, rng, tourn["group_matchdays"], lookup
-        )
-
-    state.third_qualifiers = rank_third_place(state.group_results)
-    qkey = "".join(sorted(state.third_qualifiers))
-    third_slots = third_lookup.get(qkey)
-    if not third_slots:
-        third_slots = load_json("third_place_combos.json")["combos"][0]["third_slots"]
-
-    r32_pairs = []
-    for m in tourn["r32"]:
-        home = team_from_ref(m["home"], state, third_slots, m.get("slot"))
-        away = (
-            team_from_ref("3RD", state, third_slots, m["slot"])
-            if m["away"] == "3RD"
-            else team_from_ref(m["away"], state, third_slots, m.get("slot"))
-        )
-        r32_pairs.append((home, away))
-
-    r32_w, r32_l = play_knockout_round(r32_pairs, strengths, rng)
-    w = {m["id"]: r32_w[i] for i, m in enumerate(tourn["r32"])}
-
-    def pair(mid: int) -> tuple[str, str]:
-        a, b = tourn["knockout_chain"][str(mid)]
-        return w[a], w[b]
-
-    r16_pairs = [pair(mid) for mid in (90, 89, 91, 92, 94, 93, 96, 95)]
-    r16_w, r16_l = play_knockout_round(r16_pairs, strengths, rng)
-    w16 = dict(zip((90, 89, 91, 92, 94, 93, 96, 95), r16_w))
-
-    qf_pairs = [(w16[90], w16[92]), (w16[91], w16[93]), (w16[94], w16[96]), (w16[89], w16[95])]
-    qf_w, qf_l = play_knockout_round(qf_pairs, strengths, rng)
-
-    sf_pairs = [(qf_w[0], qf_w[2]), (qf_w[1], qf_w[3])]
-    sf_w, sf_l = play_knockout_round(sf_pairs, strengths, rng)
-
-    final_w, final_l = play_match(sf_w[0], sf_w[1], strengths, rng)
-    bronze_w, bronze_l = play_match(sf_l[0], sf_l[1], strengths, rng)
-
-    ranks: dict[str, int] = {}
-    ranks[final_w] = 1
-    ranks[final_l] = 2
-    ranks[bronze_w] = 3
-    ranks[bronze_l] = 4
-    for i, t in enumerate(qf_l):
-        ranks[t] = 5 + i
-    for i, t in enumerate(r16_l):
-        ranks[t] = 9 + i
-    for i, t in enumerate(r32_l):
-        ranks[t] = 17 + i
-
-    all_teams = [t for gr in state.group_results.values() for t in gr.standings]
-    remaining = [t for t in all_teams if t not in ranks]
-    rem_stats = []
-    for gr in state.group_results.values():
-        for t in remaining:
-            if t not in gr.standings:
-                continue
-            s = gr.stats[t]
-            pos = gr.standings.index(t) + 1
-            rem_stats.append((t, s["pts"], s["gf"] - s["ga"], s["gf"] + s["ga"], pos))
-    rem_stats.sort(key=lambda x: (-x[1], -x[2], -x[3], x[4], x[0]))
-    for i, (t, *_) in enumerate(rem_stats):
-        ranks[t] = 33 + i
-
-    goals_sum = {
-        t: s["gf"] + s["ga"]
-        for gr in state.group_results.values()
-        for t, s in gr.stats.items()
-    }
-    max_g = max(goals_sum.values())
-    bonus_teams = [t for t, v in goals_sum.items() if v == max_g]
-
     points: dict[str, float] = defaultdict(float)
     stage_hit: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     group_pos_hit: dict[str, dict[int, int]] = defaultdict(lambda: defaultdict(int))
@@ -285,34 +259,167 @@ def run_single_sim(
     }
 
 
-def run_monte_carlo(n_sims: int = 25_000, seed: int = 42) -> dict[str, Any]:
-    odds = merge_odds()
-    strengths = odds["strengths"]
-    lookup = match_lookup(odds["matches"])
-    rng = random.Random(seed)
+def _build_ranks_and_bonus(state: SimState, knockout: dict[str, Any]) -> tuple[dict[str, int], list[str]]:
+    ranks: dict[str, int] = {}
+    ranks[knockout["final_w"]] = 1
+    ranks[knockout["final_l"]] = 2
+    ranks[knockout["bronze_w"]] = 3
+    ranks[knockout["bronze_l"]] = 4
+    for i, t in enumerate(knockout["qf_l"]):
+        ranks[t] = 5 + i
+    for i, t in enumerate(knockout["r16_l"]):
+        ranks[t] = 9 + i
+    for i, t in enumerate(knockout["r32_l"]):
+        ranks[t] = 17 + i
 
-    all_teams = []
-    for teams in load_json("tournament.json")["groups"].values():
-        all_teams.extend(teams)
+    all_teams = [t for gr in state.group_results.values() for t in gr.standings]
+    remaining = [t for t in all_teams if t not in ranks]
+    rem_stats = []
+    for gr in state.group_results.values():
+        for t in remaining:
+            if t not in gr.standings:
+                continue
+            s = gr.stats[t]
+            pos = gr.standings.index(t) + 1
+            rem_stats.append((t, s["pts"], s["gf"] - s["ga"], s["gf"] + s["ga"], pos))
+    rem_stats.sort(key=lambda x: (-x[1], -x[2], -x[3], x[4], x[0]))
+    for i, (t, *_) in enumerate(rem_stats):
+        ranks[t] = 33 + i
 
-    acc_points = defaultdict(float)
-    acc_group = defaultdict(lambda: defaultdict(float))
-    acc_stage = defaultdict(lambda: defaultdict(float))
-    acc_bonus = defaultdict(float)
+    goals_sum = {
+        t: s["gf"] + s["ga"]
+        for gr in state.group_results.values()
+        for t, s in gr.stats.items()
+    }
+    max_g = max(goals_sum.values())
+    bonus_teams = [t for t, v in goals_sum.items() if v == max_g]
+    return ranks, bonus_teams
 
-    for _ in range(n_sims):
-        res = run_single_sim(strengths, lookup, rng)
-        for t, p in res["points"].items():
-            acc_points[t] += p
-        for t, pos_d in res["group_pos"].items():
-            for pos, c in pos_d.items():
-                acc_group[t][pos] += c
-        for t, st_d in res["stages"].items():
-            for st, c in st_d.items():
-                acc_stage[t][st] += c
-        for t in res["bonus_teams"]:
-            acc_bonus[t] += 1 / len(res["bonus_teams"])
 
+def _run_knockout_bracket(
+    tourn: dict,
+    state: SimState,
+    third_slots: dict[str, str],
+    play_round,
+    play_final,
+) -> dict[str, Any]:
+    r32_pairs = []
+    for m in tourn["r32"]:
+        home = team_from_ref(m["home"], state, third_slots, m.get("slot"))
+        away = (
+            team_from_ref("3RD", state, third_slots, m["slot"])
+            if m["away"] == "3RD"
+            else team_from_ref(m["away"], state, third_slots, m.get("slot"))
+        )
+        r32_pairs.append((home, away))
+
+    r32_w, r32_l = play_round(r32_pairs)
+    w = {m["id"]: r32_w[i] for i, m in enumerate(tourn["r32"])}
+
+    def pair(mid: int) -> tuple[str, str]:
+        a, b = tourn["knockout_chain"][str(mid)]
+        return w[a], w[b]
+
+    r16_pairs = [pair(mid) for mid in (90, 89, 91, 92, 94, 93, 96, 95)]
+    r16_w, r16_l = play_round(r16_pairs)
+    w16 = dict(zip((90, 89, 91, 92, 94, 93, 96, 95), r16_w))
+
+    qf_pairs = [
+        (w16[90], w16[92]),
+        (w16[91], w16[93]),
+        (w16[94], w16[96]),
+        (w16[89], w16[95]),
+    ]
+    qf_w, qf_l = play_round(qf_pairs)
+
+    sf_pairs = [(qf_w[0], qf_w[2]), (qf_w[1], qf_w[3])]
+    sf_w, sf_l = play_round(sf_pairs)
+
+    final_w, final_l = play_final(sf_w[0], sf_w[1])
+    bronze_w, bronze_l = play_final(sf_l[0], sf_l[1])
+
+    return {
+        "r32_l": r32_l,
+        "r16_l": r16_l,
+        "qf_l": qf_l,
+        "final_w": final_w,
+        "final_l": final_l,
+        "bronze_w": bronze_w,
+        "bronze_l": bronze_l,
+    }
+
+
+def run_single_sim_odds(
+    strengths: dict[str, float],
+    lookup: dict[tuple[str, str], dict[str, float]],
+    rng: random.Random,
+) -> dict[str, Any]:
+    tourn = load_json("tournament.json")
+    third_lookup = load_json("third_place_combos.json")["lookup"]
+    state = SimState()
+
+    for g, teams in tourn["groups"].items():
+        state.group_results[g] = simulate_group(
+            teams, rng, tourn["group_matchdays"], lookup,
+        )
+
+    state.third_qualifiers = rank_third_place(state.group_results)
+    qkey = "".join(sorted(state.third_qualifiers))
+    third_slots = third_lookup.get(qkey)
+    if not third_slots:
+        third_slots = load_json("third_place_combos.json")["combos"][0]["third_slots"]
+
+    ko = _run_knockout_bracket(
+        tourn,
+        state,
+        third_slots,
+        play_round=lambda pairs: play_knockout_round(pairs, strengths, rng),
+        play_final=lambda a, b: play_match(a, b, strengths, rng),
+    )
+    ranks, bonus_teams = _build_ranks_and_bonus(state, ko)
+    return _score_simulation(state, ranks, bonus_teams)
+
+
+def run_single_sim_ml(
+    predictor,
+    odds_lookup: dict,
+    rng: random.Random,
+) -> dict[str, Any]:
+    tourn = load_json("tournament.json")
+    third_lookup = load_json("third_place_combos.json")["lookup"]
+    state = SimState()
+    engine = predictor.fresh_engine()
+
+    for g, teams in tourn["groups"].items():
+        state.group_results[g] = simulate_group_ml(
+            teams, rng, tourn["group_matchdays"], predictor, engine, odds_lookup,
+        )
+
+    state.third_qualifiers = rank_third_place(state.group_results)
+    qkey = "".join(sorted(state.third_qualifiers))
+    third_slots = third_lookup.get(qkey)
+    if not third_slots:
+        third_slots = load_json("third_place_combos.json")["combos"][0]["third_slots"]
+
+    ko = _run_knockout_bracket(
+        tourn,
+        state,
+        third_slots,
+        play_round=lambda pairs: play_knockout_round_ml(pairs, predictor, engine, rng),
+        play_final=lambda a, b: predictor.simulate_knockout(engine, a, b, rng),
+    )
+    ranks, bonus_teams = _build_ranks_and_bonus(state, ko)
+    return _score_simulation(state, ranks, bonus_teams)
+
+
+def _aggregate_results(
+    n_sims: int,
+    all_teams: list[str],
+    acc_points,
+    acc_group,
+    acc_stage,
+    acc_bonus,
+) -> list[dict[str, Any]]:
     n = n_sims
     results = []
     for team in sorted(all_teams, key=lambda t: -acc_points[t]):
@@ -344,11 +451,63 @@ def run_monte_carlo(n_sims: int = 25_000, seed: int = 42) -> dict[str, Any]:
                 "stage_probs": {k: round(v, 4) for k, v in sorted(stages.items())},
             }
         )
+    return results
 
-    return {
+
+def run_monte_carlo(
+    n_sims: int = 25_000,
+    seed: int = 42,
+    use_ml: bool = True,
+    odds_weight: float = 0.35,
+) -> dict[str, Any]:
+    odds = merge_odds()
+    lookup = match_lookup(odds["matches"])
+    sources = list(odds["sources"])
+    rng = random.Random(seed)
+
+    all_teams = []
+    for teams in load_json("tournament.json")["groups"].values():
+        all_teams.extend(teams)
+
+    acc_points = defaultdict(float)
+    acc_group = defaultdict(lambda: defaultdict(float))
+    acc_stage = defaultdict(lambda: defaultdict(float))
+    acc_bonus = defaultdict(float)
+
+    if use_ml:
+        from ml.predictor import load_predictor
+
+        predictor = load_predictor(odds_weight=odds_weight)
+        sources.append(
+            f"ml_match_model (65% ML + {int(odds_weight * 100)}% Oddschecker 1X2 for groups)"
+        )
+        sim_fn = lambda: run_single_sim_ml(predictor, lookup, rng)
+    else:
+        strengths = odds["strengths"]
+        sources.append("odds_only (1X2 group + outright knockout strengths)")
+        sim_fn = lambda: run_single_sim_odds(strengths, lookup, rng)
+
+    for _ in range(n_sims):
+        res = sim_fn()
+        for t, p in res["points"].items():
+            acc_points[t] += p
+        for t, pos_d in res["group_pos"].items():
+            for pos, c in pos_d.items():
+                acc_group[t][pos] += c
+        for t, st_d in res["stages"].items():
+            for st, c in st_d.items():
+                acc_stage[t][st] += c
+        for t in res["bonus_teams"]:
+            acc_bonus[t] += 1 / len(res["bonus_teams"])
+
+    payload: dict[str, Any] = {
         "n_simulations": n_sims,
-        "odds_sources": odds["sources"],
+        "odds_sources": sources,
         "missing_outright": odds.get("missing_outright", []),
         "outright_input": odds["outright"],
-        "teams": results,
+        "use_ml": use_ml,
+        "teams": _aggregate_results(n_sims, all_teams, acc_points, acc_group, acc_stage, acc_bonus),
     }
+    if use_ml:
+        payload["ml_odds_blend"] = odds_weight
+    return payload

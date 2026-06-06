@@ -17,6 +17,22 @@ def main() -> None:
     parser.add_argument("-n", "--simulations", type=int, default=25_000)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("-o", "--output-dir", type=Path, default=Path("output"))
+    parser.add_argument(
+        "--no-ml",
+        action="store_true",
+        help="Use Oddschecker odds only (no Kaggle ML model)",
+    )
+    parser.add_argument(
+        "--odds-weight",
+        type=float,
+        default=0.35,
+        help="Share of Oddschecker 1X2 in group-stage blend when ML is on (default 0.35)",
+    )
+    parser.add_argument(
+        "--train-ml",
+        action="store_true",
+        help="Retrain ML model from Kaggle train.csv before simulating",
+    )
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -26,7 +42,18 @@ def main() -> None:
     cache = P("wc_data/odds_oddschecker.json")
     cache.write_text(__import__("json").dumps(parse_all(), indent=2))
 
-    result = run_monte_carlo(n_sims=args.simulations, seed=args.seed)
+    if args.train_ml:
+        from ml.trainer import train_and_save
+
+        meta = train_and_save()
+        print(f"Trained ML model on {meta['train_rows']:,} matches → wc_data/ml_match_model.joblib")
+
+    result = run_monte_carlo(
+        n_sims=args.simulations,
+        seed=args.seed,
+        use_ml=not args.no_ml,
+        odds_weight=args.odds_weight,
+    )
 
     json_path = args.output_dir / "expected_points.json"
     json_path.write_text(json.dumps(result, indent=2))
@@ -55,6 +82,8 @@ def main() -> None:
             w.writerow(row)
 
     print(f"Simulations: {result['n_simulations']:,}")
+    mode = "ML + Oddschecker" if result.get("use_ml", True) else "Oddschecker only"
+    print(f"Mode: {mode}")
     print(f"Odds sources: {', '.join(result['odds_sources'])}")
     if result.get("missing_outright"):
         print(f"Warning: no winner odds for: {', '.join(result['missing_outright'])}")
