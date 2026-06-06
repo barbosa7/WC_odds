@@ -38,9 +38,17 @@ By default the simulator uses a **Kaggle-trained match model** blended with your
 
 ```bash
 python run.py --no-ml              # Oddschecker only (previous behaviour)
+python run.py --both-models        # ML + odds-only (writes both JSON files for dashboard)
 python run.py --train-ml           # Force retrain before simulating
 python run.py --odds-weight 0.5    # 50% market / 50% ML in group stage
 python scripts/train_ml_model.py   # Train model only
+```
+
+For the dashboard **ML vs odds** tab, generate both result sets before building:
+
+```bash
+python run.py --both-models
+python build_site.py
 ```
 
 Re-save the HTML files from Oddschecker when prices move, then re-run.
@@ -53,8 +61,9 @@ python serve_web.py
 
 Opens **http://127.0.0.1:8765/** with:
 
-- **Rankings** — expected points bar chart, sortable table
-- **Team explorer** — knockout funnel, group finish, full stage distribution
+- **Rankings** — expected points bar chart (ML vs odds), sortable table with both E[Pts]
+- **ML vs odds** — side-by-side comparison, scatter plot, full diff table
+- **Team explorer** — knockout funnel for both models, group finish, stage distribution
 - **Groups** — all 12 groups ranked by E[Pts]
 - **Odds vs model** — Oddschecker implied win % vs simulated P(W)
 - **Match odds** — all 72 group-stage 1X2 prices from your HTML export
@@ -122,7 +131,7 @@ Upload the `dist/` folder at [Netlify Drop](https://app.netlify.com/drop).
 1. **Parse** best decimal odds from both HTML files (`parse_oddschecker.py`).
 2. **Train** (first run) a multinomial logistic model on 9,097 international matches from the Kaggle competition (`ml/trainer.py`). Features: chronological Elo, form, H2H, rest days, tournament flags.
 3. **Group stage**: simulate each of 72 matches using a blend of **ML 1X2** (65%) and **Oddschecker 1X2** (35%). The feature engine updates Elo/form after each simulated match.
-4. **Knockout**: sample from ML 1X2 probabilities (draw → random ET/pens winner). Use `--no-ml` to revert to outright-derived Bradley–Terry strengths instead.
+4. **Knockout**: sample from ML 1X2 blended with **outright winner odds** (same weight as group stage). Draw → random ET/pens winner. Use `--no-ml` to revert to odds-only throughout.
 5. Full bracket with FIFA third-place combination table → expected points & stage probabilities.
 
 ## Files

@@ -477,9 +477,14 @@ def run_monte_carlo(
     if use_ml:
         from ml.predictor import load_predictor
 
-        predictor = load_predictor(odds_weight=odds_weight)
+        predictor = load_predictor(
+            odds_weight=odds_weight,
+            strengths=odds["strengths"],
+        )
+        w = int(odds_weight * 100)
         sources.append(
-            f"ml_match_model (65% ML + {int(odds_weight * 100)}% Oddschecker 1X2 for groups)"
+            f"ml_match_model ({100 - w}% ML + {w}% Oddschecker 1X2 groups; "
+            f"{100 - w}% ML + {w}% winner odds knockouts)"
         )
         sim_fn = lambda: run_single_sim_ml(predictor, lookup, rng)
     else:

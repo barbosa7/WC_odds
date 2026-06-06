@@ -1,5 +1,5 @@
 [build]
-  command = "pip install -r requirements.txt && python build_site.py --run-simulation"
+  command = "pip install -r requirements.txt && python build_site.py"
   publish = "dist"
 
 [build.environment]

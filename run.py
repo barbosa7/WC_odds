@@ -33,6 +33,11 @@ def main() -> None:
         action="store_true",
         help="Retrain ML model from Kaggle train.csv before simulating",
     )
+    parser.add_argument(
+        "--both-models",
+        action="store_true",
+        help="Run ML and odds-only sims (writes both JSON files for dashboard)",
+    )
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -48,17 +53,6 @@ def main() -> None:
         meta = train_and_save()
         print(f"Trained ML model on {meta['train_rows']:,} matches → wc_data/ml_match_model.joblib")
 
-    result = run_monte_carlo(
-        n_sims=args.simulations,
-        seed=args.seed,
-        use_ml=not args.no_ml,
-        odds_weight=args.odds_weight,
-    )
-
-    json_path = args.output_dir / "expected_points.json"
-    json_path.write_text(json.dumps(result, indent=2))
-
-    csv_path = args.output_dir / "expected_points.csv"
     fields = [
         "team",
         "expected_points",
@@ -75,29 +69,68 @@ def main() -> None:
         "p_group_4",
         "p_bonus_goals",
     ]
-    with csv_path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
-        w.writeheader()
-        for row in result["teams"]:
-            w.writerow(row)
 
-    print(f"Simulations: {result['n_simulations']:,}")
-    mode = "ML + Oddschecker" if result.get("use_ml", True) else "Oddschecker only"
-    print(f"Mode: {mode}")
-    print(f"Odds sources: {', '.join(result['odds_sources'])}")
-    if result.get("missing_outright"):
-        print(f"Warning: no winner odds for: {', '.join(result['missing_outright'])}")
-    print(f"\nTop 15 by expected points:\n")
-    print(f"{'Team':<28} {'E[Pts]':>8} {'P(W)':>7} {'P(SF)':>7} {'P(QF)':>7} {'P(R16)':>7}")
-    print("-" * 68)
-    for row in result["teams"][:15]:
-        print(
-            f"{row['team']:<28} {row['expected_points']:>8.1f} "
-            f"{row['p_champion']:>7.1%} {row['p_semi_final']:>7.1%} "
-            f"{row['p_quarter_final']:>7.1%} {row['p_round_of_16']:>7.1%}"
+    def write_outputs(result: dict, out_dir: Path, label: str) -> None:
+        json_path = out_dir / "expected_points.json"
+        json_path.write_text(json.dumps(result, indent=2))
+
+        csv_path = out_dir / "expected_points.csv"
+        with csv_path.open("w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+            w.writeheader()
+            for row in result["teams"]:
+                w.writerow(row)
+
+        print(f"\n=== {label} ===")
+        print(f"Simulations: {result['n_simulations']:,}")
+        mode = "ML + Oddschecker" if result.get("use_ml", True) else "Oddschecker only"
+        print(f"Mode: {mode}")
+        print(f"Odds sources: {', '.join(result['odds_sources'])}")
+        if result.get("missing_outright"):
+            print(f"Warning: no winner odds for: {', '.join(result['missing_outright'])}")
+        print(f"\nTop 15 by expected points:\n")
+        print(f"{'Team':<28} {'E[Pts]':>8} {'P(W)':>7} {'P(SF)':>7} {'P(QF)':>7} {'P(R16)':>7}")
+        print("-" * 68)
+        for row in result["teams"][:15]:
+            print(
+                f"{row['team']:<28} {row['expected_points']:>8.1f} "
+                f"{row['p_champion']:>7.1%} {row['p_semi_final']:>7.1%} "
+                f"{row['p_quarter_final']:>7.1%} {row['p_round_of_16']:>7.1%}"
+            )
+        print(f"\nFull results: {json_path}")
+        print(f"CSV: {csv_path}")
+
+    if args.both_models:
+        result_ml = run_monte_carlo(
+            n_sims=args.simulations,
+            seed=args.seed,
+            use_ml=True,
+            odds_weight=args.odds_weight,
         )
-    print(f"\nFull results: {json_path}")
-    print(f"CSV: {csv_path}")
+        write_outputs(result_ml, args.output_dir, "ML + Oddschecker")
+
+        odds_dir = args.output_dir / "odds_only"
+        odds_dir.mkdir(parents=True, exist_ok=True)
+        result_odds = run_monte_carlo(
+            n_sims=args.simulations,
+            seed=args.seed,
+            use_ml=False,
+            odds_weight=args.odds_weight,
+        )
+        write_outputs(result_odds, odds_dir, "Oddschecker only")
+
+        compare_path = args.output_dir / "expected_points_odds_only.json"
+        compare_path.write_text(json.dumps(result_odds, indent=2))
+        print(f"\nDashboard comparison file: {compare_path}")
+        return
+
+    result = run_monte_carlo(
+        n_sims=args.simulations,
+        seed=args.seed,
+        use_ml=not args.no_ml,
+        odds_weight=args.odds_weight,
+    )
+    write_outputs(result, args.output_dir, "ML + Oddschecker" if not args.no_ml else "Oddschecker only")
 
 
 if __name__ == "__main__":

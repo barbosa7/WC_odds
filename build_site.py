@@ -16,6 +16,7 @@ DATA_OUT = DIST / "data"
 
 REQUIRED = {
     "expected_points.json": ROOT / "output" / "expected_points.json",
+    "expected_points_odds_only.json": ROOT / "output" / "expected_points_odds_only.json",
     "tournament.json": ROOT / "wc_data" / "tournament.json",
     "odds_oddschecker.json": ROOT / "wc_data" / "odds_oddschecker.json",
 }
@@ -23,7 +24,7 @@ REQUIRED = {
 
 def run_simulation(n_sims: int) -> None:
     subprocess.run(
-        [sys.executable, str(ROOT / "run.py"), "-n", str(n_sims)],
+        [sys.executable, str(ROOT / "run.py"), "-n", str(n_sims), "--both-models"],
         check=True,
         cwd=ROOT,
     )

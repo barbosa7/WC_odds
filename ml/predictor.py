@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 from pathlib import Path
 
 import joblib
@@ -10,7 +9,8 @@ import numpy as np
 
 from ml.constants import norm_team
 from ml.features import FEATURE_COLS, FeatureEngine
-from ml.trainer import MODEL_PATH, clone_engine, resolve_train_path, train_and_save
+from ml.trainer import MODEL_PATH, clone_engine, train_and_save
+from odds_fetch import knockout_match_probs
 
 WC_TOURNAMENT = "FIFA World Cup"
 WC_START = "2026-06-11"
@@ -23,11 +23,17 @@ class MatchPredictor:
         base_engine: FeatureEngine,
         alpha: float = 0.9,
         odds_weight: float = 0.35,
+        knockout_odds_weight: float | None = None,
+        strengths: dict[str, float] | None = None,
     ) -> None:
         self.model = model
         self.base_engine = base_engine
         self.alpha = alpha
         self.odds_weight = odds_weight
+        self.knockout_odds_weight = (
+            odds_weight if knockout_odds_weight is None else knockout_odds_weight
+        )
+        self.strengths = strengths or {}
 
     def fresh_engine(self) -> FeatureEngine:
         return clone_engine(self.base_engine)
@@ -39,6 +45,17 @@ class MatchPredictor:
         blend = self.alpha * ml + (1 - self.alpha) * elo
         blend /= blend.sum()
         return np.clip(blend, 1e-6, 1 - 1e-6)
+
+    def _blend_probs(
+        self,
+        ml: np.ndarray,
+        market: np.ndarray,
+        weight: float,
+    ) -> tuple[float, float, float]:
+        w = weight
+        out = (1 - w) * ml + w * market
+        out /= out.sum()
+        return float(out[0]), float(out[1]), float(out[2])
 
     def match_probs(
         self,
@@ -65,13 +82,27 @@ class MatchPredictor:
                 market = np.array([o["away"], o["draw"], o["home"]])
 
         if market is not None:
-            w = self.odds_weight
-            out = (1 - w) * ml + w * market
-            out /= out.sum()
-        else:
-            out = ml
+            return self._blend_probs(ml, market, self.odds_weight)
+        return float(ml[0]), float(ml[1]), float(ml[2])
 
-        return float(out[0]), float(out[1]), float(out[2])
+    def knockout_probs(
+        self,
+        engine: FeatureEngine,
+        team_a: str,
+        team_b: str,
+        *,
+        date: str = WC_START,
+    ) -> tuple[float, float, float]:
+        """ML 1X2 blended with outright winner odds for knockout ties."""
+        team_a, team_b = norm_team(team_a), norm_team(team_b)
+        feats = engine.extract(team_a, team_b, date, neutral=True, tournament=WC_TOURNAMENT)
+        ml = self._ml_probs(feats)
+
+        if self.strengths:
+            ma, md, mb = knockout_match_probs(team_a, team_b, self.strengths)
+            return self._blend_probs(ml, np.array([ma, md, mb]), self.knockout_odds_weight)
+
+        return float(ml[0]), float(ml[1]), float(ml[2])
 
     def simulate_goals(
         self,
@@ -115,10 +146,7 @@ class MatchPredictor:
         *,
         date: str = WC_START,
     ) -> tuple[str, str]:
-        pa, pd, pb = self.match_probs(
-            engine, team_a, team_b, date=date, neutral=True, tournament=WC_TOURNAMENT,
-            odds_lookup=None,
-        )
+        pa, pd, pb = self.knockout_probs(engine, team_a, team_b, date=date)
         u = rng.random()
         if u < pa:
             winner, loser, res = team_a, team_b, "H"
@@ -134,7 +162,11 @@ class MatchPredictor:
         return winner, loser
 
 
-def load_predictor(odds_weight: float = 0.35) -> MatchPredictor:
+def load_predictor(
+    odds_weight: float = 0.35,
+    knockout_odds_weight: float | None = None,
+    strengths: dict[str, float] | None = None,
+) -> MatchPredictor:
     if not MODEL_PATH.exists():
         train_and_save()
     payload = joblib.load(MODEL_PATH)
@@ -143,4 +175,6 @@ def load_predictor(odds_weight: float = 0.35) -> MatchPredictor:
         base_engine=payload["base_engine"],
         alpha=payload.get("alpha", 0.9),
         odds_weight=odds_weight,
+        knockout_odds_weight=knockout_odds_weight,
+        strengths=strengths,
     )

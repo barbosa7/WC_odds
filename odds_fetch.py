@@ -99,6 +99,21 @@ def strengths_from_outright(outright: dict[str, float]) -> dict[str, float]:
     return {t: max(floor, s) for t, s in strengths.items()}
 
 
+def knockout_match_probs(
+    team_a: str,
+    team_b: str,
+    strengths: dict[str, float],
+) -> tuple[float, float, float]:
+    """Return (P team_a wins, draw, P team_b wins) from outright-derived strengths."""
+    sa, sb = strengths.get(team_a, 1.0), strengths.get(team_b, 1.0)
+    diff = sa - sb
+    p_a = 1 / (1 + math.exp(-1.15 * diff))
+    p_b = 1 / (1 + math.exp(1.15 * diff))
+    p_draw = max(0.08, 0.32 - 0.12 * abs(diff))
+    s = p_a + p_b + p_draw
+    return p_a / s, p_draw / s, p_b / s
+
+
 def merge_odds() -> dict[str, Any]:
     data = get_odds_data()
     sources = [f"oddschecker:{data.get('winner_html')}", f"oddschecker:{data.get('matches_html')}"]

@@ -312,10 +312,39 @@ input[type="search"]:focus, select:focus {
   font-size: 0.85rem;
   color: var(--accent);
   font-weight: 500;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.group-team-pts-sub {
+  font-size: 0.7rem;
+  color: var(--blue);
+  font-weight: 400;
 }
 
 .gap-pos { color: var(--danger); }
 .gap-neg { color: var(--blue); }
+
+.diff-pos { color: var(--accent); font-family: var(--mono); font-size: 0.8rem; }
+.diff-neg { color: var(--purple); font-family: var(--mono); font-size: 0.8rem; }
+.diff-zero { color: var(--text-muted); font-family: var(--mono); font-size: 0.8rem; }
+
+.model-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+.model-badge.ml { background: rgba(61, 214, 140, 0.15); color: var(--accent); }
+.model-badge.odds { background: rgba(91, 156, 245, 0.15); color: var(--blue); }
 
 .footer {
   border-top: 1px solid var(--border);

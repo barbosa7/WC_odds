@@ -25,6 +25,7 @@
       </div>
       <nav class="tabs" role="tablist">
         <button class="tab active" data-tab="rankings" role="tab">Rankings</button>
+        <button class="tab" data-tab="compare" role="tab">ML vs odds</button>
         <button class="tab" data-tab="teams" role="tab">Team explorer</button>
         <button class="tab" data-tab="groups" role="tab">Groups</button>
         <button class="tab" data-tab="calibration" role="tab">Odds vs model</button>
@@ -56,7 +57,9 @@
                   <th data-sort="rank">#</th>
                   <th data-sort="team">Team</th>
                   <th data-sort="group">Grp</th>
-                  <th data-sort="expected_points">E[Pts]</th>
+                  <th data-sort="expected_points">E[Pts] ML</th>
+                  <th data-sort="expected_points_odds">E[Pts] Odds</th>
+                  <th data-sort="pts_diff">Δ</th>
                   <th data-sort="p_champion">P(W)</th>
                   <th data-sort="p_semi_final">P(SF)</th>
                   <th data-sort="p_quarter_final">P(QF)</th>
@@ -64,6 +67,46 @@
                   <th data-sort="p_round_of_32">P(R32)</th>
                   <th data-sort="p_group_1">P(1st)</th>
                   <th data-sort="p_bonus_goals">P(bonus)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-compare" class="panel">
+        <div class="grid-2">
+          <div class="card chart-card">
+            <h2>Expected points — ML vs odds-only (top 20)</h2>
+            <p class="hint">Green = ML + Oddschecker blend · Blue = market odds only</p>
+            <div class="chart-wrap tall"><canvas id="chart-compare"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <h2>Scatter: odds-only vs ML expected points</h2>
+            <p class="hint">Above the diagonal = ML model rates team higher</p>
+            <div class="chart-wrap tall"><canvas id="chart-compare-scatter"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-toolbar">
+            <h2>Full comparison</h2>
+            <input type="search" id="search-compare" placeholder="Search team…" />
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="compare-table">
+              <thead>
+                <tr>
+                  <th data-sort-cmp="team">Team</th>
+                  <th data-sort-cmp="group">Grp</th>
+                  <th data-sort-cmp="expected_points_ml">E[Pts] ML</th>
+                  <th data-sort-cmp="expected_points_odds">E[Pts] Odds</th>
+                  <th data-sort-cmp="pts_diff">Δ Pts</th>
+                  <th data-sort-cmp="p_champion_ml">P(W) ML</th>
+                  <th data-sort-cmp="p_champion_odds">P(W) Odds</th>
+                  <th data-sort-cmp="pw_diff">Δ P(W)</th>
+                  <th data-sort-cmp="rank_ml">Rank ML</th>
+                  <th data-sort-cmp="rank_odds">Rank Odds</th>
                 </tr>
               </thead>
               <tbody></tbody>
