@@ -34,6 +34,15 @@ pip install -r requirements.txt
 python run.py
 ```
 
+By default the simulator uses a **Kaggle-trained match model** blended with your Oddschecker 1X2 prices for group games, and ML-only probabilities for knockouts. The model trains automatically on first run from `wc_data/kaggle_train.csv` (copied from the [wc2026-ai-prediction](https://www.kaggle.com/competitions/wc2026-ai-prediction) competition).
+
+```bash
+python run.py --no-ml              # Oddschecker only (previous behaviour)
+python run.py --train-ml           # Force retrain before simulating
+python run.py --odds-weight 0.5    # 50% market / 50% ML in group stage
+python scripts/train_ml_model.py   # Train model only
+```
+
 Re-save the HTML files from Oddschecker when prices move, then re-run.
 
 ## Dashboard
@@ -111,9 +120,10 @@ Upload the `dist/` folder at [Netlify Drop](https://app.netlify.com/drop).
 ## How it works
 
 1. **Parse** best decimal odds from both HTML files (`parse_oddschecker.py`).
-2. **Group stage**: simulate each of 72 matches using devigged **1X2 market probabilities** (not invented strengths).
-3. **Knockout**: Bradley–Terry strengths derived from **winner odds** + group-winner nudges.
-4. Full bracket with FIFA third-place combination table → expected points & stage probabilities.
+2. **Train** (first run) a multinomial logistic model on 9,097 international matches from the Kaggle competition (`ml/trainer.py`). Features: chronological Elo, form, H2H, rest days, tournament flags.
+3. **Group stage**: simulate each of 72 matches using a blend of **ML 1X2** (65%) and **Oddschecker 1X2** (35%). The feature engine updates Elo/form after each simulated match.
+4. **Knockout**: sample from ML 1X2 probabilities (draw → random ET/pens winner). Use `--no-ml` to revert to outright-derived Bradley–Terry strengths instead.
+5. Full bracket with FIFA third-place combination table → expected points & stage probabilities.
 
 ## Files
 
@@ -123,5 +133,11 @@ Upload the `dist/` folder at [Netlify Drop](https://app.netlify.com/drop).
 | `odds_fetch.py` | Load parsed odds |
 | `simulate.py` | Tournament simulation |
 | `run.py` | CLI entry point |
+| `ml/trainer.py` | Train & save match model |
+| `ml/predictor.py` | ML + odds blend for match probs |
+| `ml/features.py` | Elo/form feature engine |
+| `scripts/train_ml_model.py` | Standalone model training |
 | `wc_data/tournament.json` | Groups & bracket |
+| `wc_data/kaggle_train.csv` | Kaggle training data |
+| `wc_data/ml_match_model.joblib` | Saved model (auto-generated) |
 | `wc_data/odds_oddschecker.json` | Parsed cache (auto-generated) |
