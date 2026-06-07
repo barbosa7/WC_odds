@@ -1,6 +1,11 @@
 [build]
   command = "pip install -r requirements.txt && python build_site.py"
   publish = "dist"
+  functions = "netlify/functions"
+
+[[edge_functions]]
+  function = "protect"
+  path = "/*"
 
 [build.environment]
   PYTHON_VERSION = "3.11"
@@ -15,4 +20,4 @@
 [[headers]]
   for = "/data/*"
   [headers.values]
-    Cache-Control = "public, max-age=300"
+    Cache-Control = "private, no-store"

@@ -9,7 +9,7 @@ import numpy as np
 
 from ml.constants import norm_team
 from ml.features import FEATURE_COLS, FeatureEngine
-from ml.trainer import MODEL_PATH, clone_engine, train_and_save
+from ml.trainer import MODEL_PATH, clone_engine
 from odds_fetch import knockout_match_probs
 
 WC_TOURNAMENT = "FIFA World Cup"
@@ -21,7 +21,7 @@ class MatchPredictor:
         self,
         model,
         base_engine: FeatureEngine,
-        alpha: float = 0.9,
+        alpha: float = 1.0,
         odds_weight: float = 0.35,
         knockout_odds_weight: float | None = None,
         strengths: dict[str, float] | None = None,
@@ -168,12 +168,20 @@ def load_predictor(
     strengths: dict[str, float] | None = None,
 ) -> MatchPredictor:
     if not MODEL_PATH.exists():
-        train_and_save()
+        from ml.martj42 import build_extended_train, load_extended_train
+        from ml.trainer import TrainConfig, train_and_save
+
+        df = load_extended_train() if (MODEL_PATH.parent / "international_train_extended.csv").exists() else build_extended_train()
+        train_and_save(
+            df,
+            TrainConfig(alpha=1.0, decay_lambda=0.05, ref_date=df["date"].max()),
+            train_path=str(MODEL_PATH.parent / "international_train_extended.csv"),
+        )
     payload = joblib.load(MODEL_PATH)
     return MatchPredictor(
         model=payload["model"],
         base_engine=payload["base_engine"],
-        alpha=payload.get("alpha", 0.9),
+        alpha=payload.get("alpha", 1.0),
         odds_weight=odds_weight,
         knockout_odds_weight=knockout_odds_weight,
         strengths=strengths,

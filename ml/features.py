@@ -13,14 +13,18 @@ from ml.constants import TOURNAMENT_WEIGHT, norm_team
 INITIAL_ELO = 1500.0
 HOME_ADV_ELO = 65.0
 BASE_K = 20.0
+FORM_WINDOW = 10
+RECENT_WR_WINDOW = 20
+H2H_WINDOW = 8
 
 
 @dataclass
 class TeamState:
     elo: float = INITIAL_ELO
-    form: deque = field(default_factory=lambda: deque(maxlen=10))
-    gf_form: deque = field(default_factory=lambda: deque(maxlen=10))
-    ga_form: deque = field(default_factory=lambda: deque(maxlen=10))
+    form: deque = field(default_factory=lambda: deque(maxlen=FORM_WINDOW))
+    gf_form: deque = field(default_factory=lambda: deque(maxlen=FORM_WINDOW))
+    ga_form: deque = field(default_factory=lambda: deque(maxlen=FORM_WINDOW))
+    recent_results: deque = field(default_factory=lambda: deque(maxlen=RECENT_WR_WINDOW))
     last_date: datetime | None = None
     matches: int = 0
     wins: int = 0
@@ -75,6 +79,11 @@ class FeatureEngine:
             return 30.0
         return max(1.0, (dt - t.last_date).days)
 
+    def _recent_winrate(self, t: TeamState) -> float:
+        if not t.recent_results:
+            return 0.5
+        return float(sum(t.recent_results)) / len(t.recent_results)
+
     def _h2h_rates(self, home: str, away: str) -> tuple[float, float, float]:
         key = self._h2h_key(home, away)
         hist = self.h2h.get(key, [])
@@ -82,7 +91,7 @@ class FeatureEngine:
             return 0.33, 0.34, 0.33
         h = d = a = 0
         home, away = norm_team(home), norm_team(away)
-        for res, was_home in hist[-8:]:
+        for res, was_home in hist[-H2H_WINDOW:]:
             if was_home == home:
                 h += res == "H"
                 d += res == "D"
@@ -145,8 +154,8 @@ class FeatureEngine:
             "h2h_away": ha,
             "matches_home": float(th.matches),
             "matches_away": float(ta.matches),
-            "winrate_home": th.wins / max(1, th.matches),
-            "winrate_away": ta.wins / max(1, ta.matches),
+            "winrate_home": self._recent_winrate(th),
+            "winrate_away": self._recent_winrate(ta),
             "neutral": 1.0 if neutral else 0.0,
             "same_conf": 1.0 if home_conf and home_conf == away_conf else 0.0,
             "is_wc": 1.0 if tournament == "FIFA World Cup" else 0.0,
@@ -180,6 +189,8 @@ class FeatureEngine:
         pts_a = 3 if result == "A" else (1 if result == "D" else 0)
         th.form.append(pts_h / 3.0)
         ta.form.append(pts_a / 3.0)
+        th.recent_results.append(1.0 if result == "H" else (0.5 if result == "D" else 0.0))
+        ta.recent_results.append(1.0 if result == "A" else (0.5 if result == "D" else 0.0))
         th.gf_form.append(home_score)
         th.ga_form.append(away_score)
         ta.gf_form.append(away_score)

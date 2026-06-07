@@ -53,6 +53,9 @@ def build(*, run_sim: bool = False, n_sims: int = 25_000) -> None:
     for out_name, src_path in REQUIRED.items():
         shutil.copy2(src_path, DATA_OUT / out_name)
 
+    redirects = DIST / "_redirects"
+    redirects.write_text("/login /login.html 200\n")
+
     print(f"Built static site → {DIST}")
     print(f"  {len(list(DIST.rglob('*')))} files")
     print("  Deploy dist/ to Netlify, or run: python serve_web.py")

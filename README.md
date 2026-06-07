@@ -74,6 +74,25 @@ Regenerate data with `python run.py`, then refresh the browser.
 
 The site builds to static files in `dist/` — no server required in production.
 
+### Password protection
+
+The dashboard is protected by a login page on Netlify. Before deploying, set these **environment variables** in Netlify → **Site configuration → Environment variables**:
+
+| Variable | Description |
+|----------|-------------|
+| `SITE_USER` | Username you share with viewers |
+| `SITE_PASSWORD` | Password |
+| `AUTH_SECRET` | Long random string for session cookies (`openssl rand -hex 32`) |
+
+Unauthenticated visitors are redirected to `/login`. Prediction JSON under `/data/` returns 401 without a valid session. If `AUTH_SECRET` is not set, the site stays open (useful for local `serve_web.py`).
+
+To test auth locally with Netlify’s dev server:
+
+```bash
+cp .env.example .env   # fill in values
+npx netlify dev
+```
+
 ### Option A — Netlify runs the full pipeline (recommended)
 
 1. Push this repo to GitHub/GitLab/Bitbucket.

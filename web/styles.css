@@ -84,6 +84,23 @@ body::before {
   line-height: 1.6;
 }
 
+.btn-logout {
+  align-self: center;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
 .tabs {
   max-width: 1400px;
   margin: 0 auto;

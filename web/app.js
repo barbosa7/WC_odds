@@ -46,21 +46,35 @@ const FUNNEL_KEYS = [
   { key: "p_champion", label: "Win tournament" },
 ];
 
+async function fetchJson(url, label) {
+  const r = await fetch(url, { credentials: "same-origin" });
+  if (r.status === 401) {
+    const next = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/login.html?next=${next}`;
+    throw new Error("Session expired — redirecting to sign in");
+  }
+  if (!r.ok) throw new Error(`Missing ${label} — run python run.py first`);
+  return r.json();
+}
+
 async function loadData() {
   const [results, tournament, odds] = await Promise.all([
-    fetch(API.results).then((r) => {
-      if (!r.ok) throw new Error("Missing simulation output — run python run.py first");
-      return r.json();
-    }),
-    fetch(API.tournament).then((r) => r.json()),
-    fetch(API.odds).then((r) => r.json()),
+    fetchJson(API.results, "simulation output"),
+    fetchJson(API.tournament, "tournament data"),
+    fetchJson(API.odds, "odds data"),
   ]);
 
   let resultsOdds = null;
   try {
-    const r = await fetch(API.resultsOdds);
+    const r = await fetch(API.resultsOdds, { credentials: "same-origin" });
+    if (r.status === 401) {
+      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/login.html?next=${next}`;
+      throw new Error("Session expired");
+    }
     if (r.ok) resultsOdds = await r.json();
-  } catch (_) {
+  } catch (err) {
+    if (err.message === "Session expired") throw err;
     /* optional comparison file */
   }
 
@@ -804,6 +818,7 @@ async function init() {
     setupTabs();
     setupSort();
     setupSearch();
+    setupLogout();
   } catch (err) {
     document.getElementById("loading").innerHTML = `
       <div class="error-banner" style="max-width:480px;text-align:left">
@@ -814,3 +829,16 @@ async function init() {
 }
 
 init();
+
+function setupLogout() {
+  const btn = document.getElementById("logout-btn");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    try {
+      await fetch("/.netlify/functions/logout", { method: "POST", credentials: "same-origin" });
+    } catch (_) {
+      /* still redirect */
+    }
+    window.location.href = "/login.html";
+  });
+}

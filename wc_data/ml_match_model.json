@@ -1,6 +1,10 @@
 {
-  "alpha": 0.9,
-  "train_path": "/Users/tomasbarbosa/Desktop/Opti WC/wc_data/kaggle_train.csv",
-  "train_rows": 9097,
+  "alpha": 1.0,
+  "decay_lambda": 0.0,
+  "wc_weight": 1.0,
+  "major_weight": 1.0,
+  "friendly_weight": 1.0,
+  "train_path": "wc_data/international_train_extended.csv",
+  "train_rows": 12763,
   "features": 27
 }
