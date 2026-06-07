@@ -86,6 +86,8 @@ The dashboard is protected by a login page on Netlify. Before deploying, set the
 
 Unauthenticated visitors are redirected to `/login`. Prediction JSON under `/data/` returns 401 without a valid session. If `AUTH_SECRET` is not set, the site stays open (useful for local `serve_web.py`).
 
+**Never commit these values** — not in `.env`, `netlify.toml`, or any tracked file. Only set them in the Netlify dashboard (or a local `.env` for `netlify dev`, which is gitignored).
+
 To test auth locally with Netlify’s dev server:
 
 ```bash
