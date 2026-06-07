@@ -88,6 +88,8 @@ Unauthenticated visitors are redirected to `/login`. Prediction JSON under `/dat
 
 **Never commit these values** — not in `.env`, `netlify.toml`, or any tracked file. Only set them in the Netlify dashboard (or a local `.env` for `netlify dev`, which is gitignored).
 
+**Netlify deploy note:** if your username or password is a common word (e.g. `opti` matches “Opti WC”, `brazil` matches team names in the Oddschecker HTML), Netlify’s secrets scanner may flag false positives. `netlify.toml` already omits the auth env keys from scanning; for stronger security, use a random password that doesn’t appear anywhere in the repo.
+
 To test auth locally with Netlify’s dev server:
 
 ```bash

@@ -9,6 +9,10 @@
 
 [build.environment]
   PYTHON_VERSION = "3.11"
+  # Auth vars are runtime-only (Netlify UI). Omit from scan — "opti"/"brazil" appear in
+  # project name and Oddschecker HTML as false positives.
+  SECRETS_SCAN_OMIT_KEYS = "SITE_USER,SITE_PASSWORD,AUTH_SECRET"
+  SECRETS_SCAN_OMIT_PATHS = "World Cup Winner Betting Odds _ Football _ Oddschecker.htm,World Cup Betting Odds 2026 _ Oddschecker.htm,.env.example"
 
 [[headers]]
   for = "/*"
