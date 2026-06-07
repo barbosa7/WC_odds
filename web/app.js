@@ -93,41 +93,54 @@ function computePointsBreakdown(r) {
   return { groupRows, stageRows, bonusRow, groupTotal, stageTotal, bonusTotal, total };
 }
 
-function renderBreakdownTable(title, rows, subtotal) {
-  const body = rows
-    .map(
-      (row) => `
+function fmtEv(v) {
+  if (v == null || isNaN(v)) return "—";
+  const n = Number(v);
+  if (n > 0 && n < 0.05) return n.toFixed(2);
+  return n.toFixed(1);
+}
+
+function renderBreakdownSection(title, rows, subtotal, accent) {
+  const visible = rows.filter((row) => row.expected > 0.005 || row.prob > 0.001);
+  const maxEv = Math.max(...visible.map((r) => r.expected), 0.01);
+
+  const body = visible
+    .map((row) => {
+      const barPct = (row.expected / maxEv) * 100;
+      return `
       <tr>
-        <td>${row.label}</td>
-        <td class="num">${pct(row.prob)}</td>
-        <td class="num">${row.ptsEach}</td>
-        <td class="num pts">${fmtPts(row.expected)}</td>
-      </tr>`,
-    )
+        <td class="breakdown-outcome">${row.label}</td>
+        <td class="num breakdown-formula">
+          <span class="formula-p">${pct(row.prob)}</span>
+          <span class="formula-x">×</span>
+          <span class="formula-pts">${row.ptsEach}</span>
+        </td>
+        <td class="num breakdown-ev">
+          <div class="ev-cell">
+            <span class="ev-value">${fmtEv(row.expected)}</span>
+            <span class="ev-bar" style="width:${barPct}%"></span>
+          </div>
+        </td>
+      </tr>`;
+    })
     .join("");
 
   return `
-    <div class="breakdown-section">
-      <h3>${title}</h3>
-      <div class="table-scroll">
-        <table class="data-table breakdown-table">
-          <thead>
-            <tr>
-              <th>Outcome</th>
-              <th>Probability</th>
-              <th>Pts if…</th>
-              <th>E[Pts]</th>
-            </tr>
-          </thead>
-          <tbody>${body}</tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3">Subtotal</td>
-              <td class="num pts">${fmtPts(subtotal)}</td>
-            </tr>
-          </tfoot>
-        </table>
+    <div class="breakdown-panel" style="--breakdown-accent:${accent}">
+      <div class="breakdown-panel-head">
+        <h3>${title}</h3>
+        <span class="breakdown-panel-total">${fmtEv(subtotal)} pts</span>
       </div>
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>Outcome</th>
+            <th>P × pts</th>
+            <th>EV</th>
+          </tr>
+        </thead>
+        <tbody>${body || `<tr><td colspan="3" class="breakdown-empty">No contribution</td></tr>`}</tbody>
+      </table>
     </div>`;
 }
 
@@ -143,32 +156,54 @@ function renderPointsBreakdown(r) {
     const mates = groupTeams.filter((t) => t !== r.team);
 
     hintEl.textContent =
-      `Group ${groupLetter} · E[Pts] = Σ (probability × points) for group finish, tournament exit, and entertainment bonus.`;
+      `Each row is expected value: probability × points. Components sum to ${fmtEv(bd.total)} expected points.`;
 
     const barTotal = bd.total || 1;
-    const barHtml = `
-      <div class="breakdown-bar" aria-hidden="true">
-        <div class="breakdown-bar-seg group" style="width:${(bd.groupTotal / barTotal) * 100}%" title="Group: ${fmtPts(bd.groupTotal)}"></div>
-        <div class="breakdown-bar-seg stage" style="width:${(bd.stageTotal / barTotal) * 100}%" title="Tournament: ${fmtPts(bd.stageTotal)}"></div>
-        <div class="breakdown-bar-seg bonus" style="width:${Math.max((bd.bonusTotal / barTotal) * 100, bd.bonusTotal > 0 ? 2 : 0)}%" title="Bonus: ${fmtPts(bd.bonusTotal)}"></div>
-      </div>
-      <div class="breakdown-bar-legend">
-        <span><i class="swatch group"></i> Group ${fmtPts(bd.groupTotal)}</span>
-        <span><i class="swatch stage"></i> Tournament ${fmtPts(bd.stageTotal)}</span>
-        <span><i class="swatch bonus"></i> Bonus ${fmtPts(bd.bonusTotal)}</span>
-        <span class="breakdown-total">Total ${fmtPts(bd.total)}</span>
-      </div>`;
-
     const groupMatesHtml = mates.length
-      ? `<p class="breakdown-mates">Also in Group ${groupLetter}: ${mates.join(", ")}</p>`
-      : "";
+      ? `<p class="breakdown-mates">Group ${groupLetter}: ${mates.join(", ")}</p>`
+      : `<p class="breakdown-mates">Group ${groupLetter}</p>`;
 
     container.innerHTML = `
-      ${groupMatesHtml}
-      ${barHtml}
-      ${renderBreakdownTable("Group stage finish", bd.groupRows, bd.groupTotal)}
-      ${renderBreakdownTable("Tournament exit (final standing)", bd.stageRows, bd.stageTotal)}
-      ${renderBreakdownTable("Entertainment bonus", [bd.bonusRow], bd.bonusTotal)}
+      <div class="breakdown-header">
+        <div class="breakdown-header-main">
+          <span class="breakdown-team">${r.team}</span>
+          ${groupMatesHtml}
+        </div>
+        <div class="breakdown-header-total">
+          <span class="breakdown-header-label">Expected points</span>
+          <span class="breakdown-header-value">${fmtEv(bd.total)}</span>
+        </div>
+      </div>
+
+      <div class="breakdown-summary">
+        <div class="breakdown-summary-item group">
+          <span class="breakdown-summary-label">Group stage</span>
+          <span class="breakdown-summary-value">${fmtEv(bd.groupTotal)}</span>
+          <span class="breakdown-summary-share">${pct(bd.groupTotal / barTotal, 0)} of total</span>
+        </div>
+        <div class="breakdown-summary-item stage">
+          <span class="breakdown-summary-label">Tournament exit</span>
+          <span class="breakdown-summary-value">${fmtEv(bd.stageTotal)}</span>
+          <span class="breakdown-summary-share">${pct(bd.stageTotal / barTotal, 0)} of total</span>
+        </div>
+        <div class="breakdown-summary-item bonus">
+          <span class="breakdown-summary-label">Entertainment bonus</span>
+          <span class="breakdown-summary-value">${fmtEv(bd.bonusTotal)}</span>
+          <span class="breakdown-summary-share">${pct(bd.bonusTotal / barTotal, 0)} of total</span>
+        </div>
+      </div>
+
+      <div class="breakdown-bar" aria-hidden="true">
+        <div class="breakdown-bar-seg group" style="width:${(bd.groupTotal / barTotal) * 100}%"></div>
+        <div class="breakdown-bar-seg stage" style="width:${(bd.stageTotal / barTotal) * 100}%"></div>
+        <div class="breakdown-bar-seg bonus" style="width:${Math.max((bd.bonusTotal / barTotal) * 100, bd.bonusTotal > 0 ? 1.5 : 0)}%"></div>
+      </div>
+
+      <div class="breakdown-grid">
+        ${renderBreakdownSection("Group finish", bd.groupRows, bd.groupTotal, "#3dd68c")}
+        ${renderBreakdownSection("Final standing", bd.stageRows.sort((a, b) => b.expected - a.expected), bd.stageTotal, "#a78bfa")}
+        ${renderBreakdownSection("Entertainment bonus", [bd.bonusRow], bd.bonusTotal, "#f0c14a")}
+      </div>
     `;
   } catch (err) {
     console.error("Points breakdown render failed:", err);
