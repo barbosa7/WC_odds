@@ -2,5 +2,17 @@ dist/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Local env / credentials — never commit real values
 .env
+.env.local
+.env.*.local
 .env.*
+!.env.example
+
+# Other secret files
+secrets.json
+credentials.json
+*.pem
+*.key
+.netlify/state.json
