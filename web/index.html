@@ -123,15 +123,20 @@
             <select id="team-select"></select>
             <div class="team-summary" id="team-summary"></div>
           </div>
-          <div class="card">
+          <div class="card team-chart-knockout">
             <h2>Knockout progression</h2>
             <div class="chart-wrap tall"><canvas id="chart-funnel"></canvas></div>
           </div>
-          <div class="card">
+          <div class="card team-chart-group">
             <h2>Group stage finish</h2>
             <div class="chart-wrap"><canvas id="chart-group-pos"></canvas></div>
           </div>
-          <div class="card wide">
+          <div class="card points-breakdown-card">
+            <h2>Expected points breakdown</h2>
+            <p class="hint" id="breakdown-hint">Select a team to see where expected points come from.</p>
+            <div id="team-points-breakdown"></div>
+          </div>
+          <div class="card team-chart-stages">
             <h2>Full stage distribution</h2>
             <div class="chart-wrap tall"><canvas id="chart-stages"></canvas></div>
           </div>
@@ -205,6 +210,6 @@
     <p>Loading simulation data…</p>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
