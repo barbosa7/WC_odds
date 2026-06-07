@@ -1,0 +1,65 @@
+match_id,date,home_team,away_team,group,phase,neutral
+10001,2022-11-20,Qatar,Ecuador,A,Group,1
+10002,2022-11-25,Qatar,Senegal,A,Group,1
+10003,2022-11-25,Netherlands,Ecuador,A,Group,1
+10004,2022-11-29,Ecuador,Senegal,A,Group,1
+10005,2022-11-29,Netherlands,Qatar,A,Group,1
+10006,2022-11-29,Senegal,Ecuador,A,Group,1
+10007,2022-11-21,England,Iran,B,Group,1
+10008,2022-11-21,United States,Wales,B,Group,1
+10009,2022-11-25,Wales,Iran,B,Group,1
+10010,2022-11-25,England,United States,B,Group,1
+10011,2022-11-29,Wales,England,B,Group,1
+10012,2022-11-29,Iran,United States,B,Group,1
+10013,2022-11-22,Argentina,Saudi Arabia,C,Group,1
+10014,2022-11-22,Mexico,Poland,C,Group,1
+10015,2022-11-26,Poland,Saudi Arabia,C,Group,1
+10016,2022-11-26,Argentina,Mexico,C,Group,1
+10017,2022-11-30,Poland,Argentina,C,Group,1
+10018,2022-11-30,Saudi Arabia,Mexico,C,Group,1
+10019,2022-11-22,Denmark,Tunisia,D,Group,1
+10020,2022-11-22,France,Australia,D,Group,1
+10021,2022-11-26,Tunisia,Australia,D,Group,1
+10022,2022-11-26,France,Denmark,D,Group,1
+10023,2022-11-30,Tunisia,France,D,Group,1
+10024,2022-11-30,Australia,Denmark,D,Group,1
+10025,2022-11-23,Germany,Japan,E,Group,1
+10026,2022-11-23,Spain,Costa Rica,E,Group,1
+10027,2022-11-27,Japan,Costa Rica,E,Group,1
+10028,2022-11-27,Spain,Germany,E,Group,1
+10029,2022-12-01,Japan,Spain,E,Group,1
+10030,2022-12-01,Costa Rica,Germany,E,Group,1
+10031,2022-11-23,Morocco,Croatia,F,Group,1
+10032,2022-11-23,Belgium,Canada,F,Group,1
+10033,2022-11-27,Belgium,Morocco,F,Group,1
+10034,2022-11-27,Croatia,Canada,F,Group,1
+10035,2022-12-01,Croatia,Belgium,F,Group,1
+10036,2022-12-01,Canada,Morocco,F,Group,1
+10037,2022-11-24,Switzerland,Cameroon,G,Group,1
+10038,2022-11-24,Brazil,Serbia,G,Group,1
+10039,2022-11-28,Cameroon,Serbia,G,Group,1
+10040,2022-11-28,Brazil,Switzerland,G,Group,1
+10041,2022-12-02,Cameroon,Brazil,G,Group,1
+10042,2022-12-02,Serbia,Switzerland,G,Group,1
+10043,2022-11-24,Uruguay,South Korea,H,Group,1
+10044,2022-11-24,Portugal,Ghana,H,Group,1
+10045,2022-11-28,South Korea,Ghana,H,Group,1
+10046,2022-11-28,Portugal,Uruguay,H,Group,1
+10047,2022-12-02,Ghana,Uruguay,H,Group,1
+10048,2022-12-02,South Korea,Portugal,H,Group,1
+10049,2022-12-03,Netherlands,United States,-,R16,1
+10050,2022-12-03,Argentina,Australia,-,R16,1
+10051,2022-12-04,France,Poland,-,R16,1
+10052,2022-12-04,England,Senegal,-,R16,1
+10053,2022-12-05,Japan,Croatia,-,R16,1
+10054,2022-12-05,Brazil,South Korea,-,R16,1
+10055,2022-12-06,Morocco,Spain,-,R16,1
+10056,2022-12-06,Portugal,Switzerland,-,R16,1
+10057,2022-12-09,Croatia,Brazil,-,QF,1
+10058,2022-12-09,Netherlands,Argentina,-,QF,1
+10059,2022-12-10,Morocco,Portugal,-,QF,1
+10060,2022-12-10,England,France,-,QF,1
+10061,2022-12-13,Argentina,Croatia,-,SF,1
+10062,2022-12-14,France,Morocco,-,SF,1
+10063,2022-12-17,Croatia,Morocco,-,3P,1
+10064,2022-12-18,Argentina,France,-,F,1

@@ -48,9 +48,15 @@ def main() -> None:
     cache.write_text(__import__("json").dumps(parse_all(), indent=2))
 
     if args.train_ml:
-        from ml.trainer import train_and_save
+        from ml.martj42 import build_extended_train, load_extended_train
+        from ml.trainer import TrainConfig, train_and_save
 
-        meta = train_and_save()
+        df = load_extended_train() if (Path("wc_data/international_train_extended.csv")).exists() else build_extended_train()
+        meta = train_and_save(
+            df,
+            TrainConfig(alpha=1.0, decay_lambda=0.05, ref_date=df["date"].max()),
+            train_path=str(Path("wc_data/international_train_extended.csv")),
+        )
         print(f"Trained ML model on {meta['train_rows']:,} matches → wc_data/ml_match_model.joblib")
 
     fields = [

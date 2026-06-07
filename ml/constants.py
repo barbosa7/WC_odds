@@ -28,6 +28,41 @@ TOURNAMENT_WEIGHT = {
     "Friendly": 0.7,
 }
 
+# Sample-weight tiers for logistic-regression training (separate from Elo K above).
+MAJOR_TOURNAMENTS = frozenset({
+    "FIFA World Cup",
+    "UEFA Euro",
+    "Copa América",
+    "Copa America",
+    "African Cup of Nations",
+    "UEFA Nations League",
+    "CONCACAF Nations League",
+    "AFC Asian Cup",
+    "Gold Cup",
+    "Confederations Cup",
+})
+
+
+def tournament_sample_weight(
+    tournament: str,
+    *,
+    wc_weight: float = 4.0,
+    major_weight: float = 2.0,
+    qual_weight: float = 1.0,
+    friendly_weight: float = 0.35,
+    other_weight: float = 0.75,
+) -> float:
+    t = str(tournament or "")
+    if t == "FIFA World Cup":
+        return wc_weight
+    if t in MAJOR_TOURNAMENTS:
+        return major_weight
+    if "World Cup qualification" in t or "Euro qualification" in t or "qualification" in t.lower():
+        return qual_weight
+    if t == "Friendly":
+        return friendly_weight
+    return other_weight
+
 
 def norm_team(name: str) -> str:
     name = str(name).strip()
