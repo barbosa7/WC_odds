@@ -38,6 +38,145 @@ const STAGE_ORDER = [
   "Group stage (48th)",
 ];
 
+const GROUP_POS_POINTS = { 1: 20, 2: 10, 3: 0, 4: 5 };
+const BONUS_POINTS = 15;
+const STAGE_POINTS = {
+  Champion: 90,
+  "Runner-up": 70,
+  "Third place": 55,
+  Fourth: 40,
+  "Quarter-finals": 30,
+  "Round of 16": 15,
+  "Round of 32": 5,
+  "Group stage out": 0,
+  "Group stage (48th)": 5,
+};
+
+const GROUP_POS_LABELS = {
+  1: "1st in group",
+  2: "2nd in group",
+  3: "3rd in group",
+  4: "4th in group",
+};
+
+function computePointsBreakdown(r) {
+  const groupRows = [1, 2, 3, 4].map((pos) => {
+    const prob = r[`p_group_${pos}`] ?? 0;
+    const ptsEach = GROUP_POS_POINTS[pos];
+    return {
+      label: GROUP_POS_LABELS[pos],
+      prob,
+      ptsEach,
+      expected: prob * ptsEach,
+    };
+  });
+
+  const stageRows = STAGE_ORDER.map((stage) => {
+    const prob = r.stage_probs?.[stage] ?? 0;
+    const ptsEach = STAGE_POINTS[stage];
+    return { label: stage, prob, ptsEach, expected: prob * ptsEach };
+  }).filter((row) => row.prob > 0.0001 || row.ptsEach > 0);
+
+  const bonusProb = r.p_bonus_goals ?? 0;
+  const bonusRow = {
+    label: "Most GF+GA in groups (split if tied)",
+    prob: bonusProb,
+    ptsEach: BONUS_POINTS,
+    expected: bonusProb * BONUS_POINTS,
+  };
+
+  const groupTotal = groupRows.reduce((s, row) => s + row.expected, 0);
+  const stageTotal = stageRows.reduce((s, row) => s + row.expected, 0);
+  const bonusTotal = bonusRow.expected;
+  const total = groupTotal + stageTotal + bonusTotal;
+
+  return { groupRows, stageRows, bonusRow, groupTotal, stageTotal, bonusTotal, total };
+}
+
+function renderBreakdownTable(title, rows, subtotal) {
+  const body = rows
+    .map(
+      (row) => `
+      <tr>
+        <td>${row.label}</td>
+        <td class="num">${pct(row.prob)}</td>
+        <td class="num">${row.ptsEach}</td>
+        <td class="num pts">${fmtPts(row.expected)}</td>
+      </tr>`,
+    )
+    .join("");
+
+  return `
+    <div class="breakdown-section">
+      <h3>${title}</h3>
+      <div class="table-scroll">
+        <table class="data-table breakdown-table">
+          <thead>
+            <tr>
+              <th>Outcome</th>
+              <th>Probability</th>
+              <th>Pts if…</th>
+              <th>E[Pts]</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3">Subtotal</td>
+              <td class="num pts">${fmtPts(subtotal)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderPointsBreakdown(r) {
+  const hintEl = document.getElementById("breakdown-hint");
+  const container = document.getElementById("team-points-breakdown");
+  if (!hintEl || !container) return;
+
+  try {
+    const bd = computePointsBreakdown(r);
+    const groupLetter = r.group;
+    const groupTeams = state.tournament?.groups?.[groupLetter] || [];
+    const mates = groupTeams.filter((t) => t !== r.team);
+
+    hintEl.textContent =
+      `Group ${groupLetter} · E[Pts] = Σ (probability × points) for group finish, tournament exit, and entertainment bonus.`;
+
+    const barTotal = bd.total || 1;
+    const barHtml = `
+      <div class="breakdown-bar" aria-hidden="true">
+        <div class="breakdown-bar-seg group" style="width:${(bd.groupTotal / barTotal) * 100}%" title="Group: ${fmtPts(bd.groupTotal)}"></div>
+        <div class="breakdown-bar-seg stage" style="width:${(bd.stageTotal / barTotal) * 100}%" title="Tournament: ${fmtPts(bd.stageTotal)}"></div>
+        <div class="breakdown-bar-seg bonus" style="width:${Math.max((bd.bonusTotal / barTotal) * 100, bd.bonusTotal > 0 ? 2 : 0)}%" title="Bonus: ${fmtPts(bd.bonusTotal)}"></div>
+      </div>
+      <div class="breakdown-bar-legend">
+        <span><i class="swatch group"></i> Group ${fmtPts(bd.groupTotal)}</span>
+        <span><i class="swatch stage"></i> Tournament ${fmtPts(bd.stageTotal)}</span>
+        <span><i class="swatch bonus"></i> Bonus ${fmtPts(bd.bonusTotal)}</span>
+        <span class="breakdown-total">Total ${fmtPts(bd.total)}</span>
+      </div>`;
+
+    const groupMatesHtml = mates.length
+      ? `<p class="breakdown-mates">Also in Group ${groupLetter}: ${mates.join(", ")}</p>`
+      : "";
+
+    container.innerHTML = `
+      ${groupMatesHtml}
+      ${barHtml}
+      ${renderBreakdownTable("Group stage finish", bd.groupRows, bd.groupTotal)}
+      ${renderBreakdownTable("Tournament exit (final standing)", bd.stageRows, bd.stageTotal)}
+      ${renderBreakdownTable("Entertainment bonus", [bd.bonusRow], bd.bonusTotal)}
+    `;
+  } catch (err) {
+    console.error("Points breakdown render failed:", err);
+    hintEl.textContent = "Could not render points breakdown.";
+    container.innerHTML = `<p class="breakdown-error">${err.message}</p>`;
+  }
+}
+
 const FUNNEL_KEYS = [
   { key: "p_round_of_32", label: "Round of 32" },
   { key: "p_round_of_16", label: "Round of 16" },
@@ -492,6 +631,8 @@ function renderTeamDetail(teamName) {
     </div>
   `;
 
+  renderPointsBreakdown(r);
+
   destroyChart("funnel");
   state.charts.funnel = new Chart(document.getElementById("chart-funnel"), {
     type: "bar",
@@ -756,6 +897,10 @@ function setupTabs() {
       document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
       tab.classList.add("active");
       document.getElementById(`panel-${tab.dataset.tab}`).classList.add("active");
+      if (tab.dataset.tab === "teams") {
+        const sel = document.getElementById("team-select");
+        if (sel?.value) renderTeamDetail(sel.value);
+      }
       if (tab.dataset.tab === "calibration") renderCalibration();
       if (tab.dataset.tab === "compare") {
         renderCompareChart();
