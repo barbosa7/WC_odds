@@ -3,6 +3,8 @@
 const API = {
   results: "./data/expected_points.json",
   resultsOdds: "./data/expected_points_odds_only.json",
+  resultsCurrent: "./data/expected_points_current.json",
+  resultsCurrentOdds: "./data/expected_points_current_odds_only.json",
   tournament: "./data/tournament.json",
   odds: "./data/odds_oddschecker.json",
 };
@@ -10,7 +12,10 @@ const API = {
 let state = {
   results: null,
   resultsOdds: null,
+  resultsCurrent: null,
+  resultsCurrentOdds: null,
   hasCompare: false,
+  hasCurrent: false,
   tournament: null,
   odds: null,
   teamToGroup: {},
@@ -252,9 +257,27 @@ async function loadData() {
     /* optional comparison file */
   }
 
+  let resultsCurrent = null;
+  let resultsCurrentOdds = null;
+  try {
+    const r = await fetch(API.resultsCurrent, { credentials: "same-origin" });
+    if (r.ok) resultsCurrent = await r.json();
+  } catch (_) {
+    /* optional current EV file */
+  }
+  try {
+    const r = await fetch(API.resultsCurrentOdds, { credentials: "same-origin" });
+    if (r.ok) resultsCurrentOdds = await r.json();
+  } catch (_) {
+    /* optional */
+  }
+
   state.results = results;
   state.resultsOdds = resultsOdds;
+  state.resultsCurrent = resultsCurrent;
+  state.resultsCurrentOdds = resultsCurrentOdds;
   state.hasCompare = !!resultsOdds;
+  state.hasCurrent = !!resultsCurrent;
   state.tournament = tournament;
   state.odds = odds;
   state.teamToGroup = {};
@@ -268,11 +291,21 @@ async function loadData() {
   const oddsRank = resultsOdds
     ? Object.fromEntries(resultsOdds.teams.map((t, i) => [t.team, i + 1]))
     : {};
+  const currentByTeam = resultsCurrent
+    ? Object.fromEntries(resultsCurrent.teams.map((t) => [t.team, t]))
+    : {};
+  const currentOddsByTeam = resultsCurrentOdds
+    ? Object.fromEntries(resultsCurrentOdds.teams.map((t) => [t.team, t]))
+    : {};
 
   state.enriched = results.teams.map((row, i) => {
     const oddsRow = oddsByTeam[row.team];
+    const currentRow = currentByTeam[row.team];
+    const currentOddsRow = currentOddsByTeam[row.team];
     const epMl = row.expected_points;
     const epOdds = oddsRow?.expected_points ?? null;
+    const epCurrent = currentRow?.expected_points ?? null;
+    const epCurrentOdds = currentOddsRow?.expected_points ?? null;
     const pwMl = row.p_champion;
     const pwOdds = oddsRow?.p_champion ?? null;
     return {
@@ -287,11 +320,15 @@ async function loadData() {
         : null,
       expected_points_ml: epMl,
       expected_points_odds: epOdds,
+      expected_points_current: epCurrent,
+      expected_points_current_odds: epCurrentOdds,
       pts_diff: epOdds != null ? epMl - epOdds : null,
+      pts_current_delta: epCurrent != null ? epCurrent - epMl : null,
       p_champion_ml: pwMl,
       p_champion_odds: pwOdds,
       pw_diff: pwOdds != null ? pwMl - pwOdds : null,
       odds_row: oddsRow,
+      current_row: currentRow,
     };
   });
 }
@@ -333,10 +370,14 @@ function renderMeta() {
   const compareNote = state.hasCompare
     ? `<div>ML + odds comparison loaded</div>`
     : `<div class="hint" style="margin-top:0.25rem">Run <code>python run.py --both-models</code> for comparison</div>`;
+  const currentNote = state.hasCurrent
+    ? `<div>Current EV: ${state.resultsCurrent.completed_matches?.length ?? "?"} match(es) played</div>`
+    : `<div class="hint" style="margin-top:0.25rem">Add scores to <code>wc_data/completed_matches.json</code> and run <code>python run.py --results … --current-only</code></div>`;
   document.getElementById("meta").innerHTML = `
     <div>${r.n_simulations.toLocaleString()} simulations</div>
     <div>${r.use_ml !== false ? "ML + Oddschecker" : "Oddschecker only"}</div>
     ${compareNote}
+    ${currentNote}
   `;
   document.getElementById("footer-sources").textContent =
     "Odds: " + r.odds_sources.join(" · ");
@@ -367,6 +408,8 @@ function renderRankingsTable(filter = "") {
       <td><strong>${fmtPts(r.expected_points_ml)}</strong></td>
       <td>${fmtPts(r.expected_points_odds)}</td>
       <td>${fmtDiff(r.pts_diff)}</td>
+      <td>${state.hasCurrent ? `<strong>${fmtPts(r.expected_points_current)}</strong>` : "—"}</td>
+      <td>${state.hasCurrent ? fmtDiff(r.pts_current_delta) : "—"}</td>
       <td class="pct ${r.p_champion > 0.08 ? "pct-high" : ""}">${pct(r.p_champion)}</td>
       <td class="pct">${pct(r.p_semi_final)}</td>
       <td class="pct">${pct(r.p_quarter_final)}</td>
@@ -655,13 +698,20 @@ function renderTeamDetail(teamName) {
       <div class="stat"><div class="stat-label">P(Win) odds</div><div class="stat-value">${pct(r.p_champion_odds)}</div></div>
     `
     : "";
+  const currentStats = state.hasCurrent
+    ? `
+      <div class="stat"><div class="stat-label">E[Pts] current</div><div class="stat-value accent">${fmtPts(r.expected_points_current)}</div></div>
+      <div class="stat"><div class="stat-label">Δ vs pre</div><div class="stat-value">${r.pts_current_delta != null ? (r.pts_current_delta > 0 ? "+" : "") + r.pts_current_delta.toFixed(1) : "—"}</div></div>
+    `
+    : "";
 
   document.getElementById("team-summary").innerHTML = `
     <div class="stat-grid">
-      <div class="stat"><div class="stat-label">E[Pts] ML</div><div class="stat-value accent">${fmtPts(r.expected_points_ml)}</div></div>
+      <div class="stat"><div class="stat-label">E[Pts] pre</div><div class="stat-value accent">${fmtPts(r.expected_points_ml)}</div></div>
       <div class="stat"><div class="stat-label">Group ${r.group}</div><div class="stat-value">#${r.rank_ml}</div></div>
       <div class="stat"><div class="stat-label">P(Win) ML</div><div class="stat-value">${pct(r.p_champion_ml)}</div></div>
       <div class="stat"><div class="stat-label">OC winner</div><div class="stat-value">${r.oc_odds ?? "—"}</div></div>
+      ${currentStats}
       ${compareStats}
     </div>
   `;

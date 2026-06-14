@@ -12,6 +12,7 @@ from typing import Any
 import numpy as np
 
 from odds_fetch import match_lookup, merge_odds
+from wc_results import ConditionalContext, group_stats_copy, seed_ml_engine
 from wc_points import (
     BONUS_GOALS_POINTS,
     GROUP_POS_POINTS,
@@ -98,15 +99,38 @@ def simulate_match_result(
     return ga, gb
 
 
+def _group_standings(teams: list[str], stats: dict[str, dict[str, int]]) -> list[str]:
+    return sorted(
+        teams,
+        key=lambda t: (
+            -stats[t]["pts"],
+            -(stats[t]["gf"] - stats[t]["ga"]),
+            -stats[t]["gf"],
+            t,
+        ),
+    )
+
+
 def simulate_group(
     teams: list[str],
     rng: random.Random,
     matchdays: list[list[list[int]]],
     lookup: dict[tuple[str, str], dict[str, float]],
+    *,
+    group_key: str = "",
+    conditional: ConditionalContext | None = None,
 ) -> GroupResult:
-    stats = {t: {"gf": 0, "ga": 0, "pts": 0} for t in teams}
-    for md in matchdays:
+    if conditional and group_key:
+        stats = group_stats_copy(conditional, group_key, teams)
+        played = conditional.played.get(group_key, set())
+    else:
+        stats = {t: {"gf": 0, "ga": 0, "pts": 0} for t in teams}
+        played = set()
+
+    for md_idx, md in enumerate(matchdays):
         for i, j in md:
+            if (md_idx, i, j) in played:
+                continue
             a, b = teams[i], teams[j]
             gf_a, gf_b = simulate_match_result(a, b, lookup, rng)
             stats[a]["gf"] += gf_a
@@ -121,16 +145,7 @@ def simulate_group(
                 stats[a]["pts"] += 1
                 stats[b]["pts"] += 1
 
-    standings = sorted(
-        teams,
-        key=lambda t: (
-            -stats[t]["pts"],
-            -(stats[t]["gf"] - stats[t]["ga"]),
-            -stats[t]["gf"],
-            t,
-        ),
-    )
-    return GroupResult(standings=standings, stats=stats)
+    return GroupResult(standings=_group_standings(teams, stats), stats=stats)
 
 
 def simulate_group_ml(
@@ -140,10 +155,21 @@ def simulate_group_ml(
     predictor,
     engine,
     odds_lookup: dict,
+    *,
+    group_key: str = "",
+    conditional: ConditionalContext | None = None,
 ) -> GroupResult:
-    stats = {t: {"gf": 0, "ga": 0, "pts": 0} for t in teams}
-    for md in matchdays:
+    if conditional and group_key:
+        stats = group_stats_copy(conditional, group_key, teams)
+        played = conditional.played.get(group_key, set())
+    else:
+        stats = {t: {"gf": 0, "ga": 0, "pts": 0} for t in teams}
+        played = set()
+
+    for md_idx, md in enumerate(matchdays):
         for i, j in md:
+            if (md_idx, i, j) in played:
+                continue
             a, b = teams[i], teams[j]
             gf_a, gf_b, _ = predictor.simulate_goals(
                 engine, a, b, rng, neutral=True, odds_lookup=odds_lookup,
@@ -160,16 +186,7 @@ def simulate_group_ml(
                 stats[a]["pts"] += 1
                 stats[b]["pts"] += 1
 
-    standings = sorted(
-        teams,
-        key=lambda t: (
-            -stats[t]["pts"],
-            -(stats[t]["gf"] - stats[t]["ga"]),
-            -stats[t]["gf"],
-            t,
-        ),
-    )
-    return GroupResult(standings=standings, stats=stats)
+    return GroupResult(standings=_group_standings(teams, stats), stats=stats)
 
 
 def rank_third_place(group_results: dict[str, GroupResult]) -> list[str]:
@@ -353,6 +370,8 @@ def run_single_sim_odds(
     strengths: dict[str, float],
     lookup: dict[tuple[str, str], dict[str, float]],
     rng: random.Random,
+    *,
+    conditional: ConditionalContext | None = None,
 ) -> dict[str, Any]:
     tourn = load_json("tournament.json")
     third_lookup = load_json("third_place_combos.json")["lookup"]
@@ -360,7 +379,12 @@ def run_single_sim_odds(
 
     for g, teams in tourn["groups"].items():
         state.group_results[g] = simulate_group(
-            teams, rng, tourn["group_matchdays"], lookup,
+            teams,
+            rng,
+            tourn["group_matchdays"],
+            lookup,
+            group_key=g,
+            conditional=conditional,
         )
 
     state.third_qualifiers = rank_third_place(state.group_results)
@@ -384,15 +408,26 @@ def run_single_sim_ml(
     predictor,
     odds_lookup: dict,
     rng: random.Random,
+    *,
+    conditional: ConditionalContext | None = None,
 ) -> dict[str, Any]:
     tourn = load_json("tournament.json")
     third_lookup = load_json("third_place_combos.json")["lookup"]
     state = SimState()
     engine = predictor.fresh_engine()
+    if conditional:
+        seed_ml_engine(engine, conditional)
 
     for g, teams in tourn["groups"].items():
         state.group_results[g] = simulate_group_ml(
-            teams, rng, tourn["group_matchdays"], predictor, engine, odds_lookup,
+            teams,
+            rng,
+            tourn["group_matchdays"],
+            predictor,
+            engine,
+            odds_lookup,
+            group_key=g,
+            conditional=conditional,
         )
 
     state.third_qualifiers = rank_third_place(state.group_results)
@@ -459,6 +494,7 @@ def run_monte_carlo(
     seed: int = 42,
     use_ml: bool = True,
     odds_weight: float = 0.35,
+    conditional: ConditionalContext | None = None,
 ) -> dict[str, Any]:
     odds = merge_odds()
     lookup = match_lookup(odds["matches"])
@@ -486,11 +522,22 @@ def run_monte_carlo(
             f"ml_match_model ({100 - w}% ML + {w}% Oddschecker 1X2 groups; "
             f"{100 - w}% ML + {w}% winner odds knockouts)"
         )
-        sim_fn = lambda: run_single_sim_ml(predictor, lookup, rng)
+        sim_fn = lambda: run_single_sim_ml(
+            predictor, lookup, rng, conditional=conditional,
+        )
     else:
         strengths = odds["strengths"]
         sources.append("odds_only (1X2 group + outright knockout strengths)")
-        sim_fn = lambda: run_single_sim_odds(strengths, lookup, rng)
+        sim_fn = lambda: run_single_sim_odds(
+            strengths, lookup, rng, conditional=conditional,
+        )
+
+    if conditional:
+        from wc_results import completed_matches_summary
+
+        sources.append(
+            f"conditional on {len(conditional.matches)} completed group match(es)"
+        )
 
     for _ in range(n_sims):
         res = sim_fn()
@@ -515,4 +562,7 @@ def run_monte_carlo(
     }
     if use_ml:
         payload["ml_odds_blend"] = odds_weight
+    if conditional:
+        payload["conditional_on_results"] = True
+        payload["completed_matches"] = completed_matches_summary(conditional)
     return payload

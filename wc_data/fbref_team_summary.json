@@ -1,0 +1,426 @@
+[
+  {
+    "team": "Belgium",
+    "matches": 15,
+    "yellow_pg": 1.53,
+    "red_pg": 0.07,
+    "corners_pg": 6.33,
+    "fouls_pg": 14.4
+  },
+  {
+    "team": "Iceland",
+    "matches": 3,
+    "yellow_pg": 1.0,
+    "red_pg": 0.0,
+    "corners_pg": 5.67,
+    "fouls_pg": 12.0
+  },
+  {
+    "team": "Brazil",
+    "matches": 22,
+    "yellow_pg": 1.64,
+    "red_pg": 0.05,
+    "corners_pg": 5.45,
+    "fouls_pg": 10.73
+  },
+  {
+    "team": "Bosnia-Herzegovina",
+    "matches": 3,
+    "yellow_pg": 1.0,
+    "red_pg": 0.0,
+    "corners_pg": 5.33,
+    "fouls_pg": 13.67
+  },
+  {
+    "team": "Russia",
+    "matches": 8,
+    "yellow_pg": 1.5,
+    "red_pg": 0.12,
+    "corners_pg": 5.25,
+    "fouls_pg": 16.75
+  },
+  {
+    "team": "Tunisia",
+    "matches": 6,
+    "yellow_pg": 1.5,
+    "red_pg": 0.0,
+    "corners_pg": 5.17,
+    "fouls_pg": 14.5
+  },
+  {
+    "team": "Croatia",
+    "matches": 17,
+    "yellow_pg": 1.59,
+    "red_pg": 0.06,
+    "corners_pg": 5.12,
+    "fouls_pg": 14.82
+  },
+  {
+    "team": "Ecuador",
+    "matches": 6,
+    "yellow_pg": 1.33,
+    "red_pg": 0.17,
+    "corners_pg": 4.83,
+    "fouls_pg": 16.5
+  },
+  {
+    "team": "Argentina",
+    "matches": 23,
+    "yellow_pg": 1.96,
+    "red_pg": 0.0,
+    "corners_pg": 4.78,
+    "fouls_pg": 10.3
+  },
+  {
+    "team": "England",
+    "matches": 19,
+    "yellow_pg": 0.95,
+    "red_pg": 0.0,
+    "corners_pg": 4.53,
+    "fouls_pg": 8.53
+  },
+  {
+    "team": "Germany",
+    "matches": 20,
+    "yellow_pg": 1.2,
+    "red_pg": 0.1,
+    "corners_pg": 4.35,
+    "fouls_pg": 7.45
+  },
+  {
+    "team": "Switzerland",
+    "matches": 15,
+    "yellow_pg": 1.93,
+    "red_pg": 0.07,
+    "corners_pg": 4.33,
+    "fouls_pg": 11.67
+  },
+  {
+    "team": "Portugal",
+    "matches": 16,
+    "yellow_pg": 1.44,
+    "red_pg": 0.12,
+    "corners_pg": 4.31,
+    "fouls_pg": 9.75
+  },
+  {
+    "team": "Senegal",
+    "matches": 7,
+    "yellow_pg": 1.86,
+    "red_pg": 0.0,
+    "corners_pg": 4.29,
+    "fouls_pg": 13.29
+  },
+  {
+    "team": "France",
+    "matches": 22,
+    "yellow_pg": 1.41,
+    "red_pg": 0.05,
+    "corners_pg": 4.27,
+    "fouls_pg": 10.09
+  },
+  {
+    "team": "Poland",
+    "matches": 7,
+    "yellow_pg": 1.43,
+    "red_pg": 0.0,
+    "corners_pg": 4.0,
+    "fouls_pg": 11.14
+  },
+  {
+    "team": "South Korea",
+    "matches": 14,
+    "yellow_pg": 2.07,
+    "red_pg": 0.07,
+    "corners_pg": 4.0,
+    "fouls_pg": 10.29
+  },
+  {
+    "team": "Canada",
+    "matches": 3,
+    "yellow_pg": 2.67,
+    "red_pg": 0.0,
+    "corners_pg": 4.0,
+    "fouls_pg": 11.0
+  },
+  {
+    "team": "Denmark",
+    "matches": 10,
+    "yellow_pg": 1.7,
+    "red_pg": 0.0,
+    "corners_pg": 3.9,
+    "fouls_pg": 8.3
+  },
+  {
+    "team": "Nigeria",
+    "matches": 10,
+    "yellow_pg": 1.2,
+    "red_pg": 0.0,
+    "corners_pg": 3.8,
+    "fouls_pg": 10.2
+  },
+  {
+    "team": "Japan",
+    "matches": 15,
+    "yellow_pg": 1.47,
+    "red_pg": 0.0,
+    "corners_pg": 3.8,
+    "fouls_pg": 9.4
+  },
+  {
+    "team": "Greece",
+    "matches": 7,
+    "yellow_pg": 1.86,
+    "red_pg": 0.14,
+    "corners_pg": 3.71,
+    "fouls_pg": 8.71
+  },
+  {
+    "team": "Colombia",
+    "matches": 9,
+    "yellow_pg": 1.56,
+    "red_pg": 0.11,
+    "corners_pg": 3.67,
+    "fouls_pg": 17.22
+  },
+  {
+    "team": "Saudi Arabia",
+    "matches": 6,
+    "yellow_pg": 2.5,
+    "red_pg": 0.0,
+    "corners_pg": 3.5,
+    "fouls_pg": 14.33
+  },
+  {
+    "team": "Mexico",
+    "matches": 15,
+    "yellow_pg": 2.2,
+    "red_pg": 0.0,
+    "corners_pg": 3.47,
+    "fouls_pg": 10.53
+  },
+  {
+    "team": "Spain",
+    "matches": 18,
+    "yellow_pg": 0.83,
+    "red_pg": 0.0,
+    "corners_pg": 3.44,
+    "fouls_pg": 5.78
+  },
+  {
+    "team": "Ivory Coast",
+    "matches": 6,
+    "yellow_pg": 1.83,
+    "red_pg": 0.0,
+    "corners_pg": 3.33,
+    "fouls_pg": 8.17
+  },
+  {
+    "team": "Sweden",
+    "matches": 5,
+    "yellow_pg": 1.6,
+    "red_pg": 0.0,
+    "corners_pg": 3.2,
+    "fouls_pg": 13.0
+  },
+  {
+    "team": "United States",
+    "matches": 12,
+    "yellow_pg": 1.5,
+    "red_pg": 0.0,
+    "corners_pg": 3.08,
+    "fouls_pg": 7.83
+  },
+  {
+    "team": "Peru",
+    "matches": 3,
+    "yellow_pg": 1.67,
+    "red_pg": 0.0,
+    "corners_pg": 3.0,
+    "fouls_pg": 12.67
+  },
+  {
+    "team": "Cameroon",
+    "matches": 9,
+    "yellow_pg": 1.89,
+    "red_pg": 0.22,
+    "corners_pg": 3.0,
+    "fouls_pg": 7.67
+  },
+  {
+    "team": "Qatar",
+    "matches": 3,
+    "yellow_pg": 2.33,
+    "red_pg": 0.0,
+    "corners_pg": 3.0,
+    "fouls_pg": 10.33
+  },
+  {
+    "team": "Iran",
+    "matches": 9,
+    "yellow_pg": 2.0,
+    "red_pg": 0.0,
+    "corners_pg": 2.89,
+    "fouls_pg": 14.56
+  },
+  {
+    "team": "Costa Rica",
+    "matches": 11,
+    "yellow_pg": 2.18,
+    "red_pg": 0.09,
+    "corners_pg": 2.73,
+    "fouls_pg": 14.91
+  },
+  {
+    "team": "Netherlands",
+    "matches": 19,
+    "yellow_pg": 2.47,
+    "red_pg": 0.11,
+    "corners_pg": 2.63,
+    "fouls_pg": 11.26
+  },
+  {
+    "team": "Morocco",
+    "matches": 10,
+    "yellow_pg": 1.7,
+    "red_pg": 0.1,
+    "corners_pg": 2.5,
+    "fouls_pg": 15.9
+  },
+  {
+    "team": "Ghana",
+    "matches": 11,
+    "yellow_pg": 2.27,
+    "red_pg": 0.0,
+    "corners_pg": 2.45,
+    "fouls_pg": 8.09
+  },
+  {
+    "team": "Uruguay",
+    "matches": 19,
+    "yellow_pg": 1.63,
+    "red_pg": 0.16,
+    "corners_pg": 2.42,
+    "fouls_pg": 9.21
+  },
+  {
+    "team": "Serbia",
+    "matches": 9,
+    "yellow_pg": 3.33,
+    "red_pg": 0.11,
+    "corners_pg": 2.33,
+    "fouls_pg": 10.0
+  },
+  {
+    "team": "Australia",
+    "matches": 13,
+    "yellow_pg": 2.08,
+    "red_pg": 0.15,
+    "corners_pg": 2.15,
+    "fouls_pg": 10.85
+  },
+  {
+    "team": "Algeria",
+    "matches": 7,
+    "yellow_pg": 2.0,
+    "red_pg": 0.29,
+    "corners_pg": 2.0,
+    "fouls_pg": 9.86
+  },
+  {
+    "team": "Wales",
+    "matches": 3,
+    "yellow_pg": 1.67,
+    "red_pg": 0.33,
+    "corners_pg": 2.0,
+    "fouls_pg": 11.67
+  },
+  {
+    "team": "Honduras",
+    "matches": 6,
+    "yellow_pg": 2.33,
+    "red_pg": 0.17,
+    "corners_pg": 2.0,
+    "fouls_pg": 7.67
+  },
+  {
+    "team": "Egypt",
+    "matches": 3,
+    "yellow_pg": 1.67,
+    "red_pg": 0.0,
+    "corners_pg": 2.0,
+    "fouls_pg": 12.67
+  },
+  {
+    "team": "Chile",
+    "matches": 8,
+    "yellow_pg": 2.75,
+    "red_pg": 0.12,
+    "corners_pg": 2.0,
+    "fouls_pg": 7.62
+  },
+  {
+    "team": "Panama",
+    "matches": 3,
+    "yellow_pg": 3.67,
+    "red_pg": 0.0,
+    "corners_pg": 1.67,
+    "fouls_pg": 16.33
+  },
+  {
+    "team": "Italy",
+    "matches": 6,
+    "yellow_pg": 1.33,
+    "red_pg": 0.17,
+    "corners_pg": 1.5,
+    "fouls_pg": 6.83
+  },
+  {
+    "team": "Slovakia",
+    "matches": 4,
+    "yellow_pg": 2.5,
+    "red_pg": 0.0,
+    "corners_pg": 0.0,
+    "fouls_pg": 0.0
+  },
+  {
+    "team": "Slovenia",
+    "matches": 3,
+    "yellow_pg": 2.67,
+    "red_pg": 0.0,
+    "corners_pg": 0.0,
+    "fouls_pg": 0.0
+  },
+  {
+    "team": "South Africa",
+    "matches": 3,
+    "yellow_pg": 1.67,
+    "red_pg": 0.0,
+    "corners_pg": 0.0,
+    "fouls_pg": 0.0
+  },
+  {
+    "team": "Paraguay",
+    "matches": 5,
+    "yellow_pg": 1.8,
+    "red_pg": 0.0,
+    "corners_pg": 0.0,
+    "fouls_pg": 0.0
+  },
+  {
+    "team": "New Zealand",
+    "matches": 3,
+    "yellow_pg": 2.0,
+    "red_pg": 0.0,
+    "corners_pg": 0.0,
+    "fouls_pg": 0.0
+  },
+  {
+    "team": "Korea DPR",
+    "matches": 3,
+    "yellow_pg": 0.67,
+    "red_pg": 0.0,
+    "corners_pg": 0.0,
+    "fouls_pg": 0.0
+  }
+]

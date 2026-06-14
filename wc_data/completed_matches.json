@@ -1,0 +1,13 @@
+{
+  "updated": "2026-06-14",
+  "matches": [
+    {"home": "Mexico", "away": "South Africa", "home_score": 2, "away_score": 0},
+    {"home": "South Korea", "away": "Czech Republic", "home_score": 2, "away_score": 1},
+    {"home": "Bosnia and Herzegovina", "away": "Canada", "home_score": 1, "away_score": 1},
+    {"home": "United States", "away": "Paraguay", "home_score": 4, "away_score": 1},
+    {"home": "Switzerland", "away": "Qatar", "home_score": 1, "away_score": 1},
+    {"home": "Brazil", "away": "Morocco", "home_score": 1, "away_score": 1},
+    {"home": "Haiti", "away": "Scotland", "home_score": 0, "away_score": 1},
+    {"home": "Australia", "away": "Turkey", "home_score": 2, "away_score": 0}
+  ]
+}

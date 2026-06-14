@@ -1,0 +1,84 @@
+{
+  "model": "Tweedie product + Poisson marginals + mean-scale cal (2018 OOS)",
+  "n_train_matches": 345,
+  "competitions": {
+    "European Championship": 153,
+    "World Cup": 192
+  },
+  "params": {
+    "tweedie_power": 1.9,
+    "tweedie_alpha": 0.5,
+    "poisson_alpha": 0.2,
+    "cal_scale": 1.0807316050714675
+  },
+  "holdout": {
+    "wc2022_holdout": {
+      "n": 64,
+      "mae": 72.8,
+      "bias": 1.1,
+      "mdape": 0.614,
+      "corr": 0.167,
+      "spearman": 0.125,
+      "rmse_log": 1.801,
+      "mean_pred": 91.8,
+      "mean_actual": 90.7
+    },
+    "wc2022_raw_tweedie": {
+      "n": 64,
+      "mae": 70.8,
+      "bias": -5.7,
+      "mdape": 0.635,
+      "corr": 0.167,
+      "spearman": 0.125,
+      "rmse_log": 1.768,
+      "mean_pred": 84.9,
+      "mean_actual": 90.7
+    },
+    "calibration_fit": "WC 2018 OOS mean-scale",
+    "cal_scale": 1.0807,
+    "train_matches": 230
+  },
+  "walk_forward_wc": [
+    {
+      "test_season": 2018,
+      "n": 64,
+      "mae": 58.1,
+      "bias": -0.0,
+      "mdape": 0.592,
+      "corr": 0.024,
+      "spearman": 0.124,
+      "rmse_log": 1.274,
+      "mean_pred": 88.0,
+      "mean_actual": 88.0
+    },
+    {
+      "test_season": 2022,
+      "n": 64,
+      "mae": 72.8,
+      "bias": 1.1,
+      "mdape": 0.614,
+      "corr": 0.167,
+      "spearman": 0.125,
+      "rmse_log": 1.801,
+      "mean_pred": 91.8,
+      "mean_actual": 90.7
+    }
+  ],
+  "feature_cols": [
+    "h_gf",
+    "h_ga",
+    "a_gf",
+    "a_ga",
+    "h_corners",
+    "a_corners",
+    "h_cards",
+    "a_cards",
+    "exp_goals",
+    "exp_corners",
+    "exp_cards",
+    "ref_cards_pg",
+    "exp_cards_ref",
+    "knockout",
+    "is_euro"
+  ]
+}
