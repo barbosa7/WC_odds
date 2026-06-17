@@ -7,7 +7,8 @@ const API = {
   resultsCurrentOdds: "./data/expected_points_current_odds_only.json",
   tournament: "./data/tournament.json",
   odds: "./data/odds_oddschecker.json",
-  tyche: "/api/tyche-opportunities",
+  tyche: "/.netlify/functions/tyche_opportunities",
+  tycheLocal: "/api/tyche-opportunities",
   tycheFallback: "./data/tychemkt_opportunities.json",
 };
 
@@ -653,26 +654,34 @@ async function loadTycheData(force = false) {
   renderTycheSummary();
   renderTycheTable(document.getElementById("search-tyche")?.value || "");
 
-  try {
-    const r = await fetch(API.tyche, { credentials: "same-origin" });
-    if (r.status === 401) {
-      const next = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = `/login.html?next=${next}`;
-      return;
+  const urls =
+    window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
+      ? [API.tycheLocal, API.tyche]
+      : [API.tyche, API.tycheLocal];
+
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { credentials: "same-origin" });
+      if (r.status === 401) {
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = `/login.html?next=${next}`;
+        return;
+      }
+      if (r.ok) {
+        state.tyche = await r.json();
+        state.tycheLive = !!state.tyche.live;
+        state.tycheFetchedAt = Date.now();
+        state.tycheLoading = false;
+        if (refreshBtn) refreshBtn.disabled = false;
+        renderTycheSummary();
+        renderTycheTable(document.getElementById("search-tyche")?.value || "");
+        return;
+      }
+      const errBody = await r.json().catch(() => ({}));
+      state.tycheError = errBody.error || `HTTP ${r.status}`;
+    } catch (err) {
+      state.tycheError = err.message || "Network error";
     }
-    if (r.ok) {
-      state.tyche = await r.json();
-      state.tycheLive = !!state.tyche.live;
-      state.tycheFetchedAt = Date.now();
-      state.tycheLoading = false;
-      renderTycheSummary();
-      renderTycheTable(document.getElementById("search-tyche")?.value || "");
-      return;
-    }
-    const errBody = await r.json().catch(() => ({}));
-    state.tycheError = errBody.error || `HTTP ${r.status}`;
-  } catch (err) {
-    state.tycheError = err.message || "Network error";
   }
 
   if (!state.tyche) {

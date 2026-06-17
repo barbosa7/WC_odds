@@ -75,7 +75,7 @@ export default async (request, context) => {
     return context.next();
   }
 
-  if (pathname.startsWith("/data/")) {
+  if (pathname.startsWith("/data/") || pathname.startsWith("/api/")) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },

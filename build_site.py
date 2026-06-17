@@ -65,7 +65,21 @@ def build(*, run_sim: bool = False, n_sims: int = 25_000) -> None:
             shutil.copy2(src_path, DATA_OUT / out_name)
 
     redirects = DIST / "_redirects"
-    redirects.write_text("/login /login.html 200\n")
+    redirects.write_text(
+        "/login /login.html 200\n"
+        "/api/tyche-opportunities /.netlify/functions/tyche_opportunities 200\n"
+    )
+
+    fn_data = ROOT / "netlify" / "functions" / "data"
+    fn_data.mkdir(parents=True, exist_ok=True)
+    for name in (
+        "expected_points.json",
+        "expected_points_current.json",
+        "match_events_predictions.json",
+    ):
+        src = DATA_OUT / name if (DATA_OUT / name).exists() else ROOT / "output" / name
+        if src.exists():
+            shutil.copy2(src, fn_data / name)
 
     print(f"Built static site → {DIST}")
     print(f"  {len(list(DIST.rglob('*')))} files")
