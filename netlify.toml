@@ -3,6 +3,10 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[functions.tyche_opportunities]
+  timeout = 26
+  included_files = ["netlify/functions/data/**"]
+
 [[edge_functions]]
   function = "protect"
   path = "/*"

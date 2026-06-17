@@ -26,20 +26,52 @@ function readJson(name) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
 }
 
-function loadTeamTheos(filename) {
-  const data = readJson(filename);
-  if (!data?.teams) return {};
-  return Object.fromEntries(data.teams.map((r) => [r.team, Number(r.expected_points)]));
+async function fetchJsonFromSite(siteUrl, siteCookie, name) {
+  if (!siteUrl) return null;
+  const headers = siteCookie ? { Cookie: siteCookie } : {};
+  const res = await fetch(`${siteUrl.replace(/\/$/, "")}/data/${name}`, { headers });
+  if (!res.ok) return null;
+  return res.json();
 }
 
-function loadMatchTheos() {
-  const rows = readJson("match_events_predictions.json");
-  if (!Array.isArray(rows)) return new Map();
-  const out = new Map();
-  for (const row of rows) {
-    const home = normaliseTeam(row.home);
-    const away = normaliseTeam(row.away);
-    out.set(`${home}\0${away}`, Number(row.expected_gxcxc));
+async function loadTheos(siteUrl, siteCookie) {
+  let teamPre = readJson("expected_points.json");
+  let teamCurrent = readJson("expected_points_current.json");
+  let matchRows = readJson("match_events_predictions.json");
+
+  if (!teamPre?.teams && siteUrl) {
+    teamPre = await fetchJsonFromSite(siteUrl, siteCookie, "expected_points.json");
+  }
+  if (!teamCurrent?.teams && siteUrl) {
+    teamCurrent = await fetchJsonFromSite(siteUrl, siteCookie, "expected_points_current.json");
+  }
+  if (!Array.isArray(matchRows) && siteUrl) {
+    matchRows = await fetchJsonFromSite(siteUrl, siteCookie, "match_events_predictions.json");
+  }
+
+  const theosPre = teamPre?.teams
+    ? Object.fromEntries(teamPre.teams.map((r) => [r.team, Number(r.expected_points)]))
+    : {};
+  const theosCurrent = teamCurrent?.teams
+    ? Object.fromEntries(teamCurrent.teams.map((r) => [r.team, Number(r.expected_points)]))
+    : {};
+  const matchTheos = new Map();
+  if (Array.isArray(matchRows)) {
+    for (const row of matchRows) {
+      const home = normaliseTeam(row.home);
+      const away = normaliseTeam(row.away);
+      matchTheos.set(`${home}\0${away}`, Number(row.expected_gxcxc));
+    }
+  }
+
+  return { theosPre, theosCurrent, matchTheos };
+}
+
+async function mapInBatches(items, batchSize, fn) {
+  const out = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    out.push(...(await Promise.all(batch.map(fn))));
   }
   return out;
 }
@@ -151,14 +183,21 @@ async function tycheCall(cookieJar, service, method, body = {}) {
   return { data: payload, cookie: newCookie };
 }
 
-async function fetchOpportunities(email, password) {
-  const theosPre = loadTeamTheos("expected_points.json");
-  const theosCurrent = loadTeamTheos("expected_points_current.json");
-  const matchTheos = loadMatchTheos();
+function relevantContracts(contracts) {
+  return contracts.filter((contract) => {
+    const meta = contract.metadata || {};
+    if (meta.kind === "total") return false;
+    if (meta.kind === "multiplier") return true;
+    return (contract.description || "").includes("finish value");
+  });
+}
 
-  let cookie = "";
-  const login = await tycheCall(cookie, "AuthService", "Login", { email, password });
-  cookie = login.cookie;
+async function fetchOpportunities(email, password, { siteUrl = "", siteCookie = "" } = {}) {
+  const [{ theosPre, theosCurrent, matchTheos }, login] = await Promise.all([
+    loadTheos(siteUrl, siteCookie),
+    tycheCall("", "AuthService", "Login", { email, password }),
+  ]);
+  let cookie = login.cookie;
   const user = login.data.user;
 
   const eventsRes = await tycheCall(cookie, "QueryService", "ListEvents", {
@@ -174,22 +213,21 @@ async function fetchOpportunities(email, password) {
     page: { pageSize: 500 },
   });
   cookie = contractsRes.cookie;
-  const contracts = contractsRes.data.contracts || [];
+  const contracts = relevantContracts(contractsRes.data.contracts || []);
 
-  const marksRes = await tycheCall(cookie, "QueryService", "ListContractMarks", {
-    eventId: event.id,
-  });
-  cookie = marksRes.cookie;
+  const [marksRes, posRes] = await Promise.all([
+    tycheCall(cookie, "QueryService", "ListContractMarks", { eventId: event.id }),
+    tycheCall(cookie, "QueryService", "ListPositions", {
+      eventId: event.id,
+      userId: user.id,
+      page: { pageSize: 500 },
+    }),
+  ]);
+  cookie = posRes.cookie || marksRes.cookie || cookie;
   const marks = Object.fromEntries(
     (marksRes.data.marks || []).map((m) => [m.contractId, Number(m.price?.value)]),
   );
 
-  const posRes = await tycheCall(cookie, "QueryService", "ListPositions", {
-    eventId: event.id,
-    userId: user.id,
-    page: { pageSize: 500 },
-  });
-  cookie = posRes.cookie;
   const myPositions = {};
   for (const row of posRes.data.positions || []) {
     const net = Number(row.netQuantity?.value ?? 0);
@@ -201,14 +239,16 @@ async function fetchOpportunities(email, password) {
     };
   }
 
-  const items = [];
-  for (const contract of contracts) {
-    const meta = contract.metadata || {};
+  const books = await mapInBatches(contracts, 20, async (contract) => {
     const bookRes = await tycheCall(cookie, "QueryService", "GetOrderBook", {
       contractId: contract.id,
     });
-    cookie = bookRes.cookie;
-    const book = bookRes.data.orderBook || {};
+    return { contract, book: bookRes.data.orderBook || {} };
+  });
+
+  const items = [];
+  for (const { contract, book } of books) {
+    const meta = contract.metadata || {};
     const [bid, bidQty] = bestLevel(book.bids);
     const [ask, askQty] = bestLevel(book.asks);
     const mark = marks[contract.id] ?? null;
@@ -239,9 +279,7 @@ async function fetchOpportunities(email, password) {
           extra: { home, away, kickoff: meta.kickoff, stage: meta.stage },
         }),
       );
-    } else if (meta.kind === "total") {
-      continue;
-    } else if ((contract.description || "").includes("finish value")) {
+    } else {
       const team = contract.title;
       items.push(
         buildItem({
@@ -311,19 +349,28 @@ export async function handler(event) {
     };
   }
 
+  const siteUrl =
+    process.env.URL || process.env.DEPLOY_PRIME_URL || process.env.DEPLOY_URL || "";
+  const siteCookie = event.headers?.cookie || event.headers?.Cookie || "";
+
   try {
-    const data = await fetchOpportunities(email, password);
+    const data = await fetchOpportunities(email, password, { siteUrl, siteCookie });
     return {
       statusCode: 200,
       headers: JSON_HEADERS,
       body: JSON.stringify(data),
     };
   } catch (err) {
-    const status = err.status === 401 ? 502 : 502;
+    const isAuth = err.status === 401 || err.code === "unauthenticated";
     return {
-      statusCode: status,
+      statusCode: isAuth ? 502 : 502,
       headers: JSON_HEADERS,
-      body: JSON.stringify({ error: err.message, code: err.code }),
+      body: JSON.stringify({
+        error: isAuth
+          ? "Tyche login failed — check TYCHE_EMAIL and TYCHE_PASSWORD"
+          : err.message || "Tyche fetch failed",
+        code: err.code,
+      }),
     };
   }
 }

@@ -678,7 +678,9 @@ async function loadTycheData(force = false) {
         return;
       }
       const errBody = await r.json().catch(() => ({}));
-      state.tycheError = errBody.error || `HTTP ${r.status}`;
+      state.tycheError =
+        errBody.error ||
+        (r.status === 502 ? "Server timeout — retry in a moment" : `HTTP ${r.status}`);
     } catch (err) {
       state.tycheError = err.message || "Network error";
     }
