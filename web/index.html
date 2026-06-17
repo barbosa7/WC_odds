@@ -37,6 +37,7 @@
         <button class="tab" data-tab="groups" role="tab">Groups</button>
         <button class="tab" data-tab="calibration" role="tab">Odds vs model</button>
         <button class="tab" data-tab="matches" role="tab">Match odds</button>
+        <button class="tab" data-tab="tyche" role="tab">Tyche market</button>
       </nav>
     </header>
 
@@ -189,6 +190,55 @@
           </div>
         </div>
       </section>
+
+      <section id="panel-tyche" class="panel">
+        <div class="tyche-summary" id="tyche-summary"></div>
+        <div class="tyche-stale-banner hidden" id="tyche-stale-banner" role="status"></div>
+        <div class="card">
+          <div class="card-toolbar tyche-toolbar">
+            <div>
+              <h2>Model vs Tyche orderbook</h2>
+              <p class="hint" id="tyche-hint">Buy when ask &lt; theo · Sell when bid &gt; theo</p>
+            </div>
+            <div class="tyche-filters">
+              <div class="tyche-filter-group" role="group" aria-label="Opportunity filter">
+                <button type="button" class="tyche-filter-btn active" data-tyche-filter="opps">Opportunities</button>
+                <button type="button" class="tyche-filter-btn" data-tyche-filter="unheld">New opps</button>
+                <button type="button" class="tyche-filter-btn" data-tyche-filter="all">All</button>
+                <button type="button" class="tyche-filter-btn" data-tyche-filter="buy">Buy only</button>
+                <button type="button" class="tyche-filter-btn" data-tyche-filter="sell">Sell only</button>
+                <button type="button" class="tyche-filter-btn" data-tyche-filter="held">Held only</button>
+              </div>
+              <div class="tyche-filter-group" role="group" aria-label="Contract type">
+                <button type="button" class="tyche-filter-btn active" data-tyche-kind="all">All types</button>
+                <button type="button" class="tyche-filter-btn" data-tyche-kind="team">Teams</button>
+                <button type="button" class="tyche-filter-btn" data-tyche-kind="match">Matches</button>
+              </div>
+              <input type="search" id="search-tyche" placeholder="Search contract…" />
+              <button type="button" class="btn-refresh" id="tyche-refresh" title="Refresh from Tyche">↻ Refresh</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="tyche-table">
+              <thead>
+                <tr>
+                  <th data-sort-tyche="edge">Edge</th>
+                  <th data-sort-tyche="side">Side</th>
+                  <th data-sort-tyche="title">Contract</th>
+                  <th data-sort-tyche="my_net">My pos</th>
+                  <th data-sort-tyche="theo">Theo</th>
+                  <th data-sort-tyche="best_bid">Bid</th>
+                  <th data-sort-tyche="best_ask">Ask</th>
+                  <th data-sort-tyche="mark">Mark</th>
+                  <th data-sort-tyche="spread">Spread</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="hint tyche-footer" id="tyche-footer"></p>
+        </div>
+      </section>
     </main>
 
     <footer class="footer">
@@ -202,6 +252,6 @@
     <p>Loading simulation data…</p>
   </div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
