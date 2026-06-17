@@ -84,6 +84,62 @@ body::before {
   line-height: 1.6;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.ev-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  gap: 2px;
+}
+
+.ev-toggle-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ev-toggle-btn:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.ev-toggle-btn.active {
+  background: var(--accent);
+  color: #0c0f14;
+}
+
+.ev-toggle-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .header-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .ev-toggle-btn {
+    font-size: 0.72rem;
+    padding: 0.4rem 0.65rem;
+  }
+}
+
 .btn-logout {
   align-self: center;
   padding: 0.45rem 0.85rem;
@@ -617,6 +673,12 @@ input[type="search"]:focus, select:focus {
   font-size: 0.7rem;
   color: var(--blue);
   font-weight: 400;
+}
+
+.group-team-delta {
+  font-size: 0.68rem;
+  font-family: var(--mono);
+  font-weight: 500;
 }
 
 .gap-pos { color: var(--danger); }
