@@ -1,0 +1,441 @@
+season,date,round,home_team,away_team,home_score,away_score,game_id,home_yellow,away_yellow,home_red,away_red,home_corners,away_corners,home_fouls,away_fouls,went_to_pens,went_to_et,total_goals,total_corners,total_cards,gxcxc,referee,competition
+2010,2010-06-11,Group stage,South Africa,Mexico,1.0,1.0,8746b4ed,2,2,0,0,0,0,0,0,False,False,2.0,0,4,0.0,,World Cup
+2010,2010-06-11,Group stage,Uruguay,France,0.0,0.0,95ff6ee4,4,3,1,0,0,0,0,0,False,False,0.0,0,8,0.0,,World Cup
+2010,2010-06-12,Group stage,Argentina,Nigeria,1.0,0.0,bbf5aa8a,1,1,0,0,0,0,0,0,False,False,1.0,0,2,0.0,,World Cup
+2010,2010-06-12,Group stage,England,United States,1.0,1.0,8342135f,2,3,0,0,0,0,0,0,False,False,2.0,0,5,0.0,,World Cup
+2010,2010-06-12,Group stage,South Korea,Greece,2.0,0.0,c3f71b02,0,1,0,0,0,0,0,0,False,False,2.0,0,1,0.0,,World Cup
+2010,2010-06-13,Group stage,Algeria,Slovenia,0.0,1.0,60a0db2e,3,1,1,0,0,0,0,0,False,False,1.0,0,5,0.0,,World Cup
+2010,2010-06-13,Group stage,Germany,Australia,4.0,0.0,5290d03a,1,3,0,1,0,0,0,0,False,False,4.0,0,5,0.0,,World Cup
+2010,2010-06-13,Group stage,Serbia,Ghana,0.0,1.0,a18697ef,3,2,1,0,0,0,0,0,False,False,1.0,0,6,0.0,,World Cup
+2010,2010-06-14,Group stage,Italy,Paraguay,1.0,1.0,d58bac17,1,1,0,0,0,0,0,0,False,False,2.0,0,2,0.0,,World Cup
+2010,2010-06-14,Group stage,Japan,Cameroon,1.0,0.0,c397cc01,1,1,0,0,0,0,0,0,False,False,1.0,0,2,0.0,,World Cup
+2010,2010-06-14,Group stage,Netherlands,Denmark,2.0,0.0,7109074a,2,1,0,0,0,0,0,0,False,False,2.0,0,3,0.0,,World Cup
+2010,2010-06-15,Group stage,Brazil,Korea DPR,2.0,1.0,37c28fe8,1,0,0,0,0,0,0,0,False,False,3.0,0,1,0.0,,World Cup
+2010,2010-06-15,Group stage,Ivory Coast,Portugal,0.0,0.0,e767ca24,2,1,0,0,0,0,0,0,False,False,0.0,0,3,0.0,,World Cup
+2010,2010-06-15,Group stage,New Zealand,Slovakia,1.0,1.0,6aded3f2,2,1,0,0,0,0,0,0,False,False,2.0,0,3,0.0,,World Cup
+2010,2010-06-16,Group stage,Honduras,Chile,0.0,1.0,1e13a414,1,2,0,0,0,0,0,0,False,False,1.0,0,3,0.0,,World Cup
+2010,2010-06-16,Group stage,South Africa,Uruguay,0.0,3.0,1f5e149c,3,0,0,0,0,0,0,0,False,False,3.0,0,3,0.0,,World Cup
+2010,2010-06-16,Group stage,Spain,Switzerland,0.0,1.0,ee27f2d6,0,4,0,0,0,0,0,0,False,False,1.0,0,4,0.0,,World Cup
+2010,2010-06-17,Group stage,Argentina,South Korea,4.0,1.0,e4380fff,3,2,0,0,0,0,0,0,False,False,5.0,0,5,0.0,,World Cup
+2010,2010-06-17,Group stage,France,Mexico,0.0,2.0,54143638,2,4,0,0,0,0,0,0,False,False,2.0,0,6,0.0,,World Cup
+2010,2010-06-17,Group stage,Greece,Nigeria,2.0,1.0,63434e3e,3,1,0,0,0,0,0,0,False,False,3.0,0,4,0.0,,World Cup
+2010,2010-06-18,Group stage,England,Algeria,0.0,0.0,4201c168,1,1,0,0,0,0,0,0,False,False,0.0,0,2,0.0,,World Cup
+2010,2010-06-18,Group stage,Germany,Serbia,0.0,1.0,d3771d0e,5,4,1,0,0,0,0,0,False,False,1.0,0,10,0.0,,World Cup
+2010,2010-06-18,Group stage,Slovenia,United States,2.0,2.0,82613a26,4,1,0,0,0,0,0,0,False,False,4.0,0,5,0.0,,World Cup
+2010,2010-06-19,Group stage,Cameroon,Denmark,1.0,2.0,2b70a1fc,2,2,0,0,0,0,0,0,False,False,3.0,0,4,0.0,,World Cup
+2010,2010-06-19,Group stage,Ghana,Australia,1.0,1.0,96816aec,3,1,0,1,0,0,0,0,False,False,2.0,0,5,0.0,,World Cup
+2010,2010-06-19,Group stage,Netherlands,Japan,1.0,0.0,94e1d20f,1,0,0,0,0,0,0,0,False,False,1.0,0,1,0.0,,World Cup
+2010,2010-06-20,Group stage,Brazil,Ivory Coast,3.0,1.0,0bed4493,2,2,1,0,0,0,0,0,False,False,4.0,0,5,0.0,,World Cup
+2010,2010-06-20,Group stage,Italy,New Zealand,1.0,1.0,857d8007,0,3,0,0,0,0,0,0,False,False,2.0,0,3,0.0,,World Cup
+2010,2010-06-20,Group stage,Slovakia,Paraguay,0.0,2.0,c8d34290,3,1,0,0,0,0,0,0,False,False,2.0,0,4,0.0,,World Cup
+2010,2010-06-21,Group stage,Chile,Switzerland,1.0,0.0,a58d1b6e,6,3,0,0,0,0,0,0,False,False,1.0,0,9,0.0,,World Cup
+2010,2010-06-21,Group stage,Portugal,Korea DPR,7.0,0.0,962fecdc,2,2,0,0,0,0,0,0,False,False,7.0,0,4,0.0,,World Cup
+2010,2010-06-21,Group stage,Spain,Honduras,2.0,0.0,3c50454e,0,2,0,0,0,0,0,0,False,False,2.0,0,2,0.0,,World Cup
+2010,2010-06-22,Group stage,France,South Africa,1.0,2.0,45967b1f,1,0,1,0,0,0,0,0,False,False,3.0,0,2,0.0,,World Cup
+2010,2010-06-22,Group stage,Greece,Argentina,0.0,2.0,4252e48b,1,1,0,0,0,0,0,0,False,False,2.0,0,2,0.0,,World Cup
+2010,2010-06-22,Group stage,Mexico,Uruguay,0.0,1.0,8d4255de,2,1,0,0,0,0,0,0,False,False,1.0,0,3,0.0,,World Cup
+2010,2010-06-22,Group stage,Nigeria,South Korea,2.0,2.0,ea3fd048,3,1,0,0,0,0,0,0,False,False,4.0,0,4,0.0,,World Cup
+2010,2010-06-23,Group stage,Australia,Serbia,2.0,1.0,d51ec74d,3,2,0,0,0,0,0,0,False,False,3.0,0,5,0.0,,World Cup
+2010,2010-06-23,Group stage,Ghana,Germany,0.0,1.0,f527754b,1,1,0,0,0,0,0,0,False,False,1.0,0,2,0.0,,World Cup
+2010,2010-06-23,Group stage,Slovenia,England,0.0,1.0,ef32e47f,3,1,0,0,0,0,0,0,False,False,1.0,0,4,0.0,,World Cup
+2010,2010-06-23,Group stage,United States,Algeria,1.0,0.0,6bb0219a,2,4,0,1,0,0,0,0,False,False,1.0,0,7,0.0,,World Cup
+2010,2010-06-24,Group stage,Cameroon,Netherlands,1.0,2.0,3f1b44f5,2,3,0,0,0,0,0,0,False,False,3.0,0,5,0.0,,World Cup
+2010,2010-06-24,Group stage,Denmark,Japan,1.0,3.0,7914ff74,3,2,0,0,0,0,0,0,False,False,4.0,0,5,0.0,,World Cup
+2010,2010-06-24,Group stage,Paraguay,New Zealand,0.0,0.0,6fd17d24,2,1,0,0,0,0,0,0,False,False,0.0,0,3,0.0,,World Cup
+2010,2010-06-24,Group stage,Slovakia,Italy,3.0,2.0,51143cbc,4,4,0,0,0,0,0,0,False,False,5.0,0,8,0.0,,World Cup
+2010,2010-06-25,Group stage,Chile,Spain,1.0,2.0,52fdcee5,4,0,1,0,0,0,0,0,False,False,3.0,0,5,0.0,,World Cup
+2010,2010-06-25,Group stage,Korea DPR,Ivory Coast,0.0,3.0,c67094bc,0,0,0,0,0,0,0,0,False,False,3.0,0,0,0.0,,World Cup
+2010,2010-06-25,Group stage,Portugal,Brazil,0.0,0.0,9b96ad8b,4,3,0,0,0,0,0,0,False,False,0.0,0,7,0.0,,World Cup
+2010,2010-06-25,Group stage,Switzerland,Honduras,0.0,0.0,39282932,1,4,0,0,0,0,0,0,False,False,0.0,0,5,0.0,,World Cup
+2010,2010-06-26,Round of 16,United States,Ghana,1.0,2.0,48dc7463,3,2,0,0,0,0,0,0,False,False,3.0,0,5,0.0,,World Cup
+2010,2010-06-26,Round of 16,Uruguay,South Korea,2.0,1.0,19c92159,0,3,0,0,0,0,0,0,False,False,3.0,0,3,0.0,,World Cup
+2010,2010-06-27,Round of 16,Argentina,Mexico,3.0,1.0,4530d7a9,0,1,0,0,0,0,0,0,False,False,4.0,0,1,0.0,,World Cup
+2010,2010-06-27,Round of 16,Germany,England,4.0,1.0,551c69c5,1,1,0,0,0,0,0,0,False,False,5.0,0,2,0.0,,World Cup
+2010,2010-06-28,Round of 16,Brazil,Chile,3.0,0.0,9f59cddd,2,3,0,0,0,0,0,0,False,False,3.0,0,5,0.0,,World Cup
+2010,2010-06-28,Round of 16,Netherlands,Slovakia,2.0,1.0,1a9bb075,2,2,0,0,0,0,0,0,False,False,3.0,0,4,0.0,,World Cup
+2010,2010-06-29,Round of 16,Paraguay,Japan,0.0,0.0,7b76869e,1,4,0,0,0,0,0,0,True,True,0.0,0,5,0.0,,World Cup
+2010,2010-06-29,Round of 16,Spain,Portugal,1.0,0.0,89c94555,1,1,0,1,0,0,0,0,False,False,1.0,0,3,0.0,,World Cup
+2010,2010-07-02,Quarter-finals,Netherlands,Brazil,2.0,1.0,987ad6dd,4,1,0,0,0,0,0,0,False,False,3.0,0,5,0.0,,World Cup
+2010,2010-07-02,Quarter-finals,Uruguay,Ghana,1.0,1.0,f64f7da2,3,3,1,0,0,0,0,0,True,True,2.0,0,7,0.0,,World Cup
+2010,2010-07-03,Quarter-finals,Argentina,Germany,0.0,4.0,cf9d0a2a,2,1,0,0,0,0,0,0,False,False,4.0,0,3,0.0,,World Cup
+2010,2010-07-03,Quarter-finals,Paraguay,Spain,0.0,1.0,b06a548e,4,2,0,0,0,0,0,0,False,False,1.0,0,6,0.0,,World Cup
+2010,2010-07-06,Semi-finals,Uruguay,Netherlands,2.0,3.0,74825640,2,3,0,0,0,0,0,0,False,False,5.0,0,5,0.0,,World Cup
+2010,2010-07-07,Semi-finals,Germany,Spain,0.0,1.0,76d2f623,0,0,0,0,0,0,0,0,False,False,1.0,0,0,0.0,,World Cup
+2010,2010-07-10,Third-place match,Uruguay,Germany,2.0,3.0,0468785c,1,2,0,0,0,0,0,0,False,False,5.0,0,3,0.0,,World Cup
+2010,2010-07-11,Final,Netherlands,Spain,0.0,1.0,6e744544,9,5,1,0,0,0,0,0,False,False,1.0,0,15,0.0,Howard Webb,World Cup
+2012,2012-06-08,Group stage,Poland,Greece,1.0,1.0,2d50b00b,0,4,1,1,0,0,0,0,False,False,2.0,0,6,0.0,Carlos Velasco,European Championship
+2012,2012-06-08,Group stage,Russia,Czech Republic,4.0,1.0,67df88ea,0,0,0,0,0,0,0,0,False,False,5.0,0,0,0.0,Howard Webb,European Championship
+2012,2012-06-09,Group stage,Germany,Portugal,1.0,0.0,da9d3266,2,2,0,0,0,0,0,0,False,False,1.0,0,4,0.0,Stéphane Lannoy,European Championship
+2012,2012-06-09,Group stage,Netherlands,Denmark,0.0,1.0,52e5fcbc,1,2,0,0,0,0,0,0,False,False,1.0,0,3,0.0,Damir Skomina,European Championship
+2012,2012-06-10,Group stage,Rep. of Ireland,Croatia,1.0,3.0,d0555020,1,2,0,0,0,0,0,0,False,False,4.0,0,3,0.0,Björn Kuipers,European Championship
+2012,2012-06-10,Group stage,Spain,Italy,1.0,1.0,be369089,3,4,0,0,0,0,0,0,False,False,2.0,0,7,0.0,Viktor Kassai,European Championship
+2012,2012-06-11,Group stage,France,England,1.0,1.0,ceaf0a3e,0,2,0,0,0,0,0,0,False,False,2.0,0,2,0.0,Nicola Rizzoli,European Championship
+2012,2012-06-11,Group stage,Ukraine,Sweden,2.0,1.0,c9b342b8,0,2,0,0,0,0,0,0,False,False,3.0,0,2,0.0,Cüneyt Çakιr,European Championship
+2012,2012-06-12,Group stage,Greece,Czech Republic,1.0,2.0,682fa3d7,3,3,0,0,0,0,0,0,False,False,3.0,0,6,0.0,Stéphane Lannoy,European Championship
+2012,2012-06-12,Group stage,Poland,Russia,1.0,1.0,c419f933,2,2,0,0,0,0,0,0,False,False,2.0,0,4,0.0,Wolfgang Stark,European Championship
+2012,2012-06-13,Group stage,Denmark,Portugal,2.0,3.0,02cb43b9,2,2,0,0,0,0,0,0,False,False,5.0,0,4,0.0,Craig Thomson,European Championship
+2012,2012-06-13,Group stage,Netherlands,Germany,1.0,2.0,7b424511,2,1,0,0,0,0,0,0,False,False,3.0,0,3,0.0,Jonas Eriksson,European Championship
+2012,2012-06-14,Group stage,Italy,Croatia,1.0,1.0,a5b7151b,2,1,0,0,0,0,0,0,False,False,2.0,0,3,0.0,Howard Webb,European Championship
+2012,2012-06-14,Group stage,Spain,Rep. of Ireland,4.0,0.0,3da41274,2,3,0,0,0,0,0,0,False,False,4.0,0,5,0.0,Pedro Proença,European Championship
+2012,2012-06-15,Group stage,Sweden,England,2.0,3.0,59fd2ff9,3,1,0,0,0,0,0,0,False,False,5.0,0,4,0.0,Damir Skomina,European Championship
+2012,2012-06-15,Group stage,Ukraine,France,0.0,2.0,3ad611ad,2,3,0,0,0,0,0,0,False,False,2.0,0,5,0.0,Björn Kuipers,European Championship
+2012,2012-06-16,Group stage,Czech Republic,Poland,1.0,0.0,856e577c,3,5,0,0,0,0,0,0,False,False,1.0,0,8,0.0,Craig Thomson,European Championship
+2012,2012-06-16,Group stage,Greece,Russia,1.0,0.0,c7b17335,2,4,0,0,0,0,0,0,False,False,1.0,0,6,0.0,Jonas Eriksson,European Championship
+2012,2012-06-17,Group stage,Denmark,Germany,1.0,2.0,0357a06e,0,0,0,0,0,0,0,0,False,False,3.0,0,0,0.0,Carlos Velasco,European Championship
+2012,2012-06-17,Group stage,Portugal,Netherlands,2.0,1.0,8a9db1cb,1,2,0,0,0,0,0,0,False,False,3.0,0,3,0.0,Nicola Rizzoli,European Championship
+2012,2012-06-18,Group stage,Croatia,Spain,0.0,1.0,1ef20457,6,0,0,0,0,0,0,0,False,False,1.0,0,6,0.0,Wolfgang Stark,European Championship
+2012,2012-06-18,Group stage,Italy,Rep. of Ireland,2.0,0.0,7dad9688,3,4,0,1,0,0,0,0,False,False,2.0,0,8,0.0,Cüneyt Çakιr,European Championship
+2012,2012-06-19,Group stage,England,Ukraine,1.0,0.0,0eab1041,2,3,0,0,0,0,0,0,False,False,1.0,0,5,0.0,Viktor Kassai,European Championship
+2012,2012-06-19,Group stage,Sweden,France,2.0,0.0,6212d0b9,2,1,0,0,0,0,0,0,False,False,2.0,0,3,0.0,Pedro Proença,European Championship
+2012,2012-06-21,Quarter-finals,Czech Republic,Portugal,0.0,1.0,ac695a68,1,2,0,0,0,0,0,0,False,False,1.0,0,3,0.0,Howard Webb,European Championship
+2012,2012-06-22,Quarter-finals,Germany,Greece,4.0,2.0,7c97c9cd,0,2,0,0,0,0,0,0,False,False,6.0,0,2,0.0,Damir Skomina,European Championship
+2012,2012-06-23,Quarter-finals,Spain,France,2.0,0.0,337d5126,1,2,0,0,0,0,0,0,False,False,2.0,0,3,0.0,Nicola Rizzoli,European Championship
+2012,2012-06-24,Quarter-finals,England,Italy,0.0,0.0,308ce2d1,0,2,0,0,0,0,0,0,True,True,0.0,0,2,0.0,Pedro Proença,European Championship
+2012,2012-06-27,Semi-finals,Portugal,Spain,0.0,0.0,c25bf1e5,5,4,0,0,0,0,0,0,True,True,0.0,0,9,0.0,Cüneyt Çakιr,European Championship
+2012,2012-06-28,Semi-finals,Germany,Italy,1.0,2.0,721a4848,1,4,0,0,0,0,0,0,False,False,3.0,0,5,0.0,Stéphane Lannoy,European Championship
+2012,2012-07-01,Final,Spain,Italy,4.0,0.0,dd297430,1,1,0,0,0,0,0,0,False,False,4.0,0,2,0.0,Pedro Proença,European Championship
+2014,2014-06-12,Group stage,Brazil,Croatia,3.0,1.0,0a93d0e2,2,2,0,0,7,3,5,21,False,False,4.0,10,4,160.0,Yuichi Nishimura,World Cup
+2014,2014-06-13,Group stage,Chile,Australia,3.0,1.0,91edb9db,1,3,0,0,3,1,9,18,False,False,4.0,4,4,64.0,Noumandiez Doué,World Cup
+2014,2014-06-13,Group stage,Mexico,Cameroon,1.0,0.0,1e731368,1,1,0,0,2,5,11,12,False,False,1.0,7,2,14.0,Wilmar Roldán,World Cup
+2014,2014-06-13,Group stage,Spain,Netherlands,1.0,5.0,df94a7ed,1,3,0,0,4,1,5,18,False,False,6.0,5,4,120.0,Nicola Rizzoli,World Cup
+2014,2014-06-14,Group stage,Colombia,Greece,3.0,0.0,2ed82ce3,1,2,0,0,4,4,19,14,False,False,3.0,8,3,72.0,Mark Geiger,World Cup
+2014,2014-06-14,Group stage,Ivory Coast,Japan,2.0,1.0,00fc135e,2,2,0,0,8,5,12,13,False,False,3.0,13,4,156.0,Enrique Osses,World Cup
+2014,2014-06-14,Group stage,England,Italy,1.0,2.0,0d888670,1,0,0,0,9,2,8,12,False,False,3.0,11,1,33.0,Björn Kuipers,World Cup
+2014,2014-06-14,Group stage,Uruguay,Costa Rica,1.0,3.0,6e542c56,3,0,1,0,5,6,20,18,False,False,4.0,11,4,176.0,Felix Brych,World Cup
+2014,2014-06-15,Group stage,Argentina,Bosnia-Herzegovina,2.0,1.0,72d2c50a,1,1,0,0,2,6,10,14,False,False,3.0,8,2,48.0,Joel Aguilar,World Cup
+2014,2014-06-15,Group stage,France,Honduras,3.0,0.0,cd1fb2ca,3,4,0,1,8,0,13,14,False,False,3.0,8,8,192.0,Sandro Ricci,World Cup
+2014,2014-06-15,Group stage,Switzerland,Ecuador,2.0,1.0,198210f9,1,1,0,0,8,5,9,15,False,False,3.0,13,2,78.0,Ravshan Irmatov,World Cup
+2014,2014-06-16,Group stage,Germany,Portugal,4.0,0.0,87a62789,0,1,0,1,4,6,8,11,False,False,4.0,10,2,80.0,Milorad Mažić,World Cup
+2014,2014-06-16,Group stage,Ghana,United States,1.0,2.0,cea329b8,2,0,0,0,7,3,10,12,False,False,3.0,10,2,60.0,Jonas Eriksson,World Cup
+2014,2014-06-16,Group stage,Iran,Nigeria,0.0,0.0,7569c36b,1,0,0,0,2,7,18,16,False,False,0.0,9,1,0.0,Carlos Vera,World Cup
+2014,2014-06-17,Group stage,Belgium,Algeria,2.0,1.0,1569fa2c,1,1,0,0,7,2,21,18,False,False,3.0,9,2,54.0,Marcos Rodriguez,World Cup
+2014,2014-06-17,Group stage,Brazil,Mexico,0.0,0.0,4f72e404,2,2,0,0,4,3,13,18,False,False,0.0,7,4,0.0,Cüneyt Çakιr,World Cup
+2014,2014-06-17,Group stage,Russia,South Korea,1.0,1.0,1159edc5,1,3,0,0,4,4,15,7,False,False,2.0,8,4,64.0,Néstor Pitana,World Cup
+2014,2014-06-18,Group stage,Australia,Netherlands,2.0,3.0,0e90edea,1,1,0,0,3,2,18,25,False,False,5.0,5,2,50.0,Djamel Haïmoudi,World Cup
+2014,2014-06-18,Group stage,Cameroon,Croatia,0.0,4.0,c3d6cd40,0,1,1,0,4,7,11,9,False,False,4.0,11,2,88.0,Pedro Proença,World Cup
+2014,2014-06-18,Group stage,Spain,Chile,0.0,2.0,ee4a9150,1,2,0,0,7,1,14,15,False,False,2.0,8,3,48.0,Mark Geiger,World Cup
+2014,2014-06-19,Group stage,Colombia,Ivory Coast,2.0,1.0,dc886814,0,2,0,0,5,5,11,14,False,False,3.0,10,2,60.0,Howard Webb,World Cup
+2014,2014-06-19,Group stage,Japan,Greece,0.0,0.0,bfbb91ac,1,4,0,1,5,7,23,18,False,False,0.0,12,6,0.0,Joel Aguilar,World Cup
+2014,2014-06-19,Group stage,Uruguay,England,2.0,1.0,6782fb8e,1,1,0,0,7,6,17,12,False,False,3.0,13,2,78.0,Carlos Velasco,World Cup
+2014,2014-06-20,Group stage,Honduras,Ecuador,1.0,2.0,28532816,2,3,0,0,4,12,15,17,False,False,3.0,16,5,240.0,Benjamin Williams,World Cup
+2014,2014-06-20,Group stage,Italy,Costa Rica,0.0,1.0,c94726d5,1,1,0,0,4,5,10,24,False,False,1.0,9,2,18.0,Enrique Osses,World Cup
+2014,2014-06-20,Group stage,Switzerland,France,2.0,5.0,3c8afe8e,0,1,0,0,5,3,12,16,False,False,7.0,8,1,56.0,Björn Kuipers,World Cup
+2014,2014-06-21,Group stage,Argentina,Iran,1.0,0.0,03032261,0,2,0,0,10,6,8,14,False,False,1.0,16,2,32.0,Milorad Mažić,World Cup
+2014,2014-06-21,Group stage,Germany,Ghana,2.0,2.0,34d954c8,0,1,0,0,7,3,11,17,False,False,4.0,10,1,40.0,Sandro Ricci,World Cup
+2014,2014-06-21,Group stage,Nigeria,Bosnia-Herzegovina,1.0,0.0,05ff2d66,1,1,0,0,4,4,9,7,False,False,1.0,8,2,16.0,Peter O'Leary,World Cup
+2014,2014-06-22,Group stage,Belgium,Russia,1.0,0.0,2860f4f2,2,1,0,0,5,8,13,9,False,False,1.0,13,3,39.0,Felix Brych,World Cup
+2014,2014-06-22,Group stage,South Korea,Algeria,2.0,4.0,21335950,2,1,0,0,7,5,13,16,False,False,6.0,12,3,216.0,Wilmar Roldán,World Cup
+2014,2014-06-22,Group stage,United States,Portugal,2.0,2.0,a1d62a1c,1,0,0,0,6,4,11,14,False,False,4.0,10,1,40.0,Néstor Pitana,World Cup
+2014,2014-06-23,Group stage,Australia,Spain,0.0,3.0,312c3bd6,2,1,0,0,2,6,14,9,False,False,3.0,8,3,72.0,Nawaf Shukralla,World Cup
+2014,2014-06-23,Group stage,Cameroon,Brazil,1.0,4.0,7b01ab8a,3,0,0,0,6,7,14,19,False,False,5.0,13,3,195.0,Jonas Eriksson,World Cup
+2014,2014-06-23,Group stage,Croatia,Mexico,1.0,3.0,e6dd8890,1,2,1,0,7,9,18,12,False,False,4.0,16,4,256.0,Ravshan Irmatov,World Cup
+2014,2014-06-23,Group stage,Netherlands,Chile,2.0,0.0,8cb7afe6,1,1,0,0,2,7,26,14,False,False,2.0,9,2,36.0,Bakary Papa Gassama,World Cup
+2014,2014-06-24,Group stage,Costa Rica,England,0.0,0.0,3de1b54e,1,2,0,0,3,7,17,17,False,False,0.0,10,3,0.0,Djamel Haïmoudi,World Cup
+2014,2014-06-24,Group stage,Greece,Ivory Coast,2.0,1.0,09d48d1d,0,3,0,0,4,7,13,23,False,False,3.0,11,3,99.0,Carlos Vera,World Cup
+2014,2014-06-24,Group stage,Italy,Uruguay,0.0,1.0,2a226ccf,2,2,1,0,3,3,19,20,False,False,1.0,6,5,30.0,Marco Antonio Rodríguez,World Cup
+2014,2014-06-24,Group stage,Japan,Colombia,1.0,4.0,02f2939b,1,1,0,0,9,2,10,19,False,False,5.0,11,2,110.0,Pedro Proença,World Cup
+2014,2014-06-25,Group stage,Bosnia-Herzegovina,Iran,3.0,1.0,baf36bea,1,1,0,0,6,5,20,17,False,False,4.0,11,2,88.0,Carlos Velasco,World Cup
+2014,2014-06-25,Group stage,Ecuador,France,0.0,0.0,d799423c,1,0,1,0,1,7,17,6,False,False,0.0,8,2,0.0,Noumandiez Doué,World Cup
+2014,2014-06-25,Group stage,Honduras,Switzerland,0.0,3.0,52eae589,1,0,0,0,8,1,17,18,False,False,3.0,9,1,27.0,Néstor Pitana,World Cup
+2014,2014-06-25,Group stage,Nigeria,Argentina,2.0,3.0,eeffe097,2,0,0,0,4,12,17,6,False,False,5.0,16,2,160.0,Nicola Rizzoli,World Cup
+2014,2014-06-26,Group stage,Algeria,Russia,1.0,1.0,43c884ac,3,2,0,0,3,4,15,14,False,False,2.0,7,5,70.0,Cüneyt Çakιr,World Cup
+2014,2014-06-26,Group stage,South Korea,Belgium,0.0,1.0,2b7b8d0e,1,1,0,1,6,4,16,11,False,False,1.0,10,3,30.0,Benjamin Williams,World Cup
+2014,2014-06-26,Group stage,Portugal,Ghana,2.0,1.0,17f4fc6b,1,3,0,0,7,4,21,16,False,False,3.0,11,4,132.0,Nawaf Shukralla,World Cup
+2014,2014-06-26,Group stage,United States,Germany,0.0,1.0,2246ef01,2,1,0,0,2,3,15,9,False,False,1.0,5,3,15.0,Ravshan Irmatov,World Cup
+2014,2014-06-28,Round of 16,Brazil,Chile,1.0,1.0,bf3f5977,4,3,0,0,9,5,28,23,True,True,2.0,14,7,196.0,Howard Webb,World Cup
+2014,2014-06-28,Round of 16,Colombia,Uruguay,2.0,0.0,484eb2ca,1,3,0,0,3,5,19,17,False,False,2.0,8,4,64.0,Björn Kuipers,World Cup
+2014,2014-06-29,Round of 16,Costa Rica,Greece,1.0,1.0,67156ef9,6,2,1,0,3,11,23,16,True,True,2.0,14,9,252.0,Benjamin Williams,World Cup
+2014,2014-06-29,Round of 16,Netherlands,Mexico,2.0,1.0,89043154,0,3,0,0,10,2,8,12,False,False,3.0,12,3,108.0,Pedro Proença,World Cup
+2014,2014-06-30,Round of 16,France,Nigeria,2.0,0.0,50163cef,1,0,0,0,12,9,12,15,False,False,2.0,21,1,42.0,Mark Geiger,World Cup
+2014,2014-06-30,Round of 16,Germany,Algeria,2.0,1.0,fa3a45a3,1,1,0,0,10,4,11,20,False,False,3.0,14,2,84.0,Sandro Ricci,World Cup
+2014,2014-07-01,Round of 16,Argentina,Switzerland,1.0,0.0,6b10caba,3,2,0,0,13,5,19,28,False,False,1.0,18,5,90.0,Jonas Eriksson,World Cup
+2014,2014-07-01,Round of 16,Belgium,United States,2.0,1.0,2ecf86bb,1,1,0,0,19,4,27,11,False,False,3.0,23,2,138.0,Djamel Haïmoudi,World Cup
+2014,2014-07-04,Quarter-finals,Brazil,Colombia,2.0,1.0,5f602ffa,2,2,0,0,4,6,31,23,False,False,3.0,10,4,120.0,Carlos Velasco,World Cup
+2014,2014-07-04,Quarter-finals,France,Germany,0.0,1.0,0189ead9,0,2,0,0,5,3,15,18,False,False,1.0,8,2,16.0,Néstor Pitana,World Cup
+2014,2014-07-05,Quarter-finals,Argentina,Belgium,1.0,0.0,64df0095,1,2,0,0,3,4,11,14,False,False,1.0,7,3,21.0,Nicola Rizzoli,World Cup
+2014,2014-07-05,Quarter-finals,Netherlands,Costa Rica,0.0,0.0,8a87d8f1,2,4,0,0,11,1,15,13,True,True,0.0,12,6,0.0,Ravshan Irmatov,World Cup
+2014,2014-07-08,Semi-finals,Brazil,Germany,1.0,7.0,04e9fcbd,1,0,0,0,7,5,11,14,False,False,8.0,12,1,96.0,Marco Antonio Rodríguez,World Cup
+2014,2014-07-09,Semi-finals,Netherlands,Argentina,0.0,0.0,e1409f9a,2,1,0,0,4,4,15,10,True,True,0.0,8,3,0.0,Cüneyt Çakιr,World Cup
+2014,2014-07-12,Third-place match,Brazil,Netherlands,0.0,3.0,2000ff71,3,2,0,0,4,1,16,20,False,False,3.0,5,5,75.0,Djamel Haïmoudi,World Cup
+2014,2014-07-13,Final,Germany,Argentina,1.0,0.0,3bbb52d8,2,2,0,0,5,3,20,16,False,False,1.0,8,4,32.0,Nicola Rizzoli,World Cup
+2016,2016-06-10,Group stage,France,Romania,2.0,1.0,c94e8405,1,3,0,0,5,4,6,14,False,False,3.0,9,4,108.0,Viktor Kassai,European Championship
+2016,2016-06-11,Group stage,Albania,Switzerland,0.0,1.0,f3b282c3,5,2,1,0,5,4,10,18,False,False,1.0,9,8,72.0,Carlos Velasco,European Championship
+2016,2016-06-11,Group stage,England,Russia,1.0,1.0,13dc8d2c,1,1,0,0,6,4,10,16,False,False,2.0,10,2,40.0,Nicola Rizzoli,European Championship
+2016,2016-06-11,Group stage,Wales,Slovakia,2.0,1.0,b0116f96,0,5,0,0,2,3,17,17,False,False,3.0,5,5,75.0,Svein Oddvar Moen,European Championship
+2016,2016-06-12,Group stage,Germany,Ukraine,2.0,0.0,4c693e49,0,1,0,0,6,12,10,10,False,False,2.0,18,1,36.0,Martin Atkinson,European Championship
+2016,2016-06-12,Group stage,Poland,Northern Ireland,1.0,0.0,e4486524,2,1,0,0,8,1,11,12,False,False,1.0,9,3,27.0,Ovidiu Hațegan,European Championship
+2016,2016-06-12,Group stage,Turkey,Croatia,0.0,1.0,246d7415,3,1,0,0,3,5,13,15,False,False,1.0,8,4,32.0,Jonas Eriksson,European Championship
+2016,2016-06-13,Group stage,Belgium,Italy,0.0,2.0,b8a7066e,1,4,0,0,8,6,10,12,False,False,2.0,14,5,140.0,Mark Clattenburg,European Championship
+2016,2016-06-13,Group stage,Rep. of Ireland,Sweden,1.0,1.0,b8499340,2,1,0,0,5,5,11,15,False,False,2.0,10,3,60.0,Milorad Mažić,European Championship
+2016,2016-06-13,Group stage,Spain,Czech Republic,1.0,0.0,14a84c72,0,1,0,0,14,3,11,12,False,False,1.0,17,1,17.0,Szymon Marciniak,European Championship
+2016,2016-06-14,Group stage,Austria,Hungary,0.0,2.0,14522673,2,1,1,0,4,4,11,16,False,False,2.0,8,4,64.0,Clément Turpin,European Championship
+2016,2016-06-14,Group stage,Portugal,Iceland,1.0,1.0,c68ea3ea,0,2,0,0,11,2,9,18,False,False,2.0,13,2,52.0,Cüneyt Çakιr,European Championship
+2016,2016-06-15,Group stage,France,Albania,2.0,0.0,64b107ef,1,2,0,0,6,4,16,13,False,False,2.0,10,3,60.0,William Collum,European Championship
+2016,2016-06-15,Group stage,Romania,Switzerland,1.0,1.0,86319b34,4,2,0,0,4,7,23,11,False,False,2.0,11,6,132.0,Sergey Karasev,European Championship
+2016,2016-06-15,Group stage,Russia,Slovakia,1.0,2.0,536d2ac3,0,1,0,0,6,5,9,12,False,False,3.0,11,1,33.0,Damir Skomina,European Championship
+2016,2016-06-16,Group stage,England,Wales,2.0,1.0,897cbea3,0,1,0,0,9,3,10,9,False,False,3.0,12,1,36.0,Felix Brych,European Championship
+2016,2016-06-16,Group stage,Germany,Poland,0.0,0.0,e8fe487e,3,3,0,0,8,2,14,9,False,False,0.0,10,6,0.0,Björn Kuipers,European Championship
+2016,2016-06-16,Group stage,Ukraine,Northern Ireland,0.0,2.0,8f00420f,2,3,0,0,2,3,15,14,False,False,2.0,5,5,50.0,Pavel Královec,European Championship
+2016,2016-06-17,Group stage,Czech Republic,Croatia,2.0,2.0,a0174ed1,1,3,0,0,2,11,15,13,False,False,4.0,13,4,208.0,Mark Clattenburg,European Championship
+2016,2016-06-17,Group stage,Italy,Sweden,1.0,0.0,1bc2b5a2,2,1,0,0,7,4,17,14,False,False,1.0,11,3,33.0,Viktor Kassai,European Championship
+2016,2016-06-17,Group stage,Spain,Turkey,3.0,0.0,b6cf5012,1,2,0,0,7,3,15,14,False,False,3.0,10,3,90.0,Milorad Mažić,European Championship
+2016,2016-06-18,Group stage,Belgium,Rep. of Ireland,3.0,0.0,058d3228,1,1,0,0,5,4,8,10,False,False,3.0,9,2,54.0,Cüneyt Çakιr,European Championship
+2016,2016-06-18,Group stage,Iceland,Hungary,1.0,1.0,bdd4b6d1,4,3,0,0,3,5,15,17,False,False,2.0,8,7,112.0,Sergey Karasev,European Championship
+2016,2016-06-18,Group stage,Portugal,Austria,0.0,0.0,bf05ecae,2,4,0,0,10,0,15,16,False,False,0.0,10,6,0.0,Nicola Rizzoli,European Championship
+2016,2016-06-19,Group stage,Romania,Albania,0.0,1.0,68f33bc1,3,3,0,0,2,6,14,13,False,False,1.0,8,6,48.0,Pavel Královec,European Championship
+2016,2016-06-19,Group stage,Switzerland,France,0.0,0.0,70e16fd0,0,2,0,0,5,10,9,10,False,False,0.0,15,2,0.0,Damir Skomina,European Championship
+2016,2016-06-20,Group stage,Russia,Wales,0.0,3.0,d86a5b6c,1,1,0,0,4,5,9,6,False,False,3.0,9,2,54.0,Jonas Eriksson,European Championship
+2016,2016-06-20,Group stage,Slovakia,England,0.0,0.0,4ae1ba74,1,1,0,0,0,11,7,13,False,False,0.0,11,2,0.0,Carlos Velasco,European Championship
+2016,2016-06-21,Group stage,Croatia,Spain,2.0,1.0,588b6d81,4,0,0,0,3,7,10,11,False,False,3.0,10,4,120.0,Björn Kuipers,European Championship
+2016,2016-06-21,Group stage,Czech Republic,Turkey,0.0,2.0,7a7bb65b,3,2,0,0,8,3,16,14,False,False,2.0,11,5,110.0,William Collum,European Championship
+2016,2016-06-21,Group stage,Northern Ireland,Germany,0.0,1.0,593acaa2,0,0,0,0,3,6,10,8,False,False,1.0,9,0,0.0,Clément Turpin,European Championship
+2016,2016-06-21,Group stage,Ukraine,Poland,0.0,1.0,8899b39b,2,1,0,0,3,2,23,12,False,False,1.0,5,3,15.0,Svein Oddvar Moen,European Championship
+2016,2016-06-22,Group stage,Hungary,Portugal,3.0,3.0,1b049399,4,0,0,0,3,9,15,9,False,False,6.0,12,4,288.0,Martin Atkinson,European Championship
+2016,2016-06-22,Group stage,Iceland,Austria,2.0,1.0,054c88c5,4,1,0,0,3,7,10,10,False,False,3.0,10,5,150.0,Szymon Marciniak,European Championship
+2016,2016-06-22,Group stage,Italy,Rep. of Ireland,0.0,1.0,bcdb3cea,4,2,0,0,4,4,21,19,False,False,1.0,8,6,48.0,Ovidiu Hațegan,European Championship
+2016,2016-06-22,Group stage,Sweden,Belgium,0.0,1.0,2745c756,2,2,0,0,4,12,10,14,False,False,1.0,16,4,64.0,Felix Brych,European Championship
+2016,2016-06-25,Round of 16,Croatia,Portugal,0.0,1.0,592683f6,0,1,0,0,6,2,12,28,False,False,1.0,8,1,8.0,Carlos Velasco,European Championship
+2016,2016-06-25,Round of 16,Switzerland,Poland,1.0,1.0,9e3d020b,2,2,0,0,13,5,16,14,True,True,2.0,18,4,144.0,Mark Clattenburg,European Championship
+2016,2016-06-25,Round of 16,Wales,Northern Ireland,1.0,0.0,e1a74710,2,2,0,0,0,6,8,20,False,False,1.0,6,4,24.0,Martin Atkinson,European Championship
+2016,2016-06-26,Round of 16,France,Rep. of Ireland,2.0,1.0,7c847853,2,3,0,1,9,1,8,12,False,False,3.0,10,6,180.0,Nicola Rizzoli,European Championship
+2016,2016-06-26,Round of 16,Germany,Slovakia,3.0,0.0,09ada352,2,2,0,0,8,1,14,12,False,False,3.0,9,4,108.0,Szymon Marciniak,European Championship
+2016,2016-06-26,Round of 16,Hungary,Belgium,0.0,4.0,ba95606b,4,3,0,0,6,8,12,10,False,False,4.0,14,7,392.0,Milorad Mažić,European Championship
+2016,2016-06-27,Round of 16,England,Iceland,1.0,2.0,d463716d,1,2,0,0,7,2,6,16,False,False,3.0,9,3,81.0,Damir Skomina,European Championship
+2016,2016-06-27,Round of 16,Italy,Spain,2.0,0.0,93c79690,3,3,0,0,5,9,19,13,False,False,2.0,14,6,168.0,Cüneyt Çakιr,European Championship
+2016,2016-06-30,Quarter-finals,Poland,Portugal,1.0,1.0,13b0870e,3,2,0,0,2,7,16,11,True,True,2.0,9,5,90.0,Felix Brych,European Championship
+2016,2016-07-01,Quarter-finals,Wales,Belgium,3.0,1.0,1318c50b,4,2,0,0,7,8,12,8,False,False,4.0,15,6,360.0,Damir Skomina,European Championship
+2016,2016-07-02,Quarter-finals,Germany,Italy,1.0,1.0,70a25091,2,5,0,0,7,5,15,13,True,True,2.0,12,7,168.0,Viktor Kassai,European Championship
+2016,2016-07-03,Quarter-finals,France,Iceland,5.0,2.0,5d601a52,1,1,0,0,4,4,8,11,False,False,7.0,8,2,112.0,Björn Kuipers,European Championship
+2016,2016-07-06,Semi-finals,Portugal,Wales,2.0,0.0,5f0395d8,2,3,0,0,6,2,10,12,False,False,2.0,8,5,80.0,Jonas Eriksson,European Championship
+2016,2016-07-07,Semi-finals,Germany,France,0.0,2.0,0c560da7,4,2,0,0,6,5,9,12,False,False,2.0,11,6,132.0,Nicola Rizzoli,European Championship
+2016,2016-07-10,Final,Portugal,France,1.0,0.0,d9551fd6,6,4,0,0,5,9,12,13,False,False,1.0,14,10,140.0,Mark Clattenburg,European Championship
+2018,2018-06-14,Group stage,Russia,Saudi Arabia,5.0,0.0,c9d7e48c,1,1,0,0,6,2,22,10,False,False,5.0,8,2,80.0,Néstor Pitana,World Cup
+2018,2018-06-15,Group stage,Egypt,Uruguay,0.0,1.0,cea695e1,2,0,0,0,0,5,12,7,False,False,1.0,5,2,10.0,Björn Kuipers,World Cup
+2018,2018-06-15,Group stage,Morocco,Iran,0.0,1.0,028c7b0f,1,3,0,0,5,2,22,14,False,False,1.0,7,4,28.0,Cüneyt Çakιr,World Cup
+2018,2018-06-15,Group stage,Portugal,Spain,3.0,3.0,2fecb1be,1,1,0,0,4,5,12,10,False,False,6.0,9,2,108.0,Gianluca Rocchi,World Cup
+2018,2018-06-16,Group stage,Argentina,Iceland,1.0,1.0,1b352279,0,0,0,0,10,2,10,15,False,False,2.0,12,0,0.0,Szymon Marciniak,World Cup
+2018,2018-06-16,Group stage,Croatia,Nigeria,2.0,0.0,b85541a6,2,1,0,0,6,5,21,16,False,False,2.0,11,3,66.0,Sandro Ricci,World Cup
+2018,2018-06-16,Group stage,France,Australia,2.0,1.0,99aa0597,1,3,0,0,5,1,16,19,False,False,3.0,6,4,72.0,Andrés Cunha,World Cup
+2018,2018-06-16,Group stage,Peru,Denmark,0.0,1.0,25905c9c,1,2,0,0,3,7,11,18,False,False,1.0,10,3,30.0,Bakary Papa Gassama,World Cup
+2018,2018-06-17,Group stage,Brazil,Switzerland,1.0,1.0,47906d9c,1,3,0,0,7,2,11,19,False,False,2.0,9,4,72.0,César Ramos,World Cup
+2018,2018-06-17,Group stage,Costa Rica,Serbia,0.0,1.0,73b53b07,2,2,0,0,5,4,19,15,False,False,1.0,9,4,36.0,Malang Diédhiou,World Cup
+2018,2018-06-17,Group stage,Germany,Mexico,0.0,1.0,4100c1fb,2,2,0,0,8,1,11,16,False,False,1.0,9,4,36.0,Alireza Faghani,World Cup
+2018,2018-06-18,Group stage,Belgium,Panama,3.0,0.0,fe0f9213,3,5,0,0,9,3,17,18,False,False,3.0,12,8,288.0,Janny Sikazwe,World Cup
+2018,2018-06-18,Group stage,Sweden,South Korea,1.0,0.0,81558c33,1,2,0,0,6,5,20,23,False,False,1.0,11,3,33.0,Joel Aguilar,World Cup
+2018,2018-06-18,Group stage,Tunisia,England,1.0,2.0,3dbb130b,0,1,0,0,2,7,14,8,False,False,3.0,9,1,27.0,Wilmar Roldán,World Cup
+2018,2018-06-19,Group stage,Colombia,Japan,1.0,2.0,6b881027,2,1,1,0,3,6,15,9,False,False,3.0,9,4,108.0,Damir Skomina,World Cup
+2018,2018-06-19,Group stage,Poland,Senegal,1.0,2.0,e254550a,1,2,0,0,3,3,8,15,False,False,3.0,6,3,54.0,Nawaf Shukralla,World Cup
+2018,2018-06-19,Group stage,Russia,Egypt,3.0,1.0,d054010d,1,1,0,0,7,4,12,10,False,False,4.0,11,2,88.0,Enrique Cáceres,World Cup
+2018,2018-06-20,Group stage,Iran,Spain,0.0,1.0,cd0c54ed,2,0,0,0,2,6,14,15,False,False,1.0,8,2,16.0,Andrés Cunha,World Cup
+2018,2018-06-20,Group stage,Portugal,Morocco,1.0,0.0,0f37c1da,1,1,0,0,5,7,19,24,False,False,1.0,12,2,24.0,Mark Geiger,World Cup
+2018,2018-06-20,Group stage,Uruguay,Saudi Arabia,1.0,0.0,958f044b,0,0,0,0,3,4,10,13,False,False,1.0,7,0,0.0,Clément Turpin,World Cup
+2018,2018-06-21,Group stage,Argentina,Croatia,0.0,3.0,c4ec1ec2,3,4,0,0,5,2,16,22,False,False,3.0,7,7,147.0,Ravshan Irmatov,World Cup
+2018,2018-06-21,Group stage,Denmark,Australia,1.0,1.0,85bb652d,2,0,0,0,3,5,7,6,False,False,2.0,8,2,32.0,Antonio Matéu Lahoz,World Cup
+2018,2018-06-21,Group stage,France,Peru,1.0,0.0,a8de3334,2,2,0,0,5,3,11,15,False,False,1.0,8,4,32.0,Mohammed Abdulla Hassan,World Cup
+2018,2018-06-22,Group stage,Brazil,Costa Rica,2.0,0.0,be3e2453,2,1,0,0,9,1,12,12,False,False,2.0,10,3,60.0,Björn Kuipers,World Cup
+2018,2018-06-22,Group stage,Nigeria,Iceland,2.0,0.0,66f80ae4,1,0,0,0,6,5,9,10,False,False,2.0,11,1,22.0,Matt Conger,World Cup
+2018,2018-06-22,Group stage,Serbia,Switzerland,1.0,2.0,c9743f21,4,1,0,0,3,7,19,13,False,False,3.0,10,5,150.0,Felix Brych,World Cup
+2018,2018-06-23,Group stage,Belgium,Tunisia,5.0,2.0,f9b97a12,0,1,0,0,5,2,12,14,False,False,7.0,7,1,49.0,Jair Marrufo,World Cup
+2018,2018-06-23,Group stage,Germany,Sweden,2.0,1.0,e9fc9e82,2,2,1,0,8,3,14,13,False,False,3.0,11,5,165.0,Szymon Marciniak,World Cup
+2018,2018-06-23,Group stage,South Korea,Mexico,1.0,2.0,97e095b0,4,0,0,0,7,5,24,7,False,False,3.0,12,4,144.0,Milorad Mažić,World Cup
+2018,2018-06-24,Group stage,England,Panama,6.0,1.0,f68efc38,1,3,0,0,3,2,13,13,False,False,7.0,5,4,140.0,Gehad Grisha,World Cup
+2018,2018-06-24,Group stage,Japan,Senegal,2.0,2.0,59b7ead6,2,3,0,0,2,5,8,15,False,False,4.0,7,5,140.0,Gianluca Rocchi,World Cup
+2018,2018-06-24,Group stage,Poland,Colombia,0.0,3.0,49433591,2,0,0,0,7,5,15,10,False,False,3.0,12,2,72.0,César Arturo Ramos,World Cup
+2018,2018-06-25,Group stage,Iran,Portugal,1.0,1.0,f572accd,2,4,0,0,1,5,16,11,False,False,2.0,6,6,72.0,Enrique Cáceres,World Cup
+2018,2018-06-25,Group stage,Saudi Arabia,Egypt,2.0,1.0,2fa10320,0,2,0,0,7,2,7,16,False,False,3.0,9,2,54.0,Wilmar Roldán,World Cup
+2018,2018-06-25,Group stage,Spain,Morocco,2.0,2.0,39619129,0,6,0,0,7,1,5,17,False,False,4.0,8,6,192.0,Ravshan Irmatov,World Cup
+2018,2018-06-25,Group stage,Uruguay,Russia,3.0,0.0,f25fa045,1,3,0,1,4,2,18,18,False,False,3.0,6,5,90.0,Malang Diédhiou,World Cup
+2018,2018-06-26,Group stage,Australia,Peru,0.0,2.0,a3abd3b3,4,2,0,0,8,3,14,12,False,False,2.0,11,6,132.0,Sergey Karasev,World Cup
+2018,2018-06-26,Group stage,Denmark,France,0.0,0.0,6a60e1ab,1,0,0,0,4,2,11,10,False,False,0.0,6,1,0.0,Sandro Ricci,World Cup
+2018,2018-06-26,Group stage,Iceland,Croatia,1.0,2.0,01e30e44,3,2,0,0,10,5,11,12,False,False,3.0,15,5,225.0,Antonio Matéu Lahoz,World Cup
+2018,2018-06-26,Group stage,Nigeria,Argentina,1.0,2.0,1185d834,2,3,0,0,3,5,20,16,False,False,3.0,8,5,120.0,Cüneyt Çakιr,World Cup
+2018,2018-06-27,Group stage,South Korea,Germany,2.0,0.0,4743cce5,4,0,0,0,3,9,16,7,False,False,2.0,12,4,96.0,Mark Geiger,World Cup
+2018,2018-06-27,Group stage,Mexico,Sweden,0.0,3.0,16d76ac5,3,2,0,0,7,3,14,11,False,False,3.0,10,5,150.0,Néstor Pitana,World Cup
+2018,2018-06-27,Group stage,Serbia,Brazil,0.0,2.0,6addd2ab,3,0,0,0,5,9,13,7,False,False,2.0,14,3,84.0,Alireza Faghani,World Cup
+2018,2018-06-27,Group stage,Switzerland,Costa Rica,2.0,2.0,83e51111,3,3,0,0,6,5,10,14,False,False,4.0,11,6,264.0,Clément Turpin,World Cup
+2018,2018-06-28,Group stage,England,Belgium,0.0,1.0,5c20eb91,0,2,0,0,7,2,12,14,False,False,1.0,9,2,18.0,Damir Skomina,World Cup
+2018,2018-06-28,Group stage,Japan,Poland,0.0,1.0,94f5d825,1,0,0,0,5,7,11,8,False,False,1.0,12,1,12.0,Janny Sikazwe,World Cup
+2018,2018-06-28,Group stage,Panama,Tunisia,1.0,2.0,545940e9,3,3,0,0,0,6,18,19,False,False,3.0,6,6,108.0,Nawaf Shukralla,World Cup
+2018,2018-06-28,Group stage,Senegal,Colombia,0.0,1.0,97a6949a,1,1,0,0,1,3,15,16,False,False,1.0,4,2,8.0,Milorad Mažić,World Cup
+2018,2018-06-30,Round of 16,France,Argentina,4.0,3.0,1c9745ea,3,5,0,0,0,4,21,15,False,False,7.0,4,8,224.0,Alireza Faghani,World Cup
+2018,2018-06-30,Round of 16,Uruguay,Portugal,2.0,1.0,8c883b46,0,1,0,0,2,10,14,13,False,False,3.0,12,1,36.0,César Arturo Ramos,World Cup
+2018,2018-07-01,Round of 16,Croatia,Denmark,1.0,1.0,f0fd68f3,0,1,0,0,5,4,5,19,True,True,2.0,9,1,18.0,Néstor Pitana,World Cup
+2018,2018-07-01,Round of 16,Spain,Russia,1.0,1.0,3750b351,1,2,0,0,6,5,5,19,True,True,2.0,11,3,66.0,Björn Kuipers,World Cup
+2018,2018-07-02,Round of 16,Belgium,Japan,3.0,2.0,1fd23151,0,1,0,0,10,6,13,9,False,False,5.0,16,1,80.0,Malang Diédhiou,World Cup
+2018,2018-07-02,Round of 16,Brazil,Mexico,2.0,0.0,44c9a149,2,4,0,0,8,7,6,17,False,False,2.0,15,6,180.0,Gianluca Rocchi,World Cup
+2018,2018-07-03,Round of 16,Colombia,England,1.0,1.0,878a02fd,6,2,0,0,2,7,23,13,True,True,2.0,9,8,144.0,Mark Geiger,World Cup
+2018,2018-07-03,Round of 16,Sweden,Switzerland,1.0,0.0,3e7c486b,1,2,0,1,3,11,11,13,False,False,1.0,14,4,56.0,Damir Skomina,World Cup
+2018,2018-07-06,Quarter-finals,Brazil,Belgium,1.0,2.0,6fa6550c,2,2,0,0,8,4,14,17,False,False,3.0,12,4,144.0,Milorad Mažić,World Cup
+2018,2018-07-06,Quarter-finals,Uruguay,France,0.0,2.0,7d3f9961,2,2,0,0,4,3,18,15,False,False,2.0,7,4,56.0,Néstor Pitana,World Cup
+2018,2018-07-07,Quarter-finals,Russia,Croatia,2.0,2.0,bd1fbaf4,1,4,0,0,6,8,25,18,True,True,4.0,14,5,280.0,Sandro Ricci,World Cup
+2018,2018-07-07,Quarter-finals,Sweden,England,0.0,2.0,c7b2bf0a,2,1,0,0,1,6,10,7,False,False,2.0,7,3,42.0,Björn Kuipers,World Cup
+2018,2018-07-10,Semi-finals,France,Belgium,1.0,0.0,605079c0,2,3,0,0,4,5,6,16,False,False,1.0,9,5,45.0,Andrés Cunha,World Cup
+2018,2018-07-11,Semi-finals,Croatia,England,2.0,1.0,12d32bfa,2,1,0,0,8,4,23,15,False,False,3.0,12,3,108.0,Cüneyt Çakιr,World Cup
+2018,2018-07-14,Third-place match,Belgium,England,2.0,0.0,bc417615,1,2,0,0,4,5,11,4,False,False,2.0,9,3,54.0,Alireza Faghani,World Cup
+2018,2018-07-15,Final,France,Croatia,4.0,2.0,a7957cf1,2,1,0,0,2,6,13,13,False,False,6.0,8,3,144.0,Néstor Pitana,World Cup
+2020,2021-06-11,Group stage,Turkey,Italy,0.0,3.0,95a9ebd1,2,0,0,0,2,8,10,8,False,False,3.0,10,2,60.0,Danny Makkelie,European Championship
+2020,2021-06-12,Group stage,Belgium,Russia,3.0,0.0,e594174b,0,0,0,0,2,4,9,11,False,False,3.0,6,0,0.0,Antonio Mateu Lahoz,European Championship
+2020,2021-06-12,Group stage,Denmark,Finland,0.0,1.0,c3c2ffa2,0,2,0,0,8,0,9,10,False,False,1.0,8,2,16.0,Anthony Taylor,European Championship
+2020,2021-06-12,Group stage,Wales,Switzerland,1.0,1.0,d9eaa85c,1,2,0,0,4,12,6,9,False,False,2.0,16,3,96.0,Clément Turpin,European Championship
+2020,2021-06-13,Group stage,Austria,N. Macedonia,3.0,1.0,b47a0ea6,1,2,0,0,4,0,13,16,False,False,4.0,4,3,48.0,Andreas Ekberg,European Championship
+2020,2021-06-13,Group stage,England,Croatia,1.0,0.0,764c27dc,1,3,0,0,1,1,9,10,False,False,1.0,2,4,8.0,Daniele Orsato,European Championship
+2020,2021-06-13,Group stage,Netherlands,Ukraine,3.0,2.0,0e9919a5,0,1,0,0,5,1,8,8,False,False,5.0,6,1,30.0,Felix Brych,European Championship
+2020,2021-06-14,Group stage,Poland,Slovakia,1.0,2.0,d35ad7a8,2,1,1,0,5,2,15,13,False,False,3.0,7,4,84.0,Ovidiu Hațegan,European Championship
+2020,2021-06-14,Group stage,Scotland,Czech Republic,0.0,2.0,6599f4ab,0,0,0,0,6,6,6,6,False,False,2.0,12,0,0.0,Daniel Siebert,European Championship
+2020,2021-06-14,Group stage,Spain,Sweden,0.0,0.0,107fd412,0,1,0,0,6,1,7,11,False,False,0.0,7,1,0.0,Slavko Vinčič,European Championship
+2020,2021-06-15,Group stage,France,Germany,1.0,0.0,95d34c87,0,1,0,0,3,5,7,10,False,False,1.0,8,1,8.0,Carlos del Cerro,European Championship
+2020,2021-06-15,Group stage,Hungary,Portugal,0.0,3.0,ba500d70,2,1,0,0,0,6,10,15,False,False,3.0,6,3,54.0,Cüneyt Çakιr,European Championship
+2020,2021-06-16,Group stage,Finland,Russia,0.0,1.0,2c48acb2,2,3,0,0,1,4,12,12,False,False,1.0,5,5,25.0,Danny Makkelie,European Championship
+2020,2021-06-16,Group stage,Italy,Switzerland,3.0,0.0,caa84313,0,2,0,0,3,2,10,12,False,False,3.0,5,2,30.0,Sergey Karasev,European Championship
+2020,2021-06-16,Group stage,Turkey,Wales,0.0,2.0,f09b64db,2,2,0,0,10,7,18,7,False,False,2.0,17,4,136.0,Artur Soares Dias,European Championship
+2020,2021-06-17,Group stage,Denmark,Belgium,1.0,2.0,25bb1fa2,3,1,0,0,2,4,8,14,False,False,3.0,6,4,72.0,Björn Kuipers,European Championship
+2020,2021-06-17,Group stage,Netherlands,Austria,2.0,0.0,f3d39a29,1,2,0,0,2,5,13,9,False,False,2.0,7,3,42.0,Orel Grinfeeld,European Championship
+2020,2021-06-17,Group stage,Ukraine,N. Macedonia,2.0,1.0,e0eed6e8,1,2,0,0,5,5,9,9,False,False,3.0,10,3,90.0,Fernando Rapallini,European Championship
+2020,2021-06-18,Group stage,Croatia,Czech Republic,1.0,1.0,1e930db9,1,3,0,0,4,4,7,12,False,False,2.0,8,4,64.0,Carlos del Cerro,European Championship
+2020,2021-06-18,Group stage,England,Scotland,0.0,0.0,027b11df,0,2,0,0,6,5,13,14,False,False,0.0,11,2,0.0,Antonio Mateu Lahoz,European Championship
+2020,2021-06-18,Group stage,Sweden,Slovakia,1.0,0.0,c6533f76,1,3,0,0,7,6,16,7,False,False,1.0,13,4,52.0,Daniel Siebert,European Championship
+2020,2021-06-19,Group stage,Hungary,France,1.0,1.0,988198ba,1,1,0,0,1,3,17,15,False,False,2.0,4,2,16.0,Michael Oliver,European Championship
+2020,2021-06-19,Group stage,Portugal,Germany,2.0,4.0,e33c4403,0,2,0,0,6,3,5,15,False,False,6.0,9,2,108.0,Anthony Taylor,European Championship
+2020,2021-06-19,Group stage,Spain,Poland,1.0,1.0,14874531,2,4,0,0,7,1,16,17,False,False,2.0,8,6,96.0,Daniele Orsato,European Championship
+2020,2021-06-20,Group stage,Italy,Wales,1.0,0.0,b756c626,1,2,0,1,7,1,14,12,False,False,1.0,8,4,32.0,Ovidiu Hațegan,European Championship
+2020,2021-06-20,Group stage,Switzerland,Turkey,3.0,1.0,fa85a731,1,3,0,0,8,8,14,20,False,False,4.0,16,4,256.0,Slavko Vinčič,European Championship
+2020,2021-06-21,Group stage,Finland,Belgium,0.0,2.0,bd35edec,0,0,0,0,0,5,6,10,False,False,2.0,5,0,0.0,Felix Brych,European Championship
+2020,2021-06-21,Group stage,N. Macedonia,Netherlands,0.0,3.0,841065f5,4,0,0,0,5,7,8,13,False,False,3.0,12,4,144.0,István Kovács,European Championship
+2020,2021-06-21,Group stage,Russia,Denmark,1.0,4.0,04188c5c,2,1,0,0,1,7,15,16,False,False,5.0,8,3,120.0,Clément Turpin,European Championship
+2020,2021-06-21,Group stage,Ukraine,Austria,0.0,1.0,7ed46abd,0,0,0,0,4,9,10,11,False,False,1.0,13,0,0.0,Cüneyt Çakιr,European Championship
+2020,2021-06-22,Group stage,Croatia,Scotland,3.0,1.0,0305e42c,1,1,0,0,5,7,10,8,False,False,4.0,12,2,96.0,Fernando Rapallini,European Championship
+2020,2021-06-22,Group stage,Czech Republic,England,0.0,1.0,20b1972b,1,0,0,0,4,6,10,11,False,False,1.0,10,1,10.0,Artur Soares Dias,European Championship
+2020,2021-06-23,Group stage,Germany,Hungary,2.0,2.0,a4888546,2,3,0,0,6,1,8,10,False,False,4.0,7,5,140.0,Sergey Karasev,European Championship
+2020,2021-06-23,Group stage,Portugal,France,2.0,2.0,5a7e53d8,0,4,0,0,0,1,9,15,False,False,4.0,1,4,16.0,Antonio Mateu Lahoz,European Championship
+2020,2021-06-23,Group stage,Slovakia,Spain,0.0,5.0,7b46b857,2,2,0,0,0,7,14,7,False,False,5.0,7,4,140.0,Björn Kuipers,European Championship
+2020,2021-06-23,Group stage,Sweden,Poland,3.0,2.0,ee6087f4,1,2,0,0,6,10,13,13,False,False,5.0,16,3,240.0,Michael Oliver,European Championship
+2020,2021-06-26,Round of 16,Italy,Austria,2.0,1.0,c2b13049,2,3,0,0,4,3,10,22,False,False,3.0,7,5,105.0,Anthony Taylor,European Championship
+2020,2021-06-26,Round of 16,Wales,Denmark,0.0,4.0,b5659aa3,4,0,1,0,1,9,11,8,False,False,4.0,10,5,200.0,Daniel Siebert,European Championship
+2020,2021-06-27,Round of 16,Belgium,Portugal,1.0,0.0,ad36a434,2,3,0,0,0,3,14,9,False,False,1.0,3,5,15.0,Felix Brych,European Championship
+2020,2021-06-27,Round of 16,Netherlands,Czech Republic,0.0,2.0,437cb418,2,1,1,0,6,5,6,14,False,False,2.0,11,4,88.0,Sergey Karasev,European Championship
+2020,2021-06-28,Round of 16,Croatia,Spain,3.0,5.0,799efcfc,2,0,0,0,1,8,26,10,False,False,8.0,9,2,144.0,Cüneyt Çakιr,European Championship
+2020,2021-06-28,Round of 16,France,Switzerland,3.0,3.0,2c7de26e,3,4,0,0,8,5,14,13,True,True,6.0,13,7,546.0,Fernando Rapallini,European Championship
+2020,2021-06-29,Round of 16,England,Germany,2.0,0.0,415ff832,3,2,0,0,3,3,11,9,False,False,2.0,6,5,60.0,Danny Makkelie,European Championship
+2020,2021-06-29,Round of 16,Sweden,Ukraine,1.0,2.0,e07bc7d3,2,2,1,0,6,2,11,7,False,False,3.0,8,5,120.0,Daniele Orsato,European Championship
+2020,2021-07-02,Quarter-finals,Belgium,Italy,1.0,2.0,35a9c7dc,1,2,0,0,9,5,16,13,False,False,3.0,14,3,126.0,Slavko Vinčič,European Championship
+2020,2021-07-02,Quarter-finals,Switzerland,Spain,1.0,1.0,18c4e831,2,1,1,0,9,13,15,14,True,True,2.0,22,4,176.0,Michael Oliver,European Championship
+2020,2021-07-03,Quarter-finals,Czech Republic,Denmark,1.0,2.0,1a1e61fe,2,0,0,0,9,7,9,10,False,False,3.0,16,2,96.0,Björn Kuipers,European Championship
+2020,2021-07-03,Quarter-finals,Ukraine,England,0.0,4.0,8589d5c5,0,0,0,0,3,2,10,4,False,False,4.0,5,0,0.0,Felix Brych,European Championship
+2020,2021-07-06,Semi-finals,Italy,Spain,1.0,1.0,997fefb3,2,1,0,0,1,6,17,18,True,True,2.0,7,3,42.0,Felix Brych,European Championship
+2020,2021-07-07,Semi-finals,England,Denmark,2.0,1.0,3c9e014a,1,1,0,0,6,5,10,21,False,False,3.0,11,2,66.0,Danny Makkelie,European Championship
+2020,2021-07-11,Final,Italy,England,1.0,1.0,56228480,5,1,0,0,3,5,22,13,True,True,2.0,8,6,96.0,Björn Kuipers,European Championship
+2022,2022-11-20,Group stage,Qatar,Ecuador,0.0,2.0,1b2886ce,4,2,0,0,1,3,15,15,False,False,2.0,4,6,48.0,Daniele Orsato,World Cup
+2022,2022-11-21,Group stage,England,Iran,6.0,2.0,d8a472c1,0,2,0,0,8,0,9,14,False,False,8.0,8,2,128.0,Raphael Claus,World Cup
+2022,2022-11-21,Group stage,Senegal,Netherlands,0.0,2.0,21eb041c,2,1,0,0,6,7,13,13,False,False,2.0,13,3,78.0,Wilton Sampaio,World Cup
+2022,2022-11-21,Group stage,United States,Wales,1.0,1.0,9de4c4cc,4,2,0,0,5,3,15,10,False,False,2.0,8,6,96.0,Abdulrahman Ibrahim Al Jassim,World Cup
+2022,2022-11-22,Group stage,Argentina,Saudi Arabia,1.0,2.0,109ad6ba,0,6,0,0,9,2,7,21,False,False,3.0,11,6,198.0,Slavko Vinčič,World Cup
+2022,2022-11-22,Group stage,Denmark,Tunisia,0.0,0.0,ea069a7f,2,1,0,0,11,9,9,10,False,False,0.0,20,3,0.0,César Arturo Ramos,World Cup
+2022,2022-11-22,Group stage,France,Australia,4.0,1.0,539719fd,0,3,0,0,8,1,5,11,False,False,5.0,9,3,135.0,Victor Gomes,World Cup
+2022,2022-11-22,Group stage,Mexico,Poland,0.0,0.0,0f944fec,2,1,0,0,6,5,14,15,False,False,0.0,11,3,0.0,Chris Beath,World Cup
+2022,2022-11-23,Group stage,Belgium,Canada,1.0,0.0,89c39a0a,3,2,0,0,4,4,11,14,False,False,1.0,8,5,40.0,Janny Sikazwe,World Cup
+2022,2022-11-23,Group stage,Germany,Japan,1.0,2.0,a3556b5a,0,0,0,0,6,6,6,14,False,False,3.0,12,0,0.0,Iván Barton,World Cup
+2022,2022-11-23,Group stage,Morocco,Croatia,0.0,0.0,197b3688,1,0,0,0,0,5,16,11,False,False,0.0,5,1,0.0,Fernando Rapallini,World Cup
+2022,2022-11-23,Group stage,Spain,Costa Rica,7.0,0.0,dadb1883,0,2,0,0,5,0,8,12,False,False,7.0,5,2,70.0,Mohammed Abdulla Hassan,World Cup
+2022,2022-11-24,Group stage,Brazil,Serbia,2.0,0.0,457c3fcf,0,3,0,0,6,4,7,12,False,False,2.0,10,3,60.0,Alireza Faghani,World Cup
+2022,2022-11-24,Group stage,Portugal,Ghana,3.0,2.0,6a84c686,2,4,0,0,3,3,14,19,False,False,5.0,6,6,180.0,Ismail Elfath,World Cup
+2022,2022-11-24,Group stage,Switzerland,Cameroon,1.0,0.0,2bfd41ff,2,1,0,0,11,5,12,10,False,False,1.0,16,3,48.0,Facundo Tello,World Cup
+2022,2022-11-24,Group stage,Uruguay,South Korea,0.0,0.0,878d5504,1,2,0,0,4,3,7,10,False,False,0.0,7,3,0.0,Clément Turpin,World Cup
+2022,2022-11-25,Group stage,England,United States,0.0,0.0,cde0c30b,0,0,0,0,3,7,9,15,False,False,0.0,10,0,0.0,Jesús Valenzuela,World Cup
+2022,2022-11-25,Group stage,Netherlands,Ecuador,1.0,1.0,dd581756,0,1,0,0,2,5,15,12,False,False,2.0,7,1,14.0,Mustapha Ghorbal,World Cup
+2022,2022-11-25,Group stage,Qatar,Senegal,1.0,3.0,bfc75e3c,3,3,0,0,6,6,7,12,False,False,4.0,12,6,288.0,Antonio Matéu,World Cup
+2022,2022-11-25,Group stage,Wales,Iran,0.0,2.0,ff2407b2,1,2,1,0,2,7,9,10,False,False,2.0,9,4,72.0,Mario Escobar,World Cup
+2022,2022-11-26,Group stage,Argentina,Mexico,2.0,0.0,d28d6c80,1,4,0,0,4,2,15,19,False,False,2.0,6,5,60.0,Daniele Orsato,World Cup
+2022,2022-11-26,Group stage,France,Denmark,2.0,1.0,6ff09149,1,2,0,0,6,4,4,9,False,False,3.0,10,3,90.0,Szymon Marciniak,World Cup
+2022,2022-11-26,Group stage,Poland,Saudi Arabia,2.0,0.0,8c7e37e6,3,2,0,0,4,5,18,15,False,False,2.0,9,5,90.0,Wilton Sampaio,World Cup
+2022,2022-11-26,Group stage,Tunisia,Australia,0.0,1.0,b105bb5f,3,0,0,0,5,2,16,15,False,False,1.0,7,3,21.0,Daniel Siebert,World Cup
+2022,2022-11-27,Group stage,Belgium,Morocco,0.0,2.0,18d1b45b,1,1,0,0,9,1,10,14,False,False,2.0,10,2,40.0,César Arturo Ramos,World Cup
+2022,2022-11-27,Group stage,Croatia,Canada,4.0,1.0,6bac97fe,2,2,0,0,5,2,13,5,False,False,5.0,7,4,140.0,Andrés Matonte,World Cup
+2022,2022-11-27,Group stage,Japan,Costa Rica,0.0,1.0,d56309f4,3,3,0,0,5,0,22,9,False,False,1.0,5,6,30.0,Michael Oliver,World Cup
+2022,2022-11-27,Group stage,Spain,Germany,1.0,1.0,9397f79c,1,3,0,0,6,5,13,11,False,False,2.0,11,4,88.0,Danny Makkelie,World Cup
+2022,2022-11-28,Group stage,Brazil,Switzerland,1.0,0.0,459240ee,1,1,0,0,8,3,10,17,False,False,1.0,11,2,22.0,Iván Barton,World Cup
+2022,2022-11-28,Group stage,Cameroon,Serbia,3.0,3.0,fbe95cd2,2,2,0,0,4,3,8,13,False,False,6.0,7,4,168.0,Mohammed Abdulla Hassan,World Cup
+2022,2022-11-28,Group stage,South Korea,Ghana,2.0,3.0,38069bed,2,2,1,0,12,5,13,9,False,False,5.0,17,5,425.0,Anthony Taylor,World Cup
+2022,2022-11-28,Group stage,Portugal,Uruguay,2.0,0.0,90fded8a,3,2,0,0,6,2,10,16,False,False,2.0,8,5,80.0,Alireza Faghani,World Cup
+2022,2022-11-29,Group stage,Ecuador,Senegal,1.0,2.0,d33eadf0,0,1,0,0,3,6,23,11,False,False,3.0,9,1,27.0,Clément Turpin,World Cup
+2022,2022-11-29,Group stage,Iran,United States,0.0,1.0,dcd3b239,3,1,0,0,1,5,14,10,False,False,1.0,6,4,24.0,Antonio Matéu,World Cup
+2022,2022-11-29,Group stage,Netherlands,Qatar,2.0,0.0,af95872a,1,0,0,0,4,2,19,9,False,False,2.0,6,1,12.0,Bakary Papa Gassama,World Cup
+2022,2022-11-29,Group stage,Wales,England,0.0,3.0,e51b7436,2,0,0,0,1,6,16,9,False,False,3.0,7,2,42.0,Slavko Vinčič,World Cup
+2022,2022-11-30,Group stage,Australia,Denmark,1.0,0.0,773b0721,2,1,0,0,2,6,11,10,False,False,1.0,8,3,24.0,Mustapha Ghorbal,World Cup
+2022,2022-11-30,Group stage,Poland,Argentina,0.0,2.0,aaa7a69d,1,1,0,0,1,9,6,11,False,False,2.0,10,2,40.0,Danny Makkelie,World Cup
+2022,2022-11-30,Group stage,Saudi Arabia,Mexico,1.0,2.0,6d3741e9,6,1,0,0,1,8,20,18,False,False,3.0,9,7,189.0,Michael Oliver,World Cup
+2022,2022-11-30,Group stage,Tunisia,France,1.0,0.0,acb6de0f,1,0,0,0,7,8,14,6,False,False,1.0,15,1,15.0,Matt Conger,World Cup
+2022,2022-12-01,Group stage,Canada,Morocco,1.0,2.0,46776714,4,0,0,0,6,2,14,14,False,False,3.0,8,4,96.0,Raphael Claus,World Cup
+2022,2022-12-01,Group stage,Costa Rica,Germany,2.0,4.0,6a2a024f,1,0,0,0,1,14,3,9,False,False,6.0,15,1,90.0,Stéphanie Frappart,World Cup
+2022,2022-12-01,Group stage,Croatia,Belgium,0.0,0.0,ea7139a8,0,1,0,0,2,4,7,9,False,False,0.0,6,1,0.0,Anthony Taylor,World Cup
+2022,2022-12-01,Group stage,Japan,Spain,2.0,1.0,f04828fe,3,0,0,0,0,2,9,6,False,False,3.0,2,3,18.0,Victor Gomes,World Cup
+2022,2022-12-02,Group stage,Cameroon,Brazil,1.0,0.0,5a2cc3c5,5,2,1,0,3,11,14,14,False,False,1.0,14,8,112.0,Ismail Elfath,World Cup
+2022,2022-12-02,Group stage,Ghana,Uruguay,0.0,2.0,0b62abf2,2,5,0,0,5,2,18,11,False,False,2.0,7,7,98.0,Daniel Siebert,World Cup
+2022,2022-12-02,Group stage,South Korea,Portugal,2.0,1.0,341e520f,2,0,0,0,5,4,9,10,False,False,3.0,9,2,54.0,Facundo Tello,World Cup
+2022,2022-12-02,Group stage,Serbia,Switzerland,2.0,3.0,cef4945f,7,4,0,0,2,0,18,14,False,False,5.0,2,11,110.0,Fernando Rapallini,World Cup
+2022,2022-12-03,Round of 16,Argentina,Australia,2.0,1.0,4319c4bd,0,2,0,0,1,3,8,15,False,False,3.0,4,2,24.0,Szymon Marciniak,World Cup
+2022,2022-12-03,Round of 16,Netherlands,United States,3.0,1.0,249ccad4,2,0,0,0,4,5,10,5,False,False,4.0,9,2,72.0,Wilton Sampaio,World Cup
+2022,2022-12-04,Round of 16,England,Senegal,3.0,0.0,a323f701,0,1,0,0,3,3,16,12,False,False,3.0,6,1,18.0,Iván Barton,World Cup
+2022,2022-12-04,Round of 16,France,Poland,3.0,1.0,430fc603,1,2,0,0,7,1,10,8,False,False,4.0,8,3,96.0,Jesús Valenzuela,World Cup
+2022,2022-12-05,Round of 16,Brazil,South Korea,4.0,1.0,bc6994e8,0,1,0,0,5,4,8,13,False,False,5.0,9,1,45.0,Clément Turpin,World Cup
+2022,2022-12-05,Round of 16,Japan,Croatia,1.0,1.0,4e74d7ed,0,2,0,0,8,5,13,16,True,True,2.0,13,2,52.0,Ismail Elfath,World Cup
+2022,2022-12-06,Round of 16,Morocco,Spain,0.0,0.0,4c0aa6b0,1,1,0,0,0,8,15,14,True,True,0.0,8,2,0.0,Fernando Rapallini,World Cup
+2022,2022-12-06,Round of 16,Portugal,Switzerland,6.0,1.0,799eb586,0,2,0,0,6,6,12,10,False,False,7.0,12,2,168.0,César Arturo Ramos,World Cup
+2022,2022-12-09,Quarter-finals,Croatia,Brazil,1.0,1.0,bb30147d,2,3,0,0,3,7,22,24,True,True,2.0,10,5,100.0,Michael Oliver,World Cup
+2022,2022-12-09,Quarter-finals,Netherlands,Argentina,2.0,2.0,9fd14983,8,10,1,0,2,8,30,18,True,True,4.0,10,19,760.0,Antonio Matéu,World Cup
+2022,2022-12-10,Quarter-finals,England,France,1.0,2.0,6d4b58f5,1,3,0,0,5,2,10,14,False,False,3.0,7,4,84.0,Wilton Sampaio,World Cup
+2022,2022-12-10,Quarter-finals,Morocco,Portugal,1.0,0.0,170c8725,3,1,1,0,3,9,15,9,False,False,1.0,12,5,60.0,Facundo Tello,World Cup
+2022,2022-12-13,Semi-finals,Argentina,Croatia,3.0,0.0,0b527037,2,2,0,0,2,4,15,8,False,False,3.0,6,4,72.0,Daniele Orsato,World Cup
+2022,2022-12-14,Semi-finals,France,Morocco,2.0,0.0,85c72a0a,0,1,0,0,2,3,10,11,False,False,2.0,5,1,10.0,César Arturo Ramos,World Cup
+2022,2022-12-17,Third-place match,Croatia,Morocco,2.0,1.0,9d73d381,0,2,0,0,6,3,13,11,False,False,3.0,9,2,54.0,Abdulrahman Ibrahim Al Jassim,World Cup
+2022,2022-12-18,Final,Argentina,France,3.0,3.0,7140acae,5,3,0,0,6,5,26,19,True,True,6.0,11,8,528.0,Szymon Marciniak,World Cup
+2024,2024-06-14,Group stage,Germany,Scotland,5.0,1.0,bd775264,2,1,0,1,5,0,15,9,False,False,6.0,5,4,120.0,Clément Turpin,European Championship
+2024,2024-06-15,Group stage,Hungary,Switzerland,1.0,3.0,c15ec4e7,2,3,0,0,2,6,9,13,False,False,4.0,8,5,160.0,Slavko Vinčič,European Championship
+2024,2024-06-15,Group stage,Italy,Albania,2.0,1.0,4891e62c,2,2,0,0,5,3,7,7,False,False,3.0,8,4,96.0,Felix Zwayer,European Championship
+2024,2024-06-15,Group stage,Spain,Croatia,3.0,0.0,b996c4de,1,0,0,0,5,0,14,13,False,False,3.0,5,1,15.0,Michael Oliver,European Championship
+2024,2024-06-16,Group stage,Poland,Netherlands,1.0,2.0,923de563,0,1,0,0,3,6,10,8,False,False,3.0,9,1,27.0,Artur Soares Dias,European Championship
+2024,2024-06-16,Group stage,Serbia,England,0.0,1.0,94c752b7,3,0,0,0,2,1,19,8,False,False,1.0,3,3,9.0,Daniele Orsato,European Championship
+2024,2024-06-16,Group stage,Slovenia,Denmark,1.0,1.0,e58cc259,2,1,0,0,5,9,12,9,False,False,2.0,14,3,84.0,Sandro Schärer,European Championship
+2024,2024-06-17,Group stage,Austria,France,0.0,1.0,3d8961eb,5,2,0,0,6,2,18,10,False,False,1.0,8,7,56.0,Jesús Gil,European Championship
+2024,2024-06-17,Group stage,Belgium,Slovakia,0.0,1.0,5bda83ea,3,1,0,0,5,7,14,10,False,False,1.0,12,4,48.0,Halil Umut Meler,European Championship
+2024,2024-06-17,Group stage,Romania,Ukraine,3.0,0.0,67c17ad9,1,1,0,0,4,8,9,8,False,False,3.0,12,2,72.0,Glenn Nyberg,European Championship
+2024,2024-06-18,Group stage,Portugal,Czech Republic,2.0,1.0,5e8192b8,2,1,0,0,13,0,6,9,False,False,3.0,13,3,117.0,Marco Guida,European Championship
+2024,2024-06-18,Group stage,Turkey,Georgia,3.0,1.0,36e9e40e,2,1,0,0,5,5,10,7,False,False,4.0,10,3,120.0,Facundo Tello,European Championship
+2024,2024-06-19,Group stage,Croatia,Albania,2.0,2.0,30406358,1,3,0,0,3,1,15,11,False,False,4.0,4,4,64.0,François Letexier,European Championship
+2024,2024-06-19,Group stage,Germany,Hungary,2.0,0.0,248233a8,2,4,0,0,11,7,12,10,False,False,2.0,18,6,216.0,Danny Makkelie,European Championship
+2024,2024-06-19,Group stage,Scotland,Switzerland,1.0,1.0,5ef87a15,3,2,0,0,5,8,11,11,False,False,2.0,13,5,130.0,Ivan Kružliak,European Championship
+2024,2024-06-20,Group stage,Denmark,England,1.0,1.0,6cfeccb2,3,1,0,0,4,2,13,5,False,False,2.0,6,4,48.0,Artur Soares Dias,European Championship
+2024,2024-06-20,Group stage,Slovenia,Serbia,1.0,1.0,874a95ef,2,4,0,0,4,9,13,8,False,False,2.0,13,6,156.0,István Kovács,European Championship
+2024,2024-06-20,Group stage,Spain,Italy,1.0,0.0,3f7c6e94,3,2,0,0,5,2,17,14,False,False,1.0,7,5,35.0,Slavko Vinčič,European Championship
+2024,2024-06-21,Group stage,Netherlands,France,0.0,0.0,ad8d106c,1,0,0,0,3,6,13,8,False,False,0.0,9,1,0.0,Anthony Taylor,European Championship
+2024,2024-06-21,Group stage,Poland,Austria,1.0,3.0,298d4d8f,4,2,0,0,4,3,15,15,False,False,4.0,7,6,168.0,Halil Umut Meler,European Championship
+2024,2024-06-21,Group stage,Slovakia,Ukraine,1.0,2.0,73849328,0,1,0,0,4,4,9,12,False,False,3.0,8,1,24.0,Michael Oliver,European Championship
+2024,2024-06-22,Group stage,Belgium,Romania,2.0,0.0,e0d67eb9,1,2,0,0,7,7,9,11,False,False,2.0,14,3,84.0,Szymon Marciniak,European Championship
+2024,2024-06-22,Group stage,Georgia,Czech Republic,1.0,1.0,aab219f9,4,5,0,0,5,11,12,17,False,False,2.0,16,9,288.0,Daniel Siebert,European Championship
+2024,2024-06-22,Group stage,Turkey,Portugal,0.0,3.0,5448c54c,3,2,0,0,9,1,16,8,False,False,3.0,10,5,150.0,Felix Zwayer,European Championship
+2024,2024-06-23,Group stage,Scotland,Hungary,0.0,1.0,2351343a,1,5,0,0,2,6,16,13,False,False,1.0,8,6,48.0,Facundo Tello,European Championship
+2024,2024-06-23,Group stage,Switzerland,Germany,1.0,1.0,14e2c55d,3,1,0,0,2,9,14,12,False,False,2.0,11,4,88.0,Daniele Orsato,European Championship
+2024,2024-06-24,Group stage,Albania,Spain,0.0,1.0,fde83534,2,1,0,0,2,6,6,15,False,False,1.0,8,3,24.0,Glenn Nyberg,European Championship
+2024,2024-06-24,Group stage,Croatia,Italy,1.0,1.0,015e81b4,6,3,0,0,2,11,18,6,False,False,2.0,13,9,234.0,Danny Makkelie,European Championship
+2024,2024-06-25,Group stage,Denmark,Serbia,0.0,0.0,5c5484a4,2,2,0,0,8,2,11,5,False,False,0.0,10,4,0.0,François Letexier,European Championship
+2024,2024-06-25,Group stage,England,Slovenia,0.0,0.0,7f111a22,3,2,0,0,6,0,11,9,False,False,0.0,6,5,0.0,Clément Turpin,European Championship
+2024,2024-06-25,Group stage,France,Poland,1.0,1.0,c410511b,1,4,0,0,11,3,12,15,False,False,2.0,14,5,140.0,Marco Guida,European Championship
+2024,2024-06-25,Group stage,Netherlands,Austria,2.0,3.0,031f8ef3,0,3,0,0,5,2,10,16,False,False,5.0,7,3,105.0,Ivan Kružliak,European Championship
+2024,2024-06-26,Group stage,Czech Republic,Turkey,1.0,2.0,8824c255,7,11,2,0,3,7,16,9,False,False,3.0,10,20,600.0,István Kovács,European Championship
+2024,2024-06-26,Group stage,Georgia,Portugal,2.0,0.0,24322b1d,1,3,0,0,1,11,6,11,False,False,2.0,12,4,96.0,Sandro Schärer,European Championship
+2024,2024-06-26,Group stage,Slovakia,Romania,1.0,1.0,00199be7,1,4,0,0,5,1,11,10,False,False,2.0,6,5,60.0,Daniel Siebert,European Championship
+2024,2024-06-26,Group stage,Ukraine,Belgium,0.0,0.0,2f0d1c11,1,1,0,0,3,7,9,8,False,False,0.0,10,2,0.0,Anthony Taylor,European Championship
+2024,2024-06-29,Round of 16,Germany,Denmark,2.0,0.0,c7429dd6,1,3,0,0,6,6,7,15,False,False,2.0,12,4,96.0,Michael Oliver,European Championship
+2024,2024-06-29,Round of 16,Switzerland,Italy,2.0,0.0,9b4d5970,0,3,0,0,4,6,9,15,False,False,2.0,10,3,60.0,Szymon Marciniak,European Championship
+2024,2024-06-30,Round of 16,England,Slovakia,2.0,1.0,2b26dc4f,3,6,0,0,9,1,12,19,False,False,3.0,10,9,270.0,Halil Umut Meler,European Championship
+2024,2024-06-30,Round of 16,Spain,Georgia,4.0,1.0,87e35d10,1,1,0,0,13,3,11,5,False,False,5.0,16,2,160.0,François Letexier,European Championship
+2024,2024-07-01,Round of 16,France,Belgium,1.0,0.0,ffae1046,3,3,0,0,5,2,7,10,False,False,1.0,7,6,42.0,Glenn Nyberg,European Championship
+2024,2024-07-01,Round of 16,Portugal,Slovenia,0.0,0.0,fd6c3c0d,2,5,0,1,11,4,8,17,True,True,0.0,15,8,0.0,Daniele Orsato,European Championship
+2024,2024-07-02,Round of 16,Austria,Turkey,1.0,2.0,f575ef3e,2,2,0,0,10,4,12,5,False,False,3.0,14,4,168.0,Artur Soares Dias,European Championship
+2024,2024-07-02,Round of 16,Romania,Netherlands,0.0,3.0,82b4d2f5,2,2,0,0,4,13,8,9,False,False,3.0,17,4,204.0,Felix Zwayer,European Championship
+2024,2024-07-05,Quarter-finals,Portugal,France,0.0,0.0,8e55d3ab,1,1,0,0,11,4,8,13,True,True,0.0,15,2,0.0,Michael Oliver,European Championship
+2024,2024-07-05,Quarter-finals,Spain,Germany,2.0,1.0,0baf4cfa,8,8,1,0,1,5,17,22,False,False,3.0,6,17,306.0,Anthony Taylor,European Championship
+2024,2024-07-06,Quarter-finals,England,Switzerland,1.0,1.0,54e21415,1,2,0,0,4,3,8,13,True,True,2.0,7,3,42.0,Daniele Orsato,European Championship
+2024,2024-07-06,Quarter-finals,Netherlands,Turkey,2.0,1.0,e8c79df4,4,2,0,1,3,7,16,7,False,False,3.0,10,7,210.0,Clément Turpin,European Championship
+2024,2024-07-09,Semi-finals,Spain,France,2.0,1.0,34d4d9d2,2,2,0,0,4,6,9,14,False,False,3.0,10,4,120.0,Slavko Vinčič,European Championship
+2024,2024-07-10,Semi-finals,Netherlands,England,1.0,2.0,dbff0752,3,3,0,0,3,0,11,6,False,False,3.0,3,6,54.0,Felix Zwayer,European Championship
+2024,2024-07-14,Final,Spain,England,2.0,1.0,e307ecc0,1,3,0,0,10,2,11,5,False,False,3.0,12,4,144.0,François Letexier,European Championship

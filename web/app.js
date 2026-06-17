@@ -3,6 +3,8 @@
 const API = {
   results: "./data/expected_points.json",
   resultsOdds: "./data/expected_points_odds_only.json",
+  resultsCurrent: "./data/expected_points_current.json",
+  resultsCurrentOdds: "./data/expected_points_current_odds_only.json",
   tournament: "./data/tournament.json",
   odds: "./data/odds_oddschecker.json",
 };
@@ -10,7 +12,11 @@ const API = {
 let state = {
   results: null,
   resultsOdds: null,
+  resultsCurrent: null,
+  resultsCurrentOdds: null,
   hasCompare: false,
+  hasCurrent: false,
+  evView: "pre",
   tournament: null,
   odds: null,
   teamToGroup: {},
@@ -21,6 +27,71 @@ let state = {
   cmpSortKey: "pts_diff",
   cmpSortAsc: false,
 };
+
+const RANKINGS_COLS = {
+  pre: [
+    { key: "display_rank", label: "#" },
+    { key: "team", label: "Team" },
+    { key: "group", label: "Grp" },
+    { key: "expected_points_ml", label: "E[Pts] Pre" },
+    { key: "expected_points_odds", label: "E[Pts] Odds" },
+    { key: "pts_diff", label: "Δ ML−Odds" },
+    { key: "p_champion", label: "P(W)" },
+    { key: "p_semi_final", label: "P(SF)" },
+    { key: "p_quarter_final", label: "P(QF)" },
+    { key: "p_round_of_16", label: "P(R16)" },
+    { key: "p_round_of_32", label: "P(R32)" },
+    { key: "p_group_1", label: "P(1st)" },
+    { key: "p_bonus_goals", label: "P(bonus)" },
+  ],
+  current: [
+    { key: "display_rank", label: "#" },
+    { key: "team", label: "Team" },
+    { key: "group", label: "Grp" },
+    { key: "expected_points_current", label: "E[Pts] Current" },
+    { key: "expected_points_ml", label: "E[Pts] Pre" },
+    { key: "pts_current_delta", label: "Δ vs Pre" },
+    { key: "p_champion", label: "P(W)" },
+    { key: "p_semi_final", label: "P(SF)" },
+    { key: "p_quarter_final", label: "P(QF)" },
+    { key: "p_round_of_16", label: "P(R16)" },
+    { key: "p_round_of_32", label: "P(R32)" },
+    { key: "p_group_1", label: "P(1st)" },
+    { key: "p_bonus_goals", label: "P(bonus)" },
+  ],
+};
+
+function isCurrentView() {
+  return state.evView === "current" && state.hasCurrent;
+}
+
+function activeStats(r) {
+  if (isCurrentView() && r.current_row) {
+    return { ...r, ...r.current_row };
+  }
+  return r;
+}
+
+function primaryPts(r) {
+  if (isCurrentView()) return r.expected_points_current;
+  return r.expected_points_ml;
+}
+
+function updateDisplayRanks() {
+  const key = isCurrentView() ? "expected_points_current" : "expected_points_ml";
+  const sorted = [...state.enriched].sort((a, b) => (b[key] ?? 0) - (a[key] ?? 0));
+  const rankMap = Object.fromEntries(sorted.map((row, i) => [row.team, i + 1]));
+  state.enriched.forEach((row) => {
+    row.display_rank = rankMap[row.team];
+  });
+  if (isCurrentView()) {
+    state.enriched.sort((a, b) => a.display_rank - b.display_rank);
+  }
+}
+
+function sortedEnriched() {
+  return [...state.enriched].sort((a, b) => a.display_rank - b.display_rank);
+}
 
 Chart.defaults.color = "#8b97a8";
 Chart.defaults.borderColor = "#252d3a";
@@ -252,9 +323,27 @@ async function loadData() {
     /* optional comparison file */
   }
 
+  let resultsCurrent = null;
+  let resultsCurrentOdds = null;
+  try {
+    const r = await fetch(API.resultsCurrent, { credentials: "same-origin" });
+    if (r.ok) resultsCurrent = await r.json();
+  } catch (_) {
+    /* optional current EV file */
+  }
+  try {
+    const r = await fetch(API.resultsCurrentOdds, { credentials: "same-origin" });
+    if (r.ok) resultsCurrentOdds = await r.json();
+  } catch (_) {
+    /* optional */
+  }
+
   state.results = results;
   state.resultsOdds = resultsOdds;
+  state.resultsCurrent = resultsCurrent;
+  state.resultsCurrentOdds = resultsCurrentOdds;
   state.hasCompare = !!resultsOdds;
+  state.hasCurrent = !!resultsCurrent;
   state.tournament = tournament;
   state.odds = odds;
   state.teamToGroup = {};
@@ -268,11 +357,21 @@ async function loadData() {
   const oddsRank = resultsOdds
     ? Object.fromEntries(resultsOdds.teams.map((t, i) => [t.team, i + 1]))
     : {};
+  const currentByTeam = resultsCurrent
+    ? Object.fromEntries(resultsCurrent.teams.map((t) => [t.team, t]))
+    : {};
+  const currentOddsByTeam = resultsCurrentOdds
+    ? Object.fromEntries(resultsCurrentOdds.teams.map((t) => [t.team, t]))
+    : {};
 
   state.enriched = results.teams.map((row, i) => {
     const oddsRow = oddsByTeam[row.team];
+    const currentRow = currentByTeam[row.team];
+    const currentOddsRow = currentOddsByTeam[row.team];
     const epMl = row.expected_points;
     const epOdds = oddsRow?.expected_points ?? null;
+    const epCurrent = currentRow?.expected_points ?? null;
+    const epCurrentOdds = currentOddsRow?.expected_points ?? null;
     const pwMl = row.p_champion;
     const pwOdds = oddsRow?.p_champion ?? null;
     return {
@@ -287,13 +386,20 @@ async function loadData() {
         : null,
       expected_points_ml: epMl,
       expected_points_odds: epOdds,
+      expected_points_current: epCurrent,
+      expected_points_current_odds: epCurrentOdds,
       pts_diff: epOdds != null ? epMl - epOdds : null,
+      pts_current_delta: epCurrent != null ? epCurrent - epMl : null,
       p_champion_ml: pwMl,
       p_champion_odds: pwOdds,
       pw_diff: pwOdds != null ? pwMl - pwOdds : null,
       odds_row: oddsRow,
+      current_row: currentRow,
     };
   });
+
+  state.evView = state.hasCurrent ? "current" : "pre";
+  updateDisplayRanks();
 }
 
 function pct(v, digits = 1) {
@@ -333,13 +439,37 @@ function renderMeta() {
   const compareNote = state.hasCompare
     ? `<div>ML + odds comparison loaded</div>`
     : `<div class="hint" style="margin-top:0.25rem">Run <code>python run.py --both-models</code> for comparison</div>`;
+  const currentNote = state.hasCurrent
+    ? `<div>Current EV: ${state.resultsCurrent.completed_matches?.length ?? "?"} match(es) played</div>`
+    : `<div class="hint" style="margin-top:0.25rem">Add scores to <code>wc_data/completed_matches.json</code> and run <code>python run.py --results … --current-only</code></div>`;
   document.getElementById("meta").innerHTML = `
     <div>${r.n_simulations.toLocaleString()} simulations</div>
     <div>${r.use_ml !== false ? "ML + Oddschecker" : "Oddschecker only"}</div>
     ${compareNote}
+    ${currentNote}
   `;
   document.getElementById("footer-sources").textContent =
     "Odds: " + r.odds_sources.join(" · ");
+}
+
+function renderRankingsHeader() {
+  const cols = RANKINGS_COLS[isCurrentView() ? "current" : "pre"];
+  const head = document.getElementById("rankings-head-row");
+  if (!head) return;
+  head.innerHTML = cols
+    .map((col) => `<th data-sort="${col.key}">${col.label}</th>`)
+    .join("");
+  document.querySelectorAll("#rankings-table th[data-sort]").forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.sort;
+      if (state.sortKey === key) state.sortAsc = !state.sortAsc;
+      else {
+        state.sortKey = key;
+        state.sortAsc = key === "team" || key === "group";
+      }
+      renderRankingsTable(document.getElementById("search-rankings")?.value || "");
+    });
+  });
 }
 
 function renderRankingsTable(filter = "") {
@@ -358,24 +488,43 @@ function renderRankingsTable(filter = "") {
   });
 
   tbody.innerHTML = rows
-    .map(
-      (r) => `
+    .map((r) => {
+      const s = activeStats(r);
+      if (isCurrentView()) {
+        return `
     <tr data-team="${r.team}">
-      <td class="rank-cell">${r.rank}</td>
+      <td class="rank-cell">${r.display_rank}</td>
+      <td class="team-cell">${r.team}</td>
+      <td>${r.group}</td>
+      <td><strong>${fmtPts(r.expected_points_current)}</strong></td>
+      <td>${fmtPts(r.expected_points_ml)}</td>
+      <td>${fmtDiff(r.pts_current_delta)}</td>
+      <td class="pct ${s.p_champion > 0.08 ? "pct-high" : ""}">${pct(s.p_champion)}</td>
+      <td class="pct">${pct(s.p_semi_final)}</td>
+      <td class="pct">${pct(s.p_quarter_final)}</td>
+      <td class="pct">${pct(s.p_round_of_16)}</td>
+      <td class="pct">${pct(s.p_round_of_32)}</td>
+      <td class="pct">${pct(s.p_group_1)}</td>
+      <td class="pct">${pct(s.p_bonus_goals)}</td>
+    </tr>`;
+      }
+      return `
+    <tr data-team="${r.team}">
+      <td class="rank-cell">${r.display_rank}</td>
       <td class="team-cell">${r.team}</td>
       <td>${r.group}</td>
       <td><strong>${fmtPts(r.expected_points_ml)}</strong></td>
       <td>${fmtPts(r.expected_points_odds)}</td>
       <td>${fmtDiff(r.pts_diff)}</td>
-      <td class="pct ${r.p_champion > 0.08 ? "pct-high" : ""}">${pct(r.p_champion)}</td>
-      <td class="pct">${pct(r.p_semi_final)}</td>
-      <td class="pct">${pct(r.p_quarter_final)}</td>
-      <td class="pct">${pct(r.p_round_of_16)}</td>
-      <td class="pct">${pct(r.p_round_of_32)}</td>
-      <td class="pct">${pct(r.p_group_1)}</td>
-      <td class="pct">${pct(r.p_bonus_goals)}</td>
-    </tr>`
-    )
+      <td class="pct ${s.p_champion > 0.08 ? "pct-high" : ""}">${pct(s.p_champion)}</td>
+      <td class="pct">${pct(s.p_semi_final)}</td>
+      <td class="pct">${pct(s.p_quarter_final)}</td>
+      <td class="pct">${pct(s.p_round_of_16)}</td>
+      <td class="pct">${pct(s.p_round_of_32)}</td>
+      <td class="pct">${pct(s.p_group_1)}</td>
+      <td class="pct">${pct(s.p_bonus_goals)}</td>
+    </tr>`;
+    })
     .join("");
 
   tbody.querySelectorAll("tr").forEach((tr) => {
@@ -385,8 +534,51 @@ function renderRankingsTable(filter = "") {
 
 function renderPointsChart() {
   destroyChart("points");
-  const top = state.enriched.slice(0, 20);
+  const top = sortedEnriched().slice(0, 20);
   const ctx = document.getElementById("chart-points");
+  const title = document.getElementById("chart-points-title");
+  if (title) {
+    title.textContent = isCurrentView()
+      ? "Current expected points — top 20"
+      : "Pre-tournament expected points — top 20";
+  }
+
+  if (isCurrentView()) {
+    state.charts.points = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: top.map((t) => t.team),
+        datasets: [
+          {
+            label: "Current EV",
+            data: top.map((t) => t.expected_points_current ?? 0),
+            backgroundColor: "rgba(61, 214, 140, 0.85)",
+            borderRadius: 4,
+          },
+          {
+            label: "Pre-tournament EV",
+            data: top.map((t) => t.expected_points_ml ?? 0),
+            backgroundColor: "rgba(139, 151, 168, 0.55)",
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: "bottom", labels: { boxWidth: 12 } },
+        },
+        scales: {
+          x: { grid: { color: "#252d3a" }, title: { display: true, text: "Points" } },
+          y: { grid: { display: false } },
+        },
+      },
+    });
+    return;
+  }
+
   const datasets = [
     {
       label: "ML + Oddschecker",
@@ -427,18 +619,19 @@ function renderPointsChart() {
 function renderWinnersChart() {
   destroyChart("winners");
   const top = [...state.enriched]
+    .map((r) => activeStats(r))
     .sort((a, b) => b.p_champion - a.p_champion)
     .slice(0, 12);
   const ctx = document.getElementById("chart-winners");
   const datasets = [
     {
-      label: "P(Champion) ML",
-      data: top.map((t) => t.p_champion_ml * 100),
+      label: isCurrentView() ? "P(Champion) current" : "P(Champion) ML",
+      data: top.map((t) => t.p_champion * 100),
       backgroundColor: "#3dd68c",
       borderRadius: 4,
     },
   ];
-  if (state.hasCompare) {
+  if (state.hasCompare && !isCurrentView()) {
     datasets.push({
       label: "P(Champion) Odds",
       data: top.map((t) => (t.p_champion_odds ?? 0) * 100),
@@ -637,36 +830,51 @@ function selectTeam(name, tab = "teams") {
 
 function renderTeamSelect() {
   const sel = document.getElementById("team-select");
-  sel.innerHTML = state.enriched
+  const current = sel.value;
+  const ordered = sortedEnriched();
+  sel.innerHTML = ordered
     .map((r) => `<option value="${r.team}">${r.team} (Group ${r.group})</option>`)
     .join("");
-  sel.addEventListener("change", () => renderTeamDetail(sel.value));
+  if (current && ordered.some((r) => r.team === current)) sel.value = current;
+  else if (ordered.length) sel.value = ordered[0].team;
   renderTeamDetail(sel.value);
 }
 
 function renderTeamDetail(teamName) {
   const r = state.enriched.find((t) => t.team === teamName);
   if (!r) return;
+  const s = activeStats(r);
+  const viewLabel = isCurrentView() ? "current" : "pre-tournament";
+  const rank = r.display_rank;
 
-  const compareStats = state.hasCompare
+  const compareStats = state.hasCompare && !isCurrentView()
     ? `
       <div class="stat"><div class="stat-label">E[Pts] odds</div><div class="stat-value">${fmtPts(r.expected_points_odds)}</div></div>
       <div class="stat"><div class="stat-label">Δ E[Pts]</div><div class="stat-value">${r.pts_diff != null ? (r.pts_diff > 0 ? "+" : "") + r.pts_diff.toFixed(1) : "—"}</div></div>
       <div class="stat"><div class="stat-label">P(Win) odds</div><div class="stat-value">${pct(r.p_champion_odds)}</div></div>
     `
     : "";
+  const currentStats = isCurrentView()
+    ? `
+      <div class="stat"><div class="stat-label">E[Pts] current</div><div class="stat-value accent">${fmtPts(r.expected_points_current)}</div></div>
+      <div class="stat"><div class="stat-label">E[Pts] pre</div><div class="stat-value">${fmtPts(r.expected_points_ml)}</div></div>
+      <div class="stat"><div class="stat-label">Δ vs pre</div><div class="stat-value">${r.pts_current_delta != null ? (r.pts_current_delta > 0 ? "+" : "") + r.pts_current_delta.toFixed(1) : "—"}</div></div>
+    `
+    : `
+      <div class="stat"><div class="stat-label">E[Pts] pre</div><div class="stat-value accent">${fmtPts(r.expected_points_ml)}</div></div>
+    `;
 
   document.getElementById("team-summary").innerHTML = `
     <div class="stat-grid">
-      <div class="stat"><div class="stat-label">E[Pts] ML</div><div class="stat-value accent">${fmtPts(r.expected_points_ml)}</div></div>
-      <div class="stat"><div class="stat-label">Group ${r.group}</div><div class="stat-value">#${r.rank_ml}</div></div>
-      <div class="stat"><div class="stat-label">P(Win) ML</div><div class="stat-value">${pct(r.p_champion_ml)}</div></div>
+      ${currentStats}
+      <div class="stat"><div class="stat-label">Group ${r.group}</div><div class="stat-value">#${rank}</div></div>
+      <div class="stat"><div class="stat-label">P(Win) · ${viewLabel}</div><div class="stat-value">${pct(s.p_champion)}</div></div>
       <div class="stat"><div class="stat-label">OC winner</div><div class="stat-value">${r.oc_odds ?? "—"}</div></div>
       ${compareStats}
     </div>
   `;
 
-  renderPointsBreakdown(r);
+  renderPointsBreakdown(s);
 
   destroyChart("funnel");
   state.charts.funnel = new Chart(document.getElementById("chart-funnel"), {
@@ -675,12 +883,12 @@ function renderTeamDetail(teamName) {
       labels: FUNNEL_KEYS.map((f) => f.label),
       datasets: [
         {
-          label: "ML model",
-          data: FUNNEL_KEYS.map((f) => r[f.key] * 100),
+          label: isCurrentView() ? "Current model" : "ML model",
+          data: FUNNEL_KEYS.map((f) => s[f.key] * 100),
           backgroundColor: "#3dd68c",
           borderRadius: 6,
         },
-        ...(state.hasCompare && r.odds_row
+        ...(state.hasCompare && r.odds_row && !isCurrentView()
           ? [
               {
                 label: "Odds only",
@@ -712,7 +920,7 @@ function renderTeamDetail(teamName) {
       labels: ["1st (20p)", "2nd (10p)", "3rd (0p)", "4th (5p)"],
       datasets: [
         {
-          data: [r.p_group_1, r.p_group_2, r.p_group_3, r.p_group_4].map((x) => x * 100),
+          data: [s.p_group_1, s.p_group_2, s.p_group_3, s.p_group_4].map((x) => x * 100),
           backgroundColor: ["#3dd68c", "#5b9cf5", "#8b97a8", "#f0c14a"],
           borderWidth: 0,
         },
@@ -727,9 +935,9 @@ function renderTeamDetail(teamName) {
     },
   });
 
-  const stages = STAGE_ORDER.filter((s) => r.stage_probs?.[s] > 0.001).map((s) => ({
-    label: s,
-    value: r.stage_probs[s] * 100,
+  const stages = STAGE_ORDER.filter((sname) => s.stage_probs?.[sname] > 0.001).map((sname) => ({
+    label: sname,
+    value: s.stage_probs[sname] * 100,
   }));
 
   destroyChart("stages");
@@ -762,26 +970,40 @@ function renderTeamDetail(teamName) {
 function renderGroups() {
   const grid = document.getElementById("groups-grid");
   const byTeam = Object.fromEntries(state.enriched.map((r) => [r.team, r]));
+  const ptsKey = isCurrentView() ? "expected_points_current" : "expected_points_ml";
+  const headerLabel = isCurrentView() ? "Current E[Pts]" : "Pre E[Pts]";
 
   grid.innerHTML = Object.entries(state.tournament.groups)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([g, teams]) => {
       const sorted = [...teams].sort(
-        (a, b) => (byTeam[b]?.expected_points_ml || 0) - (byTeam[a]?.expected_points_ml || 0)
+        (a, b) => (byTeam[b]?.[ptsKey] || 0) - (byTeam[a]?.[ptsKey] || 0)
       );
       return `
       <div class="group-card">
-        <div class="group-header">Group ${g}<span>ML E[Pts]</span></div>
+        <div class="group-header">Group ${g}<span>${headerLabel}</span></div>
         ${sorted
           .map((t) => {
             const r = byTeam[t];
-            const oddsPts = r?.expected_points_odds != null ? fmtPts(r.expected_points_odds) : null;
+            const mainPts = r ? fmtPts(r[ptsKey]) : "—";
+            const subPts = isCurrentView()
+              ? r?.expected_points_ml != null
+                ? fmtPts(r.expected_points_ml)
+                : null
+              : r?.expected_points_odds != null
+                ? fmtPts(r.expected_points_odds)
+                : null;
+            const delta =
+              isCurrentView() && r?.pts_current_delta != null
+                ? `<span class="group-team-delta ${r.pts_current_delta >= 0 ? "diff-pos" : "diff-neg"}">${r.pts_current_delta > 0 ? "+" : ""}${r.pts_current_delta.toFixed(1)}</span>`
+                : "";
             return `
           <div class="group-team" data-team="${t}">
             <span class="group-team-name">${t}</span>
             <span class="group-team-pts">
-              ${r ? fmtPts(r.expected_points_ml) : "—"}
-              ${oddsPts ? `<span class="group-team-pts-sub">${oddsPts}</span>` : ""}
+              ${mainPts}
+              ${subPts ? `<span class="group-team-pts-sub">${subPts}</span>` : ""}
+              ${delta}
             </span>
           </div>`;
           })
@@ -946,17 +1168,7 @@ function setupTabs() {
 }
 
 function setupSort() {
-  document.querySelectorAll("#rankings-table th[data-sort]").forEach((th) => {
-    th.addEventListener("click", () => {
-      const key = th.dataset.sort;
-      if (state.sortKey === key) state.sortAsc = !state.sortAsc;
-      else {
-        state.sortKey = key;
-        state.sortAsc = key === "team" || key === "group";
-      }
-      renderRankingsTable(document.getElementById("search-rankings").value);
-    });
-  });
+  renderRankingsHeader();
 
   document.querySelectorAll("#compare-table th[data-sort-cmp]").forEach((th) => {
     th.addEventListener("click", () => {
@@ -983,21 +1195,47 @@ function setupSearch() {
   });
 }
 
+function applyEvView(view) {
+  if (view === "current" && !state.hasCurrent) return;
+  state.evView = view;
+  state.sortKey = view === "current" ? "expected_points_current" : "expected_points_ml";
+  state.sortAsc = false;
+  updateDisplayRanks();
+  document.querySelectorAll(".ev-toggle-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.view === view);
+  });
+  renderRankingsHeader();
+  renderRankingsTable(document.getElementById("search-rankings")?.value || "");
+  renderPointsChart();
+  renderWinnersChart();
+  renderGroups();
+  renderTeamSelect();
+}
+
+function setupEvViewToggle() {
+  const toggle = document.getElementById("ev-view-toggle");
+  if (!toggle) return;
+  toggle.querySelectorAll(".ev-toggle-btn").forEach((btn) => {
+    btn.disabled = btn.dataset.view === "current" && !state.hasCurrent;
+    btn.addEventListener("click", () => applyEvView(btn.dataset.view));
+  });
+  applyEvView(state.evView);
+}
+
 async function init() {
   try {
     await loadData();
     document.getElementById("loading").classList.add("hidden");
     renderMeta();
-    renderRankingsTable();
-    renderPointsChart();
-    renderWinnersChart();
-    renderTeamSelect();
-    renderGroups();
+    setupEvViewToggle();
     renderCalibration();
     renderMatches();
     setupTabs();
     setupSort();
     setupSearch();
+    document.getElementById("team-select")?.addEventListener("change", (e) => {
+      renderTeamDetail(e.target.value);
+    });
     setupLogout();
   } catch (err) {
     document.getElementById("loading").innerHTML = `

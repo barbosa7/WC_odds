@@ -157,6 +157,68 @@ Upload the `dist/` folder at [Netlify Drop](https://app.netlify.com/drop).
 4. **Knockout**: sample from ML 1X2 blended with **outright winner odds** (same weight as group stage). Draw → random ET/pens winner. Use `--no-ml` to revert to odds-only throughout.
 5. Full bracket with FIFA third-place combination table → expected points & stage probabilities.
 
+## Current expected points (after kickoff)
+
+Pre-tournament EV stays in `output/expected_points.json`. To update **current** EV after real group-stage results:
+
+1. Add scores to `wc_data/completed_matches.json`:
+
+```json
+{
+  "updated": "2026-06-12",
+  "matches": [
+    {"home": "Mexico", "away": "South Africa", "home_score": 2, "away_score": 0},
+    {"home": "South Korea", "away": "Czech Republic", "home_score": 1, "away_score": 1}
+  ]
+}
+```
+
+Home/away can be either order — the fixture is matched automatically. Optional `group` / `matchday` fields are checked against the schedule.
+
+2. Re-run the conditional simulation (fast — does not overwrite pre-tournament baseline):
+
+```bash
+python run.py --results wc_data/completed_matches.json --current-only -n 25000
+python build_site.py && python serve_web.py
+```
+
+Or combine with a full refresh: `python run.py --both-models --results wc_data/completed_matches.json`
+
+The dashboard shows **E[Pts] Pre** (unchanged) and **E[Pts] Current** (remaining fixtures + knockouts simulated from current standings). The ML feature engine is updated with completed scores before simulating the rest.
+
+## FBref cards & corners (optional)
+
+Past World Cup matches can be scraped from [FBref](https://fbref.com/) for **yellow/red cards** and **corners** per team per match. This uses the `soccerdata` library (browser-based — not for Netlify CI).
+
+```bash
+pip install soccerdata lxml
+python scripts/fetch_fbref.py                  # 2022, 2018, 2014, 2010 (~15–20 min first run)
+python scripts/fetch_fbref.py --seasons 2022   # quick test / refresh one year
+python scripts/backfill_fbref_refs.py          # parse referee from cached HTML (fast)
+python scripts/fetch_fbref.py --summary        # also writes team averages JSON
+```
+
+Outputs:
+
+- `wc_data/fbref_match_stats.csv` — match-level cards, corners, fouls, **referee**
+- `wc_data/fbref_team_summary.json` — per-team WC averages (optional)
+- `wc_data/fbref_referee_summary.json` — per-ref card rates (optional)
+
+Validate and train the **goals × corners × cards** product model:
+
+```bash
+python scripts/validate_fbref.py       # spot-checks + coverage report
+python scripts/eval_match_events.py    # train + WC 2022 holdout metrics
+python scripts/predict_match_events.py # 2026 group stage predictions
+python scripts/eval_fbref_features.py  # test if cards/corners help 1X2 model
+```
+
+**Model (v2):** Tweedie GLM on the product directly (not independent Poisson multiply), with Poisson marginals for goals/corners/cards legs. Isotonic calibration fit on WC 2018 OOS. Trained on 345 WC+Euro matches (2014+). Honest WC 2022 holdout: MAE 72, **bias +0.6**, correlation 0.20.
+
+**Data notes:** FBref corners from **2014 onward**. Stats include **extra time**; penalty-shootout events excluded. Published refs in `wc_data/published_refs_2026.json`.
+
+**Note:** 2026 matches are not on FBref yet. Cards/corners do **not** meaningfully improve the WC 1X2 model — use them for the product model, not expected-points scoring. The main 1X2 model already trains on all pre-2022 international data and evaluates on 2022 WC only (no overlap).
+
 ## Files
 
 | File | Purpose |
@@ -169,6 +231,9 @@ Upload the `dist/` folder at [Netlify Drop](https://app.netlify.com/drop).
 | `ml/predictor.py` | ML + odds blend for match probs |
 | `ml/features.py` | Elo/form feature engine |
 | `scripts/train_ml_model.py` | Standalone model training |
+| `scripts/fetch_fbref.py` | FBref WC cards/corners fetch |
+| `ml/fbref.py` | Parse FBref match reports |
+| `wc_data/fbref_match_stats.csv` | FBref cards/corners cache |
 | `wc_data/tournament.json` | Groups & bracket |
 | `wc_data/kaggle_train.csv` | Kaggle training data |
 | `wc_data/ml_match_model.joblib` | Saved model (auto-generated) |

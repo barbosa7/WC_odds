@@ -21,6 +21,11 @@ REQUIRED = {
     "odds_oddschecker.json": ROOT / "wc_data" / "odds_oddschecker.json",
 }
 
+OPTIONAL = {
+    "expected_points_current.json": ROOT / "output" / "expected_points_current.json",
+    "expected_points_current_odds_only.json": ROOT / "output" / "expected_points_current_odds_only.json",
+}
+
 
 def run_simulation(n_sims: int) -> None:
     subprocess.run(
@@ -52,6 +57,10 @@ def build(*, run_sim: bool = False, n_sims: int = 25_000) -> None:
 
     for out_name, src_path in REQUIRED.items():
         shutil.copy2(src_path, DATA_OUT / out_name)
+
+    for out_name, src_path in OPTIONAL.items():
+        if src_path.exists():
+            shutil.copy2(src_path, DATA_OUT / out_name)
 
     redirects = DIST / "_redirects"
     redirects.write_text("/login /login.html 200\n")
