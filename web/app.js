@@ -7,6 +7,8 @@ const API = {
   resultsCurrentOdds: "./data/expected_points_current_odds_only.json",
   tournament: "./data/tournament.json",
   odds: "./data/odds_oddschecker.json",
+  tyche: "/api/tyche-opportunities",
+  tycheFallback: "./data/tychemkt_opportunities.json",
 };
 
 let state = {
@@ -26,6 +28,15 @@ let state = {
   sortAsc: false,
   cmpSortKey: "pts_diff",
   cmpSortAsc: false,
+  tyche: null,
+  tycheLive: false,
+  tycheLoading: false,
+  tycheError: null,
+  tycheFetchedAt: 0,
+  tycheFilter: "opps",
+  tycheKind: "all",
+  tycheSortKey: "edge",
+  tycheSortAsc: false,
 };
 
 const RANKINGS_COLS = {
@@ -300,6 +311,390 @@ async function fetchJson(url, label) {
   }
   if (!r.ok) throw new Error(`Missing ${label} — run python run.py first`);
   return r.json();
+}
+
+function tycheRowFields(row) {
+  const useCurrent = isCurrentView() && row.theo_current != null;
+  return {
+    theo: useCurrent ? row.theo_current : row.theo_pre,
+    side: useCurrent ? row.side_current : row.side_pre,
+    edge: useCurrent ? row.edge_current : row.edge_pre,
+    buy_edge: useCurrent ? row.buy_edge_current : row.buy_edge_pre,
+    sell_edge: useCurrent ? row.sell_edge_current : row.sell_edge_pre,
+  };
+}
+
+function fmtPrice(v) {
+  if (v == null || Number.isNaN(v)) return "—";
+  const n = Number(v);
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
+function formatMyPosition(row, side) {
+  const net = Number(row.my_net ?? 0);
+  if (!net) {
+    return { html: "—", cls: "pos-flat", aligned: false };
+  }
+  const label = net > 0 ? "long" : "short";
+  const aligned = (side === "buy" && net > 0) || (side === "sell" && net < 0);
+  const qty = net > 0 ? `+${fmtPrice(net)}` : fmtPrice(net);
+  const held = aligned ? `<span class="pos-held" title="Already positioned for this opportunity">✓</span>` : "";
+  return {
+    html: `<span class="pos-qty">${qty}</span><span class="pos-label ${label}">${label}</span>${held}`,
+    cls: `pos-${label}${aligned ? " pos-aligned" : ""}`,
+    aligned,
+  };
+}
+
+const TYCHE_STALE_MS = 45_000;
+const TYCHE_WARN_MS = 120_000;
+
+function tycheDataAgeMs() {
+  if (!state.tyche) return null;
+  const fromPayload = state.tyche.fetched_at ? Date.parse(state.tyche.fetched_at) : NaN;
+  const fromClient = state.tycheFetchedAt || 0;
+  const ts = Number.isFinite(fromPayload) ? fromPayload : fromClient;
+  if (!ts) return null;
+  return Date.now() - ts;
+}
+
+function formatTycheAge(ms) {
+  if (ms == null) return "unknown age";
+  const sec = Math.floor(ms / 1000);
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  return `${Math.floor(min / 60)}h ago`;
+}
+
+function getTycheStaleInfo() {
+  if (state.tycheLoading) return null;
+  if (!state.tyche) {
+    return state.tycheError
+      ? { level: "error", message: `No Tyche data loaded — ${state.tycheError}` }
+      : null;
+  }
+
+  const ageMs = tycheDataAgeMs();
+  const ageLabel = formatTycheAge(ageMs);
+
+  if (!state.tycheLive) {
+    return {
+      level: "warn",
+      message: `Showing a cached snapshot (${ageLabel}), not a live pull. Orderbooks and positions may be out of date — click Refresh or configure TYCHE credentials on the server.`,
+    };
+  }
+
+  if (state.tycheError) {
+    return {
+      level: "warn",
+      message: `Live pull had issues (${state.tycheError}). Displaying last successful data from ${ageLabel}.`,
+    };
+  }
+
+  if (ageMs != null && ageMs > TYCHE_WARN_MS) {
+    return {
+      level: "warn",
+      message: `Tyche data is ${ageLabel}. Orderbooks may have moved — click Refresh for a fresh pull.`,
+    };
+  }
+
+  return null;
+}
+
+function renderTycheStaleBanner() {
+  const banner = document.getElementById("tyche-stale-banner");
+  if (!banner) return;
+
+  const info = getTycheStaleInfo();
+  if (!info) {
+    banner.classList.add("hidden");
+    banner.textContent = "";
+    return;
+  }
+
+  banner.classList.remove("hidden");
+  banner.classList.toggle("tyche-stale-error", info.level === "error");
+  banner.classList.toggle("tyche-stale-warn", info.level !== "error");
+  banner.textContent = info.message;
+}
+
+function renderTycheSummary() {
+  const el = document.getElementById("tyche-summary");
+  const hint = document.getElementById("tyche-hint");
+  const footer = document.getElementById("tyche-footer");
+  if (!el) return;
+
+  if (state.tycheLoading && !state.tyche) {
+    el.innerHTML = `
+      <div class="tyche-stat neutral" style="grid-column: 1 / -1">
+        <span class="tyche-stat-label">Loading live Tyche data…</span>
+      </div>`;
+    if (footer) footer.textContent = "Pulling live data from Tyche…";
+    return;
+  }
+
+  if (!state.tyche) return;
+
+  const items = state.tyche.items || [];
+  const buy = items.filter((r) => tycheRowFields(r).side === "buy");
+  const sell = items.filter((r) => tycheRowFields(r).side === "sell");
+  const openPos = state.tyche.account?.open_positions ?? items.filter((r) => r.my_net).length;
+  const acct = state.tyche.account?.name || "You";
+  const fetched = state.tyche.fetched_at
+    ? new Date(state.tyche.fetched_at).toLocaleString()
+    : "unknown";
+
+  el.innerHTML = `
+    <div class="tyche-stat buy">
+      <span class="tyche-stat-value">${buy.length}</span>
+      <span class="tyche-stat-label">Buy opportunities</span>
+      <span class="tyche-stat-sub">Ask below theo</span>
+    </div>
+    <div class="tyche-stat sell">
+      <span class="tyche-stat-value">${sell.length}</span>
+      <span class="tyche-stat-label">Sell opportunities</span>
+      <span class="tyche-stat-sub">Bid above theo</span>
+    </div>
+    <div class="tyche-stat neutral">
+      <span class="tyche-stat-value">${openPos}</span>
+      <span class="tyche-stat-label">Your positions</span>
+      <span class="tyche-stat-sub">${acct} on Tyche</span>
+    </div>
+  `;
+
+  if (hint) {
+    hint.textContent = `Theo = model expected points (${isCurrentView() ? "current tournament state" : "pre-tournament"}). Buy when ask < theo · Sell when bid > theo. ✓ = you already hold the suggested side.`;
+  }
+  if (footer) {
+    if (state.tycheLoading) {
+      footer.textContent = "Pulling live data from Tyche…";
+    } else if (state.tycheError && !state.tyche) {
+      footer.textContent = `Could not reach Tyche: ${state.tycheError}`;
+    } else if (state.tycheLive) {
+      footer.textContent = `Live from Tyche · updated ${fetched}`;
+    } else if (state.tyche) {
+      footer.textContent = `Cached snapshot · ${fetched} (set TYCHE_EMAIL / TYCHE_PASSWORD for live pulls)`;
+    } else {
+      footer.textContent = "No Tyche data — configure credentials or run the fetch script";
+    }
+  }
+
+  renderTycheStaleBanner();
+}
+
+function renderTycheTable(query = "") {
+  const tbody = document.querySelector("#tyche-table tbody");
+  if (!tbody) return;
+
+  if (!state.tyche?.items?.length) {
+    const msg = state.tycheLoading
+      ? "Loading Tyche orderbooks…"
+      : state.tycheError
+        ? `Could not load Tyche data: ${state.tycheError}`
+        : `No Tyche data. Set <code>TYCHE_EMAIL</code> / <code>TYCHE_PASSWORD</code> on the server, or run the fetch script.`;
+    tbody.innerHTML = `<tr><td colspan="9" class="tyche-empty">${msg}</td></tr>`;
+    return;
+  }
+
+  const q = query.trim().toLowerCase();
+  let rows = state.tyche.items.map((row) => ({ row, ...tycheRowFields(row) }));
+
+  if (state.tycheFilter === "opps") rows = rows.filter((r) => r.side);
+  else if (state.tycheFilter === "unheld") {
+    rows = rows.filter((r) => r.side && Number(r.row.my_net ?? 0) === 0);
+  } else if (state.tycheFilter === "buy") rows = rows.filter((r) => r.side === "buy");
+  else if (state.tycheFilter === "sell") rows = rows.filter((r) => r.side === "sell");
+  else if (state.tycheFilter === "held") rows = rows.filter((r) => Number(r.row.my_net ?? 0) !== 0);
+
+  if (state.tycheKind !== "all") rows = rows.filter((r) => r.row.kind === state.tycheKind);
+
+  if (q) {
+    rows = rows.filter(({ row }) => {
+      const hay = [row.title, row.team, row.home, row.away, row.group, row.stage]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  const key = state.tycheSortKey;
+  const dir = state.tycheSortAsc ? 1 : -1;
+  rows.sort((a, b) => {
+    if (key === "title") return dir * String(a.row.title).localeCompare(b.row.title);
+    if (key === "side") {
+      const order = { buy: 0, sell: 1 };
+      return dir * ((order[a.side] ?? 9) - (order[b.side] ?? 9));
+    }
+    const av =
+      key === "theo"
+        ? a.theo
+        : key === "my_net"
+          ? Number(a.row.my_net ?? 0)
+          : key === "spread"
+            ? (a.row.best_ask ?? 0) - (a.row.best_bid ?? 0)
+            : key === "edge"
+              ? a.edge ?? -999
+              : a.row[key];
+    const bv =
+      key === "theo"
+        ? b.theo
+        : key === "my_net"
+          ? Number(b.row.my_net ?? 0)
+          : key === "spread"
+            ? (b.row.best_ask ?? 0) - (b.row.best_bid ?? 0)
+            : key === "edge"
+              ? b.edge ?? -999
+              : b.row[key];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return dir * (av - bv);
+  });
+
+  tbody.innerHTML = rows
+    .map(({ row, theo, side, edge }) => {
+      const spread =
+        row.best_bid != null && row.best_ask != null ? row.best_ask - row.best_bid : null;
+      const kindBadge =
+        row.kind === "match"
+          ? `<span class="tyche-kind match">Match</span>`
+          : `<span class="tyche-kind team">Team</span>`;
+      const sideBadge = side
+        ? `<span class="tyche-side ${side}">${side.toUpperCase()}</span>`
+        : `<span class="tyche-side none">—</span>`;
+      const edgeCls = edge > 0 ? "edge-pos" : edge != null ? "edge-neg" : "";
+      const titleExtra =
+        row.kind === "team" && row.group
+          ? `<span class="tyche-meta">Grp ${row.group}</span>`
+          : row.kind === "match" && row.kickoff
+            ? `<span class="tyche-meta">${new Date(row.kickoff).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>`
+            : "";
+      const bidCell =
+        row.best_bid != null
+          ? `${fmtPrice(row.best_bid)}<span class="tyche-qty">×${fmtPrice(row.bid_qty)}</span>`
+          : "—";
+      const askCell =
+        row.best_ask != null
+          ? `${fmtPrice(row.best_ask)}<span class="tyche-qty">×${fmtPrice(row.ask_qty)}</span>`
+          : "—";
+      const bidCls = side === "sell" ? "book-highlight sell" : "";
+      const askCls = side === "buy" ? "book-highlight buy" : "";
+      const pos = formatMyPosition(row, side);
+      return `
+      <tr class="${side ? `tyche-opp-${side}` : ""}${pos.aligned ? " tyche-pos-aligned" : ""}">
+        <td class="num ${edgeCls}">${edge != null && edge > 0 ? `+${fmtPrice(edge)}` : edge != null ? fmtPrice(edge) : "—"}</td>
+        <td>${sideBadge}</td>
+        <td class="tyche-title">${kindBadge}${row.title}${titleExtra}</td>
+        <td class="num tyche-pos ${pos.cls}">${pos.html}</td>
+        <td class="num">${theo != null ? fmtPrice(theo) : "—"}</td>
+        <td class="num ${bidCls}">${bidCell}</td>
+        <td class="num ${askCls}">${askCell}</td>
+        <td class="num">${row.mark != null ? fmtPrice(row.mark) : "—"}</td>
+        <td class="num">${spread != null ? fmtPrice(spread) : "—"}</td>
+      </tr>`;
+    })
+    .join("");
+}
+
+function setupTychePanel() {
+  document.getElementById("tyche-refresh")?.addEventListener("click", () => {
+    loadTycheData(true);
+  });
+
+  document.querySelectorAll("[data-tyche-filter]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.tycheFilter = btn.dataset.tycheFilter;
+      document.querySelectorAll("[data-tyche-filter]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.tycheFilter === state.tycheFilter);
+      });
+      renderTycheTable(document.getElementById("search-tyche")?.value || "");
+    });
+  });
+
+  document.querySelectorAll("[data-tyche-kind]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.tycheKind = btn.dataset.tycheKind;
+      document.querySelectorAll("[data-tyche-kind]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.tycheKind === state.tycheKind);
+      });
+      renderTycheTable(document.getElementById("search-tyche")?.value || "");
+    });
+  });
+
+  document.getElementById("search-tyche")?.addEventListener("input", (e) => {
+    renderTycheTable(e.target.value);
+  });
+
+  document.querySelectorAll("#tyche-table th[data-sort-tyche]").forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.sortTyche;
+      if (state.tycheSortKey === key) state.tycheSortAsc = !state.tycheSortAsc;
+      else {
+        state.tycheSortKey = key;
+        state.tycheSortAsc = key === "title" || key === "side";
+      }
+      renderTycheTable(document.getElementById("search-tyche")?.value || "");
+    });
+  });
+}
+
+async function loadTycheData(force = false) {
+  if (state.tycheLoading) return;
+  if (!force && state.tyche && Date.now() - state.tycheFetchedAt < TYCHE_STALE_MS) {
+    return;
+  }
+
+  state.tycheLoading = true;
+  state.tycheError = null;
+  const refreshBtn = document.getElementById("tyche-refresh");
+  if (refreshBtn) refreshBtn.disabled = true;
+  renderTycheSummary();
+  renderTycheTable(document.getElementById("search-tyche")?.value || "");
+
+  try {
+    const r = await fetch(API.tyche, { credentials: "same-origin" });
+    if (r.status === 401) {
+      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/login.html?next=${next}`;
+      return;
+    }
+    if (r.ok) {
+      state.tyche = await r.json();
+      state.tycheLive = !!state.tyche.live;
+      state.tycheFetchedAt = Date.now();
+      state.tycheLoading = false;
+      renderTycheSummary();
+      renderTycheTable(document.getElementById("search-tyche")?.value || "");
+      return;
+    }
+    const errBody = await r.json().catch(() => ({}));
+    state.tycheError = errBody.error || `HTTP ${r.status}`;
+  } catch (err) {
+    state.tycheError = err.message || "Network error";
+  }
+
+  if (!state.tyche) {
+    try {
+      const r = await fetch(API.tycheFallback, { credentials: "same-origin" });
+      if (r.ok) {
+        state.tyche = await r.json();
+        state.tycheLive = false;
+        state.tycheFetchedAt = Date.now();
+        state.tycheError = state.tycheError
+          ? `${state.tycheError} — showing cached snapshot`
+          : null;
+      }
+    } catch (_) {
+      /* no fallback */
+    }
+  }
+
+  state.tycheLoading = false;
+  if (refreshBtn) refreshBtn.disabled = false;
+  renderTycheSummary();
+  renderTycheTable(document.getElementById("search-tyche")?.value || "");
 }
 
 async function loadData() {
@@ -1163,6 +1558,12 @@ function setupTabs() {
         renderCompareChart();
         renderCompareTable(document.getElementById("search-compare")?.value || "");
       }
+      if (tab.dataset.tab === "tyche") {
+        loadTycheData(false).then(() => {
+          renderTycheSummary();
+          renderTycheTable(document.getElementById("search-tyche")?.value || "");
+        });
+      }
     });
   });
 }
@@ -1233,10 +1634,12 @@ async function init() {
     setupTabs();
     setupSort();
     setupSearch();
+    setupTychePanel();
     document.getElementById("team-select")?.addEventListener("change", (e) => {
       renderTeamDetail(e.target.value);
     });
     setupLogout();
+    loadTycheData(true);
   } catch (err) {
     document.getElementById("loading").innerHTML = `
       <div class="error-banner" style="max-width:480px;text-align:left">

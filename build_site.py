@@ -24,6 +24,8 @@ REQUIRED = {
 OPTIONAL = {
     "expected_points_current.json": ROOT / "output" / "expected_points_current.json",
     "expected_points_current_odds_only.json": ROOT / "output" / "expected_points_current_odds_only.json",
+    "tychemkt_opportunities.json": ROOT / "output" / "tychemkt_opportunities.json",
+    "match_events_predictions.json": ROOT / "output" / "match_events_predictions.json",
 }
 
 
