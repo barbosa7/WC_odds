@@ -10,6 +10,7 @@ const API = {
   tyche: "/.netlify/functions/tyche_opportunities",
   tycheLocal: "/api/tyche-opportunities",
   tycheFallback: "./data/tychemkt_opportunities.json",
+  matchEvents: "./data/match_events_predictions.json",
 };
 
 let state = {
@@ -38,6 +39,7 @@ let state = {
   tycheKind: "all",
   tycheSortKey: "edge",
   tycheSortAsc: false,
+  matchPredictions: null,
 };
 
 const RANKINGS_COLS = {
@@ -323,6 +325,98 @@ function tycheRowFields(row) {
     buy_edge: useCurrent ? row.buy_edge_current : row.buy_edge_pre,
     sell_edge: useCurrent ? row.sell_edge_current : row.sell_edge_pre,
   };
+}
+
+const TYCHE_TEAM_ALIASES = {
+  Czechia: "Czech Republic",
+  Türkiye: "Turkey",
+  Curacao: "Curaçao",
+  USA: "United States",
+};
+
+function normaliseTycheTeam(name) {
+  const trimmed = String(name || "").trim();
+  return TYCHE_TEAM_ALIASES[trimmed] ?? trimmed;
+}
+
+function roundTyche(n) {
+  return n == null ? null : Math.round(n * 100) / 100;
+}
+
+function computeTycheEdges(theo, bid, ask) {
+  const buyEdge = theo != null && ask != null ? theo - ask : null;
+  const sellEdge = theo != null && bid != null ? bid - theo : null;
+  let side = null;
+  let edge = null;
+  if (buyEdge != null && buyEdge > 0 && (sellEdge == null || sellEdge <= 0 || buyEdge >= sellEdge)) {
+    side = "buy";
+    edge = buyEdge;
+  } else if (sellEdge != null && sellEdge > 0) {
+    side = "sell";
+    edge = sellEdge;
+  } else if (buyEdge != null || sellEdge != null) {
+    edge = Math.max(buyEdge ?? -Infinity, sellEdge ?? -Infinity);
+  }
+  return {
+    buy_edge: roundTyche(buyEdge),
+    sell_edge: roundTyche(sellEdge),
+    side,
+    edge: roundTyche(edge),
+  };
+}
+
+function teamTheoMap(results) {
+  if (!results?.teams) return {};
+  return Object.fromEntries(results.teams.map((r) => [r.team, Number(r.expected_points)]));
+}
+
+function matchTheoMap(rows) {
+  const out = new Map();
+  if (!Array.isArray(rows)) return out;
+  for (const row of rows) {
+    const home = normaliseTycheTeam(row.home);
+    const away = normaliseTycheTeam(row.away);
+    out.set(`${home}\0${away}`, Number(row.expected_gxcxc));
+  }
+  return out;
+}
+
+function enrichTycheData(data) {
+  if (!data?.items?.length) return data;
+  if (data.items[0].theo_pre != null || data.items[0].edge_pre != null) return data;
+
+  const theosPre = teamTheoMap(state.results);
+  const theosCurrent = state.hasCurrent ? teamTheoMap(state.resultsCurrent) : theosPre;
+  const matchTheos = matchTheoMap(state.matchPredictions);
+
+  data.items = data.items.map((row) => {
+    let theoPre = null;
+    let theoCurrent = null;
+    if (row.kind === "team") {
+      theoPre = theosPre[row.team ?? row.title] ?? null;
+      theoCurrent = theosCurrent[row.team ?? row.title] ?? theoPre;
+    } else if (row.kind === "match") {
+      const key = `${normaliseTycheTeam(row.home)}\0${normaliseTycheTeam(row.away)}`;
+      theoPre = matchTheos.get(key) ?? null;
+      theoCurrent = theoPre;
+    }
+    const pre = computeTycheEdges(theoPre, row.best_bid, row.best_ask);
+    const cur = computeTycheEdges(theoCurrent, row.best_bid, row.best_ask);
+    return {
+      ...row,
+      theo_pre: roundTyche(theoPre),
+      theo_current: roundTyche(theoCurrent),
+      buy_edge_pre: pre.buy_edge,
+      sell_edge_pre: pre.sell_edge,
+      side_pre: pre.side,
+      edge_pre: pre.edge,
+      buy_edge_current: cur.buy_edge,
+      sell_edge_current: cur.sell_edge,
+      side_current: cur.side,
+      edge_current: cur.edge,
+    };
+  });
+  return data;
 }
 
 function fmtPrice(v) {
@@ -668,7 +762,7 @@ async function loadTycheData(force = false) {
         return;
       }
       if (r.ok) {
-        state.tyche = await r.json();
+        state.tyche = enrichTycheData(await r.json());
         state.tycheLive = !!state.tyche.live;
         state.tycheFetchedAt = Date.now();
         state.tycheLoading = false;
@@ -678,8 +772,9 @@ async function loadTycheData(force = false) {
         return;
       }
       const errBody = await r.json().catch(() => ({}));
+      const detail = [errBody.error, errBody.code].filter(Boolean).join(" — ");
       state.tycheError =
-        errBody.error ||
+        detail ||
         (r.status === 502 ? "Server timeout — retry in a moment" : `HTTP ${r.status}`);
     } catch (err) {
       state.tycheError = err.message || "Network error";
@@ -744,12 +839,21 @@ async function loadData() {
     /* optional */
   }
 
+  let matchPredictions = null;
+  try {
+    const r = await fetch(API.matchEvents, { credentials: "same-origin" });
+    if (r.ok) matchPredictions = await r.json();
+  } catch (_) {
+    /* optional match multiplier theos */
+  }
+
   state.results = results;
   state.resultsOdds = resultsOdds;
   state.resultsCurrent = resultsCurrent;
   state.resultsCurrentOdds = resultsCurrentOdds;
   state.hasCompare = !!resultsOdds;
   state.hasCurrent = !!resultsCurrent;
+  state.matchPredictions = matchPredictions;
   state.tournament = tournament;
   state.odds = odds;
   state.teamToGroup = {};
