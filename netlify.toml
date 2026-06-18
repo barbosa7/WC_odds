@@ -5,7 +5,6 @@
 
 [functions.tyche_opportunities]
   timeout = 26
-  included_files = ["netlify/functions/data/**"]
 
 [[edge_functions]]
   function = "protect"
@@ -13,6 +12,7 @@
 
 [build.environment]
   PYTHON_VERSION = "3.11"
+  NODE_VERSION = "20"
   # Auth vars are runtime-only (Netlify UI). Omit from scan — "opti"/"brazil" appear in
   # project name and Oddschecker HTML as false positives.
   SECRETS_SCAN_OMIT_KEYS = "SITE_USER,SITE_PASSWORD,AUTH_SECRET,TYCHE_EMAIL,TYCHE_PASSWORD"
