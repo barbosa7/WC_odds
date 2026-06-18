@@ -783,6 +783,9 @@ input[type="search"]:focus, select:focus {
 
 .tyche-stat.buy { border-color: rgba(61, 214, 140, 0.35); }
 .tyche-stat.sell { border-color: rgba(240, 113, 120, 0.35); }
+.tyche-stat.basket.bid { border-color: rgba(61, 214, 140, 0.2); }
+.tyche-stat.basket.mark { border-color: rgba(91, 156, 245, 0.25); }
+.tyche-stat.basket.ask { border-color: rgba(240, 113, 120, 0.2); }
 
 .tyche-stat-value {
   font-size: 1.75rem;
@@ -793,6 +796,9 @@ input[type="search"]:focus, select:focus {
 
 .tyche-stat.buy .tyche-stat-value { color: var(--accent); }
 .tyche-stat.sell .tyche-stat-value { color: var(--danger); }
+.tyche-stat.basket.bid .tyche-stat-value { color: var(--accent); }
+.tyche-stat.basket.mark .tyche-stat-value { color: var(--blue); }
+.tyche-stat.basket.ask .tyche-stat-value { color: var(--danger); }
 
 .tyche-stat-label { font-weight: 600; font-size: 0.9rem; }
 .tyche-stat-sub { color: var(--text-muted); font-size: 0.78rem; }

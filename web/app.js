@@ -426,6 +426,70 @@ function fmtPrice(v) {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
+function tycheImputedBid(row) {
+  if (row.best_bid != null) return Number(row.best_bid);
+  if (row.mark != null) return Number(row.mark) - 1;
+  return null;
+}
+
+function tycheImputedAsk(row) {
+  if (row.best_ask != null) return Number(row.best_ask);
+  if (row.mark != null) return Number(row.mark) + 1;
+  return null;
+}
+
+function computeTycheBasket(items) {
+  const teams = (items || []).filter((r) => r.kind === "team");
+  let bidSum = 0;
+  let markSum = 0;
+  let askSum = 0;
+  let bidCount = 0;
+  let markCount = 0;
+  let askCount = 0;
+  let bidImputed = 0;
+  let askImputed = 0;
+
+  for (const row of teams) {
+    if (row.mark != null) {
+      markSum += Number(row.mark);
+      markCount += 1;
+    }
+    const bid = tycheImputedBid(row);
+    if (bid != null) {
+      bidSum += bid;
+      bidCount += 1;
+      if (row.best_bid == null) bidImputed += 1;
+    }
+    const ask = tycheImputedAsk(row);
+    if (ask != null) {
+      askSum += ask;
+      askCount += 1;
+      if (row.best_ask == null) askImputed += 1;
+    }
+  }
+
+  return {
+    teams: teams.length,
+    bidSum,
+    markSum,
+    askSum,
+    bidCount,
+    markCount,
+    askCount,
+    bidImputed,
+    askImputed,
+  };
+}
+
+function fmtBasketSum(n) {
+  if (n == null || Number.isNaN(n)) return "—";
+  return Number(n).toFixed(1);
+}
+
+function imputedSub(n) {
+  return n ? `${n} imputed (mark ± 1)` : "all live quotes";
+}
+
 function formatMyPosition(row, side) {
   const net = Number(row.my_net ?? 0);
   if (!net) {
@@ -540,6 +604,7 @@ function renderTycheSummary() {
   const fetched = state.tyche.fetched_at
     ? new Date(state.tyche.fetched_at).toLocaleString()
     : "unknown";
+  const basket = computeTycheBasket(items);
 
   el.innerHTML = `
     <div class="tyche-stat buy">
@@ -556,6 +621,21 @@ function renderTycheSummary() {
       <span class="tyche-stat-value">${openPos}</span>
       <span class="tyche-stat-label">Your positions</span>
       <span class="tyche-stat-sub">${acct} on Tyche</span>
+    </div>
+    <div class="tyche-stat basket bid">
+      <span class="tyche-stat-value">${fmtBasketSum(basket.bidSum)}</span>
+      <span class="tyche-stat-label">Basket bid</span>
+      <span class="tyche-stat-sub">${basket.bidCount}/${basket.teams} teams · ${imputedSub(basket.bidImputed)}</span>
+    </div>
+    <div class="tyche-stat basket mark">
+      <span class="tyche-stat-value">${fmtBasketSum(basket.markSum)}</span>
+      <span class="tyche-stat-label">Basket mark</span>
+      <span class="tyche-stat-sub">${basket.markCount}/${basket.teams} teams with mark</span>
+    </div>
+    <div class="tyche-stat basket ask">
+      <span class="tyche-stat-value">${fmtBasketSum(basket.askSum)}</span>
+      <span class="tyche-stat-label">Basket ask</span>
+      <span class="tyche-stat-sub">${basket.askCount}/${basket.teams} teams · ${imputedSub(basket.askImputed)}</span>
     </div>
   `;
 
