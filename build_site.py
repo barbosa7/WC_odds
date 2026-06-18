@@ -67,7 +67,6 @@ def build(*, run_sim: bool = False, n_sims: int = 25_000) -> None:
     redirects = DIST / "_redirects"
     redirects.write_text(
         "/login /login.html 200\n"
-        "/api/tyche-opportunities /.netlify/functions/tyche_opportunities 200\n"
     )
 
     fn_data = ROOT / "netlify" / "functions" / "data"

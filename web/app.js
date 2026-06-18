@@ -7,7 +7,8 @@ const API = {
   resultsCurrentOdds: "./data/expected_points_current_odds_only.json",
   tournament: "./data/tournament.json",
   odds: "./data/odds_oddschecker.json",
-  tyche: "/.netlify/functions/tyche_opportunities",
+  tyche: "/api/tyche-opportunities",
+  tycheFn: "/.netlify/functions/tyche_opportunities",
   tycheLocal: "/api/tyche-opportunities",
   tycheFallback: "./data/tychemkt_opportunities.json",
   matchEvents: "./data/match_events_predictions.json",
@@ -748,12 +749,12 @@ async function loadTycheData(force = false) {
   renderTycheSummary();
   renderTycheTable(document.getElementById("search-tyche")?.value || "");
 
-  const urls =
-    window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
-      ? [API.tycheLocal, API.tyche]
-      : [API.tyche, API.tycheLocal];
+  const isLocal =
+    window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+  const urls = isLocal ? [API.tycheLocal] : [API.tyche, API.tycheFn];
 
-  for (const url of urls) {
+  for (const base of urls) {
+    const url = force ? `${base}?refresh=1` : base;
     try {
       const r = await fetch(url, { credentials: "same-origin" });
       if (r.status === 401) {

@@ -3,9 +3,7 @@ const JSON_HEADERS = {
   "Content-Type": "application/json",
   "Cache-Control": "private, no-store",
 };
-
 const CACHE_MS = 45_000;
-let cache = { payload: null, expires: 0 };
 
 const TEAM_ALIASES = {
   Czechia: "Czech Republic",
@@ -13,6 +11,12 @@ const TEAM_ALIASES = {
   Curacao: "Curaçao",
   USA: "United States",
 };
+
+let cache = { payload: null, expires: 0 };
+
+function json(body, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
+}
 
 function normaliseTeam(name) {
   return TEAM_ALIASES[name?.trim()] ?? name?.trim() ?? "";
@@ -115,33 +119,19 @@ async function fetchOpportunities(email, password) {
     };
   }
 
-  const books = (
-    await Promise.allSettled(
-      contracts.map(async (contract) => {
-        for (let attempt = 0; attempt < 2; attempt += 1) {
-          try {
-            const bookRes = await tycheCall(cookie, "QueryService", "GetOrderBook", {
-              contractId: contract.id,
-            });
-            return { contract, book: bookRes.data.orderBook || {} };
-          } catch (err) {
-            if (attempt === 1) {
-              console.warn(`GetOrderBook failed for ${contract.id}: ${err.message}`);
-              return null;
-            }
-          }
-        }
-        return null;
-      }),
-    )
-  )
-    .filter((result) => result.status === "fulfilled" && result.value)
-    .map((result) => result.value);
+  const bookResults = await Promise.allSettled(
+    contracts.map(async (contract) => {
+      const bookRes = await tycheCall(cookie, "QueryService", "GetOrderBook", {
+        contractId: contract.id,
+      });
+      return { contract, book: bookRes.data.orderBook || {} };
+    }),
+  );
 
   const items = [];
-  for (const entry of books) {
-    if (!entry) continue;
-    const { contract, book } = entry;
+  for (const result of bookResults) {
+    if (result.status !== "fulfilled") continue;
+    const { contract, book } = result.value;
     const meta = contract.metadata || {};
     const [bid, bidQty] = bestLevel(book.bids);
     const [ask, askQty] = bestLevel(book.asks);
@@ -203,58 +193,54 @@ async function fetchOpportunities(email, password) {
   };
 }
 
-function jsonResponse(statusCode, body) {
-  return {
-    statusCode,
-    headers: JSON_HEADERS,
-    body: JSON.stringify(body),
-  };
-}
-
-export async function handler(event) {
-  if (event.httpMethod && event.httpMethod !== "GET") {
-    return jsonResponse(405, { error: "Method not allowed" });
+export default async (request) => {
+  if (request.method !== "GET") {
+    return json({ error: "Method not allowed" }, 405);
   }
 
-  const email = (process.env.TYCHE_EMAIL || "").trim();
-  const password = (process.env.TYCHE_PASSWORD || "").trim();
+  const url = new URL(request.url);
+  const email = (Netlify.env.get("TYCHE_EMAIL") || "").trim();
+  const password = (Netlify.env.get("TYCHE_PASSWORD") || "").trim();
 
-  if (event.queryStringParameters?.ping === "1") {
-    return jsonResponse(200, {
+  if (url.searchParams.get("ping") === "1") {
+    return json({
       ok: true,
-      runtime: "lambda",
+      runtime: "edge",
       has_email: !!email,
       has_password: !!password,
-      node: process.version,
     });
   }
 
   if (!email || !password) {
-    return jsonResponse(503, {
-      error: "Tyche credentials not configured",
-      hint: "Set TYCHE_EMAIL and TYCHE_PASSWORD in Netlify environment variables",
-    });
+    return json(
+      {
+        error: "Tyche credentials not configured",
+        hint: "Set TYCHE_EMAIL and TYCHE_PASSWORD in Netlify environment variables",
+      },
+      503,
+    );
   }
 
-  const force = event.queryStringParameters?.refresh === "1";
+  const force = url.searchParams.get("refresh") === "1";
   if (!force && cache.payload && Date.now() < cache.expires) {
-    return jsonResponse(200, cache.payload);
+    return json(cache.payload);
   }
 
   try {
     const data = await fetchOpportunities(email, password);
     cache = { payload: data, expires: Date.now() + CACHE_MS };
-    return jsonResponse(200, data);
+    return json(data);
   } catch (err) {
-    console.error("tyche_opportunities failed:", err.message, err.code, err.status);
+    console.error("tyche edge failed:", err.message, err.code, err.status);
     const isAuth = err.status === 401 || err.code === "unauthenticated";
-    return jsonResponse(502, {
-      error: isAuth
-        ? "Tyche login failed — check TYCHE_EMAIL and TYCHE_PASSWORD"
-        : err.message || "Tyche fetch failed",
-      code: err.code,
-    });
+    return json(
+      {
+        error: isAuth
+          ? "Tyche login failed — check TYCHE_EMAIL and TYCHE_PASSWORD"
+          : err.message || "Tyche fetch failed",
+        code: err.code,
+      },
+      502,
+    );
   }
-}
-
-export default handler;
+};
