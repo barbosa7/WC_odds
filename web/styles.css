@@ -872,6 +872,11 @@ input[type="search"]:focus, select:focus {
   font-size: 0.75rem;
 }
 
+.tyche-meta.unlisted {
+  color: var(--gold);
+  font-weight: 600;
+}
+
 .tyche-side {
   display: inline-block;
   font-size: 0.72rem;

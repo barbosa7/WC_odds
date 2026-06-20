@@ -384,13 +384,14 @@ function matchTheoMap(rows) {
 
 function enrichTycheData(data) {
   if (!data?.items?.length) return data;
-  if (data.items[0].theo_pre != null || data.items[0].edge_pre != null) return data;
 
   const theosPre = teamTheoMap(state.results);
   const theosCurrent = state.hasCurrent ? teamTheoMap(state.resultsCurrent) : theosPre;
   const matchTheos = matchTheoMap(state.matchPredictions);
 
   data.items = data.items.map((row) => {
+    if (row.theo_pre != null && row.edge_pre != null) return row;
+
     let theoPre = null;
     let theoCurrent = null;
     if (row.kind === "team") {
@@ -418,6 +419,57 @@ function enrichTycheData(data) {
     };
   });
   return data;
+}
+
+function matchFixtureKey(home, away) {
+  return `${normaliseTycheTeam(home)}\0${normaliseTycheTeam(away)}`;
+}
+
+function mergeTycheFixtures(data) {
+  if (!data?.items || !state.matchPredictions?.length) return data;
+
+  const teamItems = data.items.filter((r) => r.kind === "team");
+  const matchItems = data.items.filter((r) => r.kind === "match");
+  const byKey = new Map();
+
+  for (const row of matchItems) {
+    byKey.set(matchFixtureKey(row.home, row.away), { ...row, tyche_listed: true });
+  }
+
+  for (const fx of state.matchPredictions) {
+    const key = matchFixtureKey(fx.home, fx.away);
+    if (byKey.has(key)) {
+      const row = byKey.get(key);
+      row.group = row.group ?? fx.group;
+      row.matchday = fx.matchday;
+      continue;
+    }
+    byKey.set(key, {
+      kind: "match",
+      contract_id: null,
+      title: `${fx.home} × ${fx.away}`,
+      status: "UNLISTED",
+      mark: null,
+      best_bid: null,
+      best_ask: null,
+      bid_qty: null,
+      ask_qty: null,
+      my_net: 0,
+      my_cash: 0,
+      home: fx.home,
+      away: fx.away,
+      group: fx.group,
+      matchday: fx.matchday,
+      tyche_listed: false,
+    });
+  }
+
+  data.items = [...teamItems, ...Array.from(byKey.values())];
+  return data;
+}
+
+function processTychePayload(data) {
+  return enrichTycheData(mergeTycheFixtures(data));
 }
 
 function fmtPrice(v) {
@@ -676,7 +728,7 @@ function renderTycheTable(query = "") {
   const q = query.trim().toLowerCase();
   let rows = state.tyche.items.map((row) => ({ row, ...tycheRowFields(row) }));
 
-  if (state.tycheFilter === "opps") rows = rows.filter((r) => r.side);
+  if (state.tycheFilter === "opps" && !q) rows = rows.filter((r) => r.side);
   else if (state.tycheFilter === "unheld") {
     rows = rows.filter((r) => r.side && Number(r.row.my_net ?? 0) === 0);
   } else if (state.tycheFilter === "buy") rows = rows.filter((r) => r.side === "buy");
@@ -737,6 +789,10 @@ function renderTycheTable(query = "") {
         row.kind === "match"
           ? `<span class="tyche-kind match">Match</span>`
           : `<span class="tyche-kind team">Team</span>`;
+      const unlistedBadge =
+        row.tyche_listed === false
+          ? `<span class="tyche-meta unlisted" title="Not listed on Tyche yet">No market</span>`
+          : "";
       const sideBadge = side
         ? `<span class="tyche-side ${side}">${side.toUpperCase()}</span>`
         : `<span class="tyche-side none">—</span>`;
@@ -744,9 +800,11 @@ function renderTycheTable(query = "") {
       const titleExtra =
         row.kind === "team" && row.group
           ? `<span class="tyche-meta">Grp ${row.group}</span>`
-          : row.kind === "match" && row.kickoff
-            ? `<span class="tyche-meta">${new Date(row.kickoff).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>`
-            : "";
+          : row.kind === "match" && row.matchday
+            ? `<span class="tyche-meta">MD${row.matchday} · Grp ${row.group || "?"}</span>`
+            : row.kind === "match" && row.kickoff
+              ? `<span class="tyche-meta">${new Date(row.kickoff).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>`
+              : "";
       const bidCell =
         row.best_bid != null
           ? `${fmtPrice(row.best_bid)}<span class="tyche-qty">×${fmtPrice(row.bid_qty)}</span>`
@@ -762,7 +820,7 @@ function renderTycheTable(query = "") {
       <tr class="${side ? `tyche-opp-${side}` : ""}${pos.aligned ? " tyche-pos-aligned" : ""}">
         <td class="num ${edgeCls}">${edge != null && edge > 0 ? `+${fmtPrice(edge)}` : edge != null ? fmtPrice(edge) : "—"}</td>
         <td>${sideBadge}</td>
-        <td class="tyche-title">${kindBadge}${row.title}${titleExtra}</td>
+        <td class="tyche-title">${kindBadge}${row.title}${titleExtra}${unlistedBadge}</td>
         <td class="num tyche-pos ${pos.cls}">${pos.html}</td>
         <td class="num">${theo != null ? fmtPrice(theo) : "—"}</td>
         <td class="num ${bidCls}">${bidCell}</td>
@@ -792,6 +850,12 @@ function setupTychePanel() {
   document.querySelectorAll("[data-tyche-kind]").forEach((btn) => {
     btn.addEventListener("click", () => {
       state.tycheKind = btn.dataset.tycheKind;
+      if (state.tycheKind === "match" && state.tycheFilter === "opps") {
+        state.tycheFilter = "all";
+        document.querySelectorAll("[data-tyche-filter]").forEach((b) => {
+          b.classList.toggle("active", b.dataset.tycheFilter === state.tycheFilter);
+        });
+      }
       document.querySelectorAll("[data-tyche-kind]").forEach((b) => {
         b.classList.toggle("active", b.dataset.tycheKind === state.tycheKind);
       });
@@ -843,7 +907,7 @@ async function loadTycheData(force = false) {
         return;
       }
       if (r.ok) {
-        state.tyche = enrichTycheData(await r.json());
+        state.tyche = processTychePayload(await r.json());
         state.tycheLive = !!state.tyche.live;
         state.tycheFetchedAt = Date.now();
         state.tycheLoading = false;
@@ -866,7 +930,7 @@ async function loadTycheData(force = false) {
     try {
       const r = await fetch(API.tycheFallback, { credentials: "same-origin" });
       if (r.ok) {
-        state.tyche = await r.json();
+        state.tyche = processTychePayload(await r.json());
         state.tycheLive = false;
         state.tycheFetchedAt = Date.now();
         state.tycheError = state.tycheError
