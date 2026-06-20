@@ -3,7 +3,8 @@ const JSON_HEADERS = {
   "Content-Type": "application/json",
   "Cache-Control": "private, no-store",
 };
-const CACHE_MS = 45_000;
+const CACHE_MS = 30_000;
+const BOOK_BATCH_SIZE = 12;
 
 const TEAM_ALIASES = {
   Czechia: "Czech Republic",
@@ -22,10 +23,20 @@ function normaliseTeam(name) {
   return TEAM_ALIASES[name?.trim()] ?? name?.trim() ?? "";
 }
 
-function bestLevel(levels) {
+function bestQuote(levels, side) {
   if (!levels?.length) return [null, null];
-  const top = levels[0];
-  return [Number(top.price?.value), Number(top.quantity?.value ?? 0)];
+  let bestPrice = null;
+  let bestQty = null;
+  for (const level of levels) {
+    const price = Number(level.price?.value);
+    if (Number.isNaN(price)) continue;
+    const qty = Number(level.quantity?.value ?? 0);
+    if (bestPrice == null || (side === "bid" ? price > bestPrice : price < bestPrice)) {
+      bestPrice = price;
+      bestQty = qty;
+    }
+  }
+  return [bestPrice, bestQty];
 }
 
 function round2(n) {
@@ -75,6 +86,82 @@ function relevantContracts(contracts) {
   });
 }
 
+function contractToItem(contract, marks, myPositions) {
+  const meta = contract.metadata || {};
+  const pos = myPositions[contract.id];
+  const base = {
+    contract_id: contract.id,
+    title: contract.title,
+    status: (contract.status || "").replace("CONTRACT_STATUS_", ""),
+    mark: round2(marks[contract.id] ?? null),
+    best_bid: null,
+    best_ask: null,
+    bid_qty: null,
+    ask_qty: null,
+    my_net: pos?.net ?? 0,
+    my_cash: pos?.cash ?? 0,
+    tyche_listed: true,
+  };
+
+  if (meta.kind === "multiplier") {
+    return {
+      ...base,
+      kind: "match",
+      home: normaliseTeam(meta.homeName),
+      away: normaliseTeam(meta.awayName),
+      kickoff: meta.kickoff,
+      stage: meta.stage,
+    };
+  }
+
+  return {
+    ...base,
+    kind: "team",
+    team: contract.title,
+    group: meta.group,
+  };
+}
+
+async function fetchOrderBooks(cookie, contracts) {
+  const books = new Map();
+  for (let i = 0; i < contracts.length; i += BOOK_BATCH_SIZE) {
+    const batch = contracts.slice(i, i + BOOK_BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map(async (contract) => {
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          try {
+            const bookRes = await tycheCall(cookie, "QueryService", "GetOrderBook", {
+              contractId: contract.id,
+            });
+            return [contract.id, bookRes.data.orderBook || {}];
+          } catch (err) {
+            if (attempt === 1) {
+              console.warn(`GetOrderBook failed for ${contract.title}: ${err.message}`);
+              return null;
+            }
+          }
+        }
+        return null;
+      }),
+    );
+    for (const result of results) {
+      if (result.status === "fulfilled" && result.value) {
+        books.set(result.value[0], result.value[1]);
+      }
+    }
+  }
+  return books;
+}
+
+function applyOrderBook(item, book) {
+  const [bid, bidQty] = bestQuote(book.bids, "bid");
+  const [ask, askQty] = bestQuote(book.asks, "ask");
+  item.best_bid = bid;
+  item.best_ask = ask;
+  item.bid_qty = bidQty;
+  item.ask_qty = askQty;
+}
+
 async function fetchOpportunities(email, password) {
   const login = await tycheCall("", "AuthService", "Login", { email, password });
   let cookie = login.cookie;
@@ -119,59 +206,11 @@ async function fetchOpportunities(email, password) {
     };
   }
 
-  const bookResults = await Promise.allSettled(
-    contracts.map(async (contract) => {
-      const bookRes = await tycheCall(cookie, "QueryService", "GetOrderBook", {
-        contractId: contract.id,
-      });
-      return { contract, book: bookRes.data.orderBook || {} };
-    }),
-  );
-
-  const items = [];
-  for (const result of bookResults) {
-    if (result.status !== "fulfilled") continue;
-    const { contract, book } = result.value;
-    const meta = contract.metadata || {};
-    const [bid, bidQty] = bestLevel(book.bids);
-    const [ask, askQty] = bestLevel(book.asks);
-    const pos = myPositions[contract.id];
-
-    if (meta.kind === "multiplier") {
-      items.push({
-        kind: "match",
-        contract_id: contract.id,
-        title: contract.title,
-        status: (contract.status || "").replace("CONTRACT_STATUS_", ""),
-        mark: round2(marks[contract.id] ?? null),
-        best_bid: bid,
-        best_ask: ask,
-        bid_qty: bidQty,
-        ask_qty: askQty,
-        my_net: pos?.net ?? 0,
-        my_cash: pos?.cash ?? 0,
-        home: normaliseTeam(meta.homeName),
-        away: normaliseTeam(meta.awayName),
-        kickoff: meta.kickoff,
-        stage: meta.stage,
-      });
-    } else {
-      items.push({
-        kind: "team",
-        contract_id: contract.id,
-        title: contract.title,
-        status: (contract.status || "").replace("CONTRACT_STATUS_", ""),
-        mark: round2(marks[contract.id] ?? null),
-        best_bid: bid,
-        best_ask: ask,
-        bid_qty: bidQty,
-        ask_qty: askQty,
-        my_net: pos?.net ?? 0,
-        my_cash: pos?.cash ?? 0,
-        team: contract.title,
-        group: meta.group,
-      });
-    }
+  const items = contracts.map((contract) => contractToItem(contract, marks, myPositions));
+  const books = await fetchOrderBooks(cookie, contracts);
+  for (const item of items) {
+    const book = books.get(item.contract_id);
+    if (book) applyOrderBook(item, book);
   }
 
   return {

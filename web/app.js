@@ -425,6 +425,37 @@ function matchFixtureKey(home, away) {
   return `${normaliseTycheTeam(home)}\0${normaliseTycheTeam(away)}`;
 }
 
+function parseMatchTitle(title) {
+  const m = String(title || "").match(/^(.+?)\s×\s(.+?)(?:\s—|\s*$)/);
+  if (!m) return null;
+  return { home: m[1].trim(), away: m[2].trim() };
+}
+
+function normaliseTycheMatchRow(row) {
+  let home = row.home;
+  let away = row.away;
+  if (!home || !away) {
+    const parsed = parseMatchTitle(row.title);
+    if (parsed) {
+      home = parsed.home;
+      away = parsed.away;
+    }
+  }
+  if (!home || !away) return null;
+  return {
+    ...row,
+    home: normaliseTycheTeam(home),
+    away: normaliseTycheTeam(away),
+    tyche_listed: row.tyche_listed !== false && !!row.contract_id,
+  };
+}
+
+function findListedMatch(byKey, home, away) {
+  return (
+    byKey.get(matchFixtureKey(home, away)) || byKey.get(matchFixtureKey(away, home))
+  );
+}
+
 function mergeTycheFixtures(data) {
   if (!data?.items || !state.matchPredictions?.length) return data;
 
@@ -433,18 +464,19 @@ function mergeTycheFixtures(data) {
   const byKey = new Map();
 
   for (const row of matchItems) {
-    byKey.set(matchFixtureKey(row.home, row.away), { ...row, tyche_listed: true });
+    const normalised = normaliseTycheMatchRow(row);
+    if (!normalised) continue;
+    byKey.set(matchFixtureKey(normalised.home, normalised.away), normalised);
   }
 
   for (const fx of state.matchPredictions) {
-    const key = matchFixtureKey(fx.home, fx.away);
-    if (byKey.has(key)) {
-      const row = byKey.get(key);
-      row.group = row.group ?? fx.group;
-      row.matchday = fx.matchday;
+    const listed = findListedMatch(byKey, fx.home, fx.away);
+    if (listed) {
+      listed.group = listed.group ?? fx.group;
+      listed.matchday = fx.matchday;
       continue;
     }
-    byKey.set(key, {
+    byKey.set(matchFixtureKey(fx.home, fx.away), {
       kind: "match",
       contract_id: null,
       title: `${fx.home} × ${fx.away}`,
@@ -456,8 +488,8 @@ function mergeTycheFixtures(data) {
       ask_qty: null,
       my_net: 0,
       my_cash: 0,
-      home: fx.home,
-      away: fx.away,
+      home: normaliseTycheTeam(fx.home),
+      away: normaliseTycheTeam(fx.away),
       group: fx.group,
       matchday: fx.matchday,
       tyche_listed: false,
@@ -480,13 +512,13 @@ function fmtPrice(v) {
 
 function tycheImputedBid(row) {
   if (row.best_bid != null) return Number(row.best_bid);
-  if (row.mark != null) return Number(row.mark) - 1;
+  if (row.mark != null) return Number(row.mark);
   return null;
 }
 
 function tycheImputedAsk(row) {
   if (row.best_ask != null) return Number(row.best_ask);
-  if (row.mark != null) return Number(row.mark) + 1;
+  if (row.mark != null) return Number(row.mark);
   return null;
 }
 
@@ -495,9 +527,11 @@ function computeTycheBasket(items) {
   let bidSum = 0;
   let markSum = 0;
   let askSum = 0;
+  let spreadSum = 0;
   let bidCount = 0;
   let markCount = 0;
   let askCount = 0;
+  let spreadCount = 0;
   let bidImputed = 0;
   let askImputed = 0;
 
@@ -507,16 +541,20 @@ function computeTycheBasket(items) {
       markCount += 1;
     }
     const bid = tycheImputedBid(row);
+    const ask = tycheImputedAsk(row);
     if (bid != null) {
       bidSum += bid;
       bidCount += 1;
       if (row.best_bid == null) bidImputed += 1;
     }
-    const ask = tycheImputedAsk(row);
     if (ask != null) {
       askSum += ask;
       askCount += 1;
       if (row.best_ask == null) askImputed += 1;
+    }
+    if (row.best_bid != null && row.best_ask != null) {
+      spreadSum += Number(row.best_ask) - Number(row.best_bid);
+      spreadCount += 1;
     }
   }
 
@@ -525,9 +563,12 @@ function computeTycheBasket(items) {
     bidSum,
     markSum,
     askSum,
+    spreadSum,
+    avgSpread: spreadCount ? spreadSum / spreadCount : null,
     bidCount,
     markCount,
     askCount,
+    spreadCount,
     bidImputed,
     askImputed,
   };
@@ -539,7 +580,7 @@ function fmtBasketSum(n) {
 }
 
 function imputedSub(n) {
-  return n ? `${n} imputed (mark ± 1)` : "all live quotes";
+  return n ? `${n} filled at mark` : "all live quotes";
 }
 
 function formatMyPosition(row, side) {
@@ -558,7 +599,7 @@ function formatMyPosition(row, side) {
   };
 }
 
-const TYCHE_STALE_MS = 45_000;
+const TYCHE_STALE_MS = 30_000;
 const TYCHE_WARN_MS = 120_000;
 
 function tycheDataAgeMs() {
@@ -687,7 +728,7 @@ function renderTycheSummary() {
     <div class="tyche-stat basket ask">
       <span class="tyche-stat-value">${fmtBasketSum(basket.askSum)}</span>
       <span class="tyche-stat-label">Basket ask</span>
-      <span class="tyche-stat-sub">${basket.askCount}/${basket.teams} teams · ${imputedSub(basket.askImputed)}</span>
+      <span class="tyche-stat-sub">${basket.askCount}/${basket.teams} teams · ${imputedSub(basket.askImputed)} · Σ spread ${fmtBasketSum(basket.spreadSum)}${basket.avgSpread != null ? ` (avg ${fmtBasketSum(basket.avgSpread)}/team)` : ""}</span>
     </div>
   `;
 
@@ -790,7 +831,7 @@ function renderTycheTable(query = "") {
           ? `<span class="tyche-kind match">Match</span>`
           : `<span class="tyche-kind team">Team</span>`;
       const unlistedBadge =
-        row.tyche_listed === false
+        row.tyche_listed === false && !row.contract_id
           ? `<span class="tyche-meta unlisted" title="Not listed on Tyche yet">No market</span>`
           : "";
       const sideBadge = side

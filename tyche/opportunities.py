@@ -52,13 +52,26 @@ def load_match_theos() -> dict[tuple[str, str], float]:
     return out
 
 
-def best_level(levels: list[dict]) -> tuple[float | None, float | None]:
-    if not levels:
-        return None, None
-    top = levels[0]
-    price = float(top["price"]["value"])
-    qty = float(top.get("quantity", {}).get("value", "0"))
-    return price, qty
+def best_bid(levels: list[dict]) -> tuple[float | None, float | None]:
+    best_price = None
+    best_qty = None
+    for level in levels:
+        price = float(level["price"]["value"])
+        qty = float(level.get("quantity", {}).get("value", "0"))
+        if best_price is None or price > best_price:
+            best_price, best_qty = price, qty
+    return best_price, best_qty
+
+
+def best_ask(levels: list[dict]) -> tuple[float | None, float | None]:
+    best_price = None
+    best_qty = None
+    for level in levels:
+        price = float(level["price"]["value"])
+        qty = float(level.get("quantity", {}).get("value", "0"))
+        if best_price is None or price < best_price:
+            best_price, best_qty = price, qty
+    return best_price, best_qty
 
 
 def compute_edges(theo: float | None, bid: float | None, ask: float | None) -> dict:
@@ -172,10 +185,10 @@ def fetch_opportunities(email: str, password: str) -> dict:
         }
         meta = contract.metadata or {}
         book = client.get_order_book(contract.id)
-        bid, bid_qty = best_level(
+        bid, bid_qty = best_bid(
             [{"price": {"value": l.price}, "quantity": {"value": l.quantity}} for l in book.bids]
         )
-        ask, ask_qty = best_level(
+        ask, ask_qty = best_ask(
             [{"price": {"value": l.price}, "quantity": {"value": l.quantity}} for l in book.asks]
         )
         mark = marks.get(contract.id)
