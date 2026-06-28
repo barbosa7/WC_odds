@@ -1009,9 +1009,35 @@ function tycheTeamLookup() {
 
 function computeBasketForTeams(teams) {
   const lookup = tycheTeamLookup();
-  const items = teams.map((t) => lookup.get(normaliseTycheTeam(t))).filter(Boolean);
-  const basket = computeTycheBasket(items);
-  return { ...basket, quoted: items.length, total: teams.length };
+  const normalized = teams.map((t) => normaliseTycheTeam(t));
+  const items = normalized.map((t) => lookup.get(t)).filter(Boolean);
+  const total = teams.length;
+
+  // Require a live bid/ask on every constituent — never impute from mark.
+  if (items.length !== total) {
+    return {
+      bidSum: null,
+      askSum: null,
+      bidCount: 0,
+      askCount: 0,
+      quoted: items.length,
+      total,
+      quotesComplete: false,
+    };
+  }
+
+  const allBids = items.every((r) => r.best_bid != null);
+  const allAsks = items.every((r) => r.best_ask != null);
+
+  return {
+    bidSum: allBids ? items.reduce((s, r) => s + Number(r.best_bid), 0) : null,
+    askSum: allAsks ? items.reduce((s, r) => s + Number(r.best_ask), 0) : null,
+    bidCount: allBids ? items.length : 0,
+    askCount: allAsks ? items.length : 0,
+    quoted: items.length,
+    total,
+    quotesComplete: allBids && allAsks,
+  };
 }
 
 function enrichBasketNode(node) {
@@ -1020,12 +1046,12 @@ function enrichBasketNode(node) {
   const minSettle = Number(node.min_settle);
   const maxSettle = Number(node.max_settle);
 
-  const theoBuyEdge = basket.askCount > 0 ? roundTyche(theo - basket.askSum) : null;
-  const theoSellEdge = basket.bidCount > 0 ? roundTyche(basket.bidSum - theo) : null;
+  const theoBuyEdge = basket.askSum != null ? roundTyche(theo - basket.askSum) : null;
+  const theoSellEdge = basket.bidSum != null ? roundTyche(basket.bidSum - theo) : null;
 
   // Settlement arb: buy if ask <= min (worst case payout covers cost); sell if bid >= max (worst case payout below proceeds)
-  const buyArbEdge = basket.askCount > 0 ? roundTyche(minSettle - basket.askSum) : null;
-  const sellArbEdge = basket.bidCount > 0 ? roundTyche(basket.bidSum - maxSettle) : null;
+  const buyArbEdge = basket.askSum != null ? roundTyche(minSettle - basket.askSum) : null;
+  const sellArbEdge = basket.bidSum != null ? roundTyche(basket.bidSum - maxSettle) : null;
 
   let side = null;
   if (buyArbEdge != null && buyArbEdge > 0 && (sellArbEdge == null || sellArbEdge <= 0 || buyArbEdge >= sellArbEdge)) {
@@ -1037,12 +1063,13 @@ function enrichBasketNode(node) {
 
   return {
     ...node,
-    bid_sum: basket.bidCount > 0 ? basket.bidSum : null,
-    ask_sum: basket.askCount > 0 ? basket.askSum : null,
-    mark_sum: basket.markCount ? basket.markSum : null,
+    bid_sum: basket.bidSum,
+    ask_sum: basket.askSum,
+    mark_sum: null,
     bid_count: basket.bidCount,
     ask_count: basket.askCount,
     quoted_count: basket.quoted,
+    quotes_complete: basket.quotesComplete,
     buy_arb_level: minSettle,
     sell_arb_level: maxSettle,
     buy_arb_edge: buyArbEdge,
@@ -1321,10 +1348,14 @@ function renderBasketsTable(filter = "") {
           : r.side === "sell"
             ? `<span class="tyche-side sell">SELL</span>`
             : `<span class="tyche-side none">—</span>`;
-      const quoteSub =
-        r.quoted_count < r.team_count
-          ? `<span class="basket-quote-sub" title="${r.team_count - r.quoted_count} teams without Tyche quotes">${r.quoted_count}/${r.team_count} quoted</span>`
-          : "";
+      const quoteSub = !r.quotes_complete
+        ? `<span class="basket-quote-sub" title="Basket bid/ask requires quotes on every team">${[
+            r.bid_sum == null ? `bid ${r.bid_count}/${r.team_count}` : null,
+            r.ask_sum == null ? `ask ${r.ask_count}/${r.team_count}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}</span>`
+        : "";
       const buyCls = r.buy_arb_edge > 0 ? "edge-pos" : "";
       const sellCls = r.sell_arb_edge > 0 ? "edge-sell" : "";
       const theoBuyCls = r.theo_buy_edge > 0 ? "edge-pos" : "";
