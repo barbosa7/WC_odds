@@ -1112,34 +1112,36 @@ function buildBracketLayoutTree() {
   if (!chain) return null;
 
   function expand(key) {
-    if (typeof key === "number" && key >= 73 && key <= 88) {
-      return { type: "leaf", matchId: key };
+    const n = typeof key === "number" ? key : Number(key);
+    if (n >= 73 && n <= 88) {
+      return { type: "leaf", matchId: n };
     }
-    const k = String(key);
-    if (k === "final") {
+    if (String(key) === "final") {
       const [a, b] = chain.final;
       return { type: "final", children: [expand(a), expand(b)] };
     }
-    const pair = chain[k];
-    const n = Number(k);
+    const pair = chain[String(n)];
+    if (!pair) return null;
     if (n >= 101) {
       return { type: "sf", sfIndex: SF_KEY_INDEX[n], children: [expand(pair[0]), expand(pair[1])] };
     }
     if (n >= 97) {
       return { type: "qf", qfIndex: QF_KEY_INDEX[n], children: [expand(pair[0]), expand(pair[1])] };
     }
-    if (n >= 90) {
+    if (n >= 89) {
       return { type: "r16", r16Id: n, children: [expand(pair[0]), expand(pair[1])] };
     }
     return null;
   }
 
   const tree = expand("final");
+  if (!tree) return null;
   assignBracketRows(tree);
   return tree;
 }
 
 function assignBracketRows(tree, counter = { i: 0 }) {
+  if (!tree) return;
   if (tree.type === "leaf") {
     tree.rowStart = tree.rowEnd = counter.i++;
     return;
@@ -1160,6 +1162,7 @@ function basketNodeForTree(tree, byId, byMatchId) {
 }
 
 function flattenBracketTree(tree, byId, byMatchId, out = []) {
+  if (!tree) return out;
   if (tree.type === "leaf") {
     const node = basketNodeForTree(tree, byId, byMatchId);
     if (node) out.push({ node, col: BRACKET_COL.leaf, rowStart: tree.rowStart, rowEnd: tree.rowEnd });
@@ -1331,11 +1334,17 @@ function renderBasketsFooter() {
 }
 
 function renderBasketsPanel() {
-  const rows = enrichedBaskets();
-  renderBasketsSummary(rows);
-  renderBracketBoard(rows);
-  renderBasketsTable(document.getElementById("search-baskets")?.value || "");
-  renderBasketsFooter();
+  try {
+    const rows = enrichedBaskets();
+    renderBasketsSummary(rows);
+    renderBracketBoard(rows);
+    renderBasketsTable(document.getElementById("search-baskets")?.value || "");
+    renderBasketsFooter();
+  } catch (err) {
+    console.error("Baskets panel error:", err);
+    const board = document.getElementById("bracket-board");
+    if (board) board.innerHTML = `<p class="hint tyche-empty">Could not render bracket: ${err.message}</p>`;
+  }
 }
 
 function setupBasketsPanel() {
