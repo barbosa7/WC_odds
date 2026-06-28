@@ -246,7 +246,7 @@
       "round": "R32",
       "match_id": 83,
       "label": "Portugal vs Croatia",
-      "parent_id": "r16-96",
+      "parent_id": "r16-93",
       "teams": [
         "Croatia",
         "Portugal"
@@ -261,7 +261,7 @@
       "round": "R32",
       "match_id": 85,
       "label": "Switzerland vs Algeria",
-      "parent_id": "r16-95",
+      "parent_id": "r16-96",
       "teams": [
         "Algeria",
         "Switzerland"
@@ -276,7 +276,7 @@
       "round": "R32",
       "match_id": 88,
       "label": "Australia vs Egypt",
-      "parent_id": "r16-96",
+      "parent_id": "r16-95",
       "teams": [
         "Australia",
         "Egypt"
@@ -291,7 +291,7 @@
       "round": "R32",
       "match_id": 86,
       "label": "Argentina vs Cape Verde",
-      "parent_id": "r16-93",
+      "parent_id": "r16-95",
       "teams": [
         "Argentina",
         "Cape Verde"
@@ -306,7 +306,7 @@
       "round": "R32",
       "match_id": 87,
       "label": "Colombia vs Ghana",
-      "parent_id": "r16-95",
+      "parent_id": "r16-96",
       "teams": [
         "Colombia",
         "Ghana"
@@ -397,6 +397,26 @@
       "max_settle": 155
     },
     {
+      "id": "r16-93",
+      "round": "R16",
+      "match_id": 93,
+      "label": "Winner(Portugal vs Croatia) vs Winner(Spain vs Austria)",
+      "children": [
+        "r32-83",
+        "r32-84"
+      ],
+      "teams": [
+        "Austria",
+        "Croatia",
+        "Portugal",
+        "Spain"
+      ],
+      "team_count": 4,
+      "theo": 138.02,
+      "min_settle": 105,
+      "max_settle": 165
+    },
+    {
       "id": "r16-94",
       "round": "R16",
       "match_id": 94,
@@ -417,49 +437,29 @@
       "max_settle": 155
     },
     {
-      "id": "r16-93",
+      "id": "r16-95",
       "round": "R16",
-      "match_id": 93,
-      "label": "Winner(Spain vs Austria) vs Winner(Argentina vs Cape Verde)",
+      "match_id": 95,
+      "label": "Winner(Argentina vs Cape Verde) vs Winner(Australia vs Egypt)",
       "children": [
-        "r32-84",
-        "r32-86"
+        "r32-86",
+        "r32-88"
       ],
       "teams": [
         "Argentina",
-        "Austria",
+        "Australia",
         "Cape Verde",
-        "Spain"
+        "Egypt"
       ],
       "team_count": 4,
-      "theo": 141.21,
-      "min_settle": 115,
-      "max_settle": 175
+      "theo": 115.21,
+      "min_settle": 105,
+      "max_settle": 165
     },
     {
       "id": "r16-96",
       "round": "R16",
       "match_id": 96,
-      "label": "Winner(Portugal vs Croatia) vs Winner(Australia vs Egypt)",
-      "children": [
-        "r32-83",
-        "r32-88"
-      ],
-      "teams": [
-        "Australia",
-        "Croatia",
-        "Egypt",
-        "Portugal"
-      ],
-      "team_count": 4,
-      "theo": 112.02,
-      "min_settle": 95,
-      "max_settle": 155
-    },
-    {
-      "id": "r16-95",
-      "round": "R16",
-      "match_id": 95,
       "label": "Winner(Switzerland vs Algeria) vs Winner(Colombia vs Ghana)",
       "children": [
         "r32-85",
@@ -481,21 +481,21 @@
       "round": "QF",
       "label": "QF 1",
       "children": [
-        "r16-90",
-        "r16-92"
+        "r16-89",
+        "r16-90"
       ],
       "teams": [
         "Canada",
-        "DR Congo",
-        "Ecuador",
-        "England",
-        "Mexico",
+        "France",
+        "Germany",
         "Morocco",
         "Netherlands",
-        "South Africa"
+        "Paraguay",
+        "South Africa",
+        "Sweden"
       ],
       "team_count": 8,
-      "theo": 232.58,
+      "theo": 238.68,
       "min_settle": 210,
       "max_settle": 260
     },
@@ -504,69 +504,69 @@
       "round": "QF",
       "label": "QF 2",
       "children": [
-        "r16-91",
-        "r16-93"
+        "r16-93",
+        "r16-94"
       ],
       "teams": [
-        "Argentina",
         "Austria",
-        "Brazil",
-        "Cape Verde",
-        "Ivory Coast",
-        "Japan",
-        "Norway",
-        "Spain"
+        "Belgium",
+        "Bosnia and Herzegovina",
+        "Croatia",
+        "Portugal",
+        "Senegal",
+        "Spain",
+        "United States"
       ],
       "team_count": 8,
-      "theo": 274.08,
-      "min_settle": 245,
-      "max_settle": 295
+      "theo": 247.96,
+      "min_settle": 210,
+      "max_settle": 260
     },
     {
       "id": "qf-2",
       "round": "QF",
       "label": "QF 3",
       "children": [
-        "r16-94",
-        "r16-96"
+        "r16-91",
+        "r16-92"
       ],
       "teams": [
-        "Australia",
-        "Belgium",
-        "Bosnia and Herzegovina",
-        "Croatia",
-        "Egypt",
-        "Portugal",
-        "Senegal",
-        "United States"
+        "Brazil",
+        "DR Congo",
+        "Ecuador",
+        "England",
+        "Ivory Coast",
+        "Japan",
+        "Mexico",
+        "Norway"
       ],
       "team_count": 8,
-      "theo": 221.96,
-      "min_settle": 200,
-      "max_settle": 250
+      "theo": 245.26,
+      "min_settle": 225,
+      "max_settle": 275
     },
     {
       "id": "qf-3",
       "round": "QF",
       "label": "QF 4",
       "children": [
-        "r16-89",
-        "r16-95"
+        "r16-95",
+        "r16-96"
       ],
       "teams": [
         "Algeria",
+        "Argentina",
+        "Australia",
+        "Cape Verde",
         "Colombia",
-        "France",
-        "Germany",
+        "Egypt",
         "Ghana",
-        "Paraguay",
-        "Sweden",
         "Switzerland"
       ],
       "team_count": 8,
-      "theo": 221.42,
-      "min_settle": 200,
-      "max_settle": 250
+      "theo": 218.14,
+      "min_settle": 210,
+      "max_settle": 260
     },
     {
       "id": "sf-0",
@@ -574,61 +574,61 @@
       "label": "Semi-final 1",
       "children": [
         "qf-0",
-        "qf-2"
+        "qf-1"
       ],
       "teams": [
-        "Australia",
+        "Austria",
         "Belgium",
         "Bosnia and Herzegovina",
         "Canada",
         "Croatia",
-        "DR Congo",
-        "Ecuador",
-        "Egypt",
-        "England",
-        "Mexico",
+        "France",
+        "Germany",
         "Morocco",
         "Netherlands",
+        "Paraguay",
         "Portugal",
         "Senegal",
         "South Africa",
+        "Spain",
+        "Sweden",
         "United States"
       ],
       "team_count": 16,
-      "theo": 454.54,
-      "min_settle": 440,
-      "max_settle": 475
+      "theo": 486.64,
+      "min_settle": 450,
+      "max_settle": 485
     },
     {
       "id": "sf-1",
       "round": "SF",
       "label": "Semi-final 2",
       "children": [
-        "qf-1",
+        "qf-2",
         "qf-3"
       ],
       "teams": [
         "Algeria",
         "Argentina",
-        "Austria",
+        "Australia",
         "Brazil",
         "Cape Verde",
         "Colombia",
-        "France",
-        "Germany",
+        "DR Congo",
+        "Ecuador",
+        "Egypt",
+        "England",
         "Ghana",
         "Ivory Coast",
         "Japan",
+        "Mexico",
         "Norway",
-        "Paraguay",
-        "Spain",
-        "Sweden",
         "Switzerland"
       ],
       "team_count": 16,
-      "theo": 495.5,
-      "min_settle": 475,
-      "max_settle": 510
+      "theo": 463.4,
+      "min_settle": 465,
+      "max_settle": 500
     },
     {
       "id": "final",

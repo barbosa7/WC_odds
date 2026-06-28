@@ -19,11 +19,11 @@ from wc_results import load_completed_matches
 
 ROOT = Path(__file__).parent
 
-R16_IDS = (90, 89, 91, 92, 94, 93, 96, 95)
+R16_IDS = (90, 89, 91, 92, 93, 94, 95, 96)
 QF_KEYS = (97, 98, 99, 100)
 SF_KEYS = (101, 102)
-QF_PAIRS = ((90, 92), (91, 93), (94, 96), (89, 95))
-SF_PAIRS = ((0, 2), (1, 3))
+QF_PAIRS = ((89, 90), (93, 94), (91, 92), (95, 96))
+SF_PAIRS = ((0, 1), (2, 3))
 
 # Rank points when eliminated at each stage (tight min / max within stage)
 _ELIM_MIN = {"r32": 5, "r16": 15, "qf": 30, "sf": 40, "final": 70, "win": 90}
