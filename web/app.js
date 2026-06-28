@@ -1017,8 +1017,8 @@ function computeBasketForTeams(teams) {
 function enrichBasketNode(node) {
   const basket = computeBasketForTeams(node.teams || []);
   const theo = Number(node.theo);
-  const buyEdge = basket.askSum && basket.askCount ? roundTyche(theo - basket.askSum) : null;
-  const sellEdge = basket.bidSum && basket.bidCount ? roundTyche(basket.bidSum - theo) : null;
+  const buyEdge = basket.askCount > 0 ? roundTyche(theo - basket.askSum) : null;
+  const sellEdge = basket.bidCount > 0 ? roundTyche(basket.bidSum - theo) : null;
   let side = null;
   if (buyEdge != null && buyEdge > 0 && (sellEdge == null || sellEdge <= 0 || buyEdge >= sellEdge)) {
     side = "buy";
@@ -1028,8 +1028,8 @@ function enrichBasketNode(node) {
   const edge = side === "buy" ? buyEdge : side === "sell" ? sellEdge : null;
   return {
     ...node,
-    bid_sum: basket.bidCount ? basket.bidSum : null,
-    ask_sum: basket.askCount ? basket.askSum : null,
+    bid_sum: basket.bidCount > 0 ? basket.bidSum : null,
+    ask_sum: basket.askCount > 0 ? basket.askSum : null,
     mark_sum: basket.markCount ? basket.markSum : null,
     bid_count: basket.bidCount,
     ask_count: basket.askCount,
@@ -1103,48 +1103,143 @@ function renderBasketsSummary(rows) {
   `;
 }
 
-const BRACKET_COLUMNS = [
-  { round: "R32", ids: [73, 75, 74, 77, 76, 78, 79, 80, 81, 82, 84, 83, 85, 88, 86, 87] },
-  { round: "R16", ids: ["r16-90", "r16-89", "r16-91", "r16-92", "r16-94", "r16-93", "r16-96", "r16-95"] },
-  { round: "QF", ids: ["qf-0", "qf-1", "qf-2", "qf-3"] },
-  { round: "SF", ids: ["sf-0", "sf-1"] },
-  { round: "Final", ids: ["final"] },
-];
+const BRACKET_COL = { leaf: 0, r16: 1, qf: 2, sf: 3, final: 4 };
+const QF_KEY_INDEX = { 97: 0, 98: 1, 99: 2, 100: 3 };
+const SF_KEY_INDEX = { 101: 0, 102: 1 };
+
+function buildBracketLayoutTree() {
+  const chain = state.tournament?.knockout_chain;
+  if (!chain) return null;
+
+  function expand(key) {
+    if (typeof key === "number" && key >= 73 && key <= 88) {
+      return { type: "leaf", matchId: key };
+    }
+    const k = String(key);
+    if (k === "final") {
+      const [a, b] = chain.final;
+      return { type: "final", children: [expand(a), expand(b)] };
+    }
+    const pair = chain[k];
+    const n = Number(k);
+    if (n >= 101) {
+      return { type: "sf", sfIndex: SF_KEY_INDEX[n], children: [expand(pair[0]), expand(pair[1])] };
+    }
+    if (n >= 97) {
+      return { type: "qf", qfIndex: QF_KEY_INDEX[n], children: [expand(pair[0]), expand(pair[1])] };
+    }
+    if (n >= 90) {
+      return { type: "r16", r16Id: n, children: [expand(pair[0]), expand(pair[1])] };
+    }
+    return null;
+  }
+
+  const tree = expand("final");
+  assignBracketRows(tree);
+  return tree;
+}
+
+function assignBracketRows(tree, counter = { i: 0 }) {
+  if (tree.type === "leaf") {
+    tree.rowStart = tree.rowEnd = counter.i++;
+    return;
+  }
+  assignBracketRows(tree.children[0], counter);
+  assignBracketRows(tree.children[1], counter);
+  tree.rowStart = tree.children[0].rowStart;
+  tree.rowEnd = tree.children[1].rowEnd;
+}
+
+function basketNodeForTree(tree, byId, byMatchId) {
+  if (tree.type === "leaf") return byMatchId[tree.matchId];
+  if (tree.type === "r16") return byId[`r16-${tree.r16Id}`];
+  if (tree.type === "qf") return byId[`qf-${tree.qfIndex}`];
+  if (tree.type === "sf") return byId[`sf-${tree.sfIndex}`];
+  if (tree.type === "final") return byId.final;
+  return null;
+}
+
+function flattenBracketTree(tree, byId, byMatchId, out = []) {
+  if (tree.type === "leaf") {
+    const node = basketNodeForTree(tree, byId, byMatchId);
+    if (node) out.push({ node, col: BRACKET_COL.leaf, rowStart: tree.rowStart, rowEnd: tree.rowEnd });
+    return out;
+  }
+  flattenBracketTree(tree.children[0], byId, byMatchId, out);
+  flattenBracketTree(tree.children[1], byId, byMatchId, out);
+  const node = basketNodeForTree(tree, byId, byMatchId);
+  if (node) {
+    out.push({ node, col: BRACKET_COL[tree.type], rowStart: tree.rowStart, rowEnd: tree.rowEnd });
+  }
+  return out;
+}
+
+function fmtArb(v, prefix) {
+  if (v == null || Number.isNaN(v)) return `<span class="bracket-arb na">${prefix} —</span>`;
+  const pos = v > 0;
+  const cls = pos ? "pos" : v < 0 ? "neg" : "flat";
+  return `<span class="bracket-arb ${cls}">${prefix} ${v > 0 ? "+" : ""}${fmtPrice(v)}</span>`;
+}
+
+function renderBracketNodeCard(n, layout) {
+  const sel = state.basketsSelectedId === n.id ? " selected" : "";
+  const opp = n.side ? ` opp-${n.side}` : "";
+  const span = layout.rowEnd - layout.rowStart + 1;
+  const quotes =
+    n.bid_sum != null || n.ask_sum != null
+      ? `<span class="bracket-quotes"><span class="bracket-q bid">${fmtBasketSum(n.bid_sum ?? "—")}</span><span class="bracket-q-sep">/</span><span class="bracket-q ask">${fmtBasketSum(n.ask_sum ?? "—")}</span></span>`
+      : `<span class="bracket-quotes muted">Bid/ask —</span>`;
+  return `<div class="bracket-slot" data-col="${layout.col}" style="--col:${layout.col};--row-start:${layout.rowStart};--row-span:${span}">
+    <button type="button" class="bracket-node${sel}${opp}" data-basket-id="${n.id}" title="${n.label} · ${n.team_count} teams">
+      <span class="bracket-node-head">
+        <span class="bracket-node-label">${basketShortLabel(n)}</span>
+        ${n.side ? `<span class="bracket-side ${n.side}">${n.side.toUpperCase()}</span>` : ""}
+      </span>
+      <span class="bracket-node-theo">Theo ${fmtBasketSum(n.theo)}</span>
+      ${quotes}
+      <span class="bracket-arbs">${fmtArb(n.buy_edge, "Buy")}${fmtArb(n.sell_edge, "Sell")}</span>
+    </button>
+  </div>`;
+}
 
 function renderBracketBoard(rows) {
   const board = document.getElementById("bracket-board");
   if (!board || !state.baskets) return;
+
   const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
   const byMatchId = Object.fromEntries(rows.filter((r) => r.match_id).map((r) => [r.match_id, r]));
+  const tree = buildBracketLayoutTree();
 
-  const cols = BRACKET_COLUMNS.map((col) => {
-    const nodes = col.ids
-      .map((id) => (typeof id === "number" ? byMatchId[id] : byId[id]))
-      .filter(Boolean);
-    const cards = nodes
-      .map((n) => {
-        const sel = state.basketsSelectedId === n.id ? " selected" : "";
-        const opp = n.side ? ` opp-${n.side}` : "";
-        const edge = n.edge != null ? `<span class="bracket-edge ${n.side || ""}">${n.edge > 0 ? "+" : ""}${fmtPrice(n.edge)}</span>` : "";
-        return `<button type="button" class="bracket-node${sel}${opp}" data-basket-id="${n.id}" title="${n.label} · ${n.team_count} teams">
-          <span class="bracket-node-label">${basketShortLabel(n)}</span>
-          <span class="bracket-node-theo">${fmtBasketSum(n.theo)}</span>
-          ${edge}
-        </button>`;
-      })
-      .join("");
-    return `<div class="bracket-col"><span class="bracket-col-head">${col.round}</span>${cards}</div>`;
-  }).join("");
+  if (!tree) {
+    board.innerHTML = `<p class="hint">Bracket layout unavailable — missing tournament data.</p>`;
+    return;
+  }
+
+  const slots = flattenBracketTree(tree, byId, byMatchId);
+  const rowCount = tree.rowEnd + 1;
+  const colHeads = ["R32", "R16", "QF", "SF", "Final"];
+  const headers = colHeads.map((h) => `<span class="bracket-col-head">${h}</span>`).join("");
+  const cards = slots.map((s) => renderBracketNodeCard(s.node, s)).join("");
 
   const allNode = byId.all;
   const allCard = allNode
     ? `<button type="button" class="bracket-node bracket-all${state.basketsSelectedId === "all" ? " selected" : ""}${allNode.side ? ` opp-${allNode.side}` : ""}" data-basket-id="all">
-        <span class="bracket-node-label">Full tournament</span>
-        <span class="bracket-node-theo">${fmtBasketSum(allNode.theo)}</span>
+        <span class="bracket-node-head"><span class="bracket-node-label">Full tournament (48)</span>${allNode.side ? `<span class="bracket-side ${allNode.side}">${allNode.side.toUpperCase()}</span>` : ""}</span>
+        <span class="bracket-node-theo">Theo ${fmtBasketSum(allNode.theo)}</span>
+        <span class="bracket-quotes"><span class="bracket-q bid">${fmtBasketSum(allNode.bid_sum ?? "—")}</span><span class="bracket-q-sep">/</span><span class="bracket-q ask">${fmtBasketSum(allNode.ask_sum ?? "—")}</span></span>
+        <span class="bracket-arbs">${fmtArb(allNode.buy_edge, "Buy")}${fmtArb(allNode.sell_edge, "Sell")}</span>
       </button>`
     : "";
 
-  board.innerHTML = `${allCard ? `<div class="bracket-all-row">${allCard}</div>` : ""}<div class="bracket-cols">${cols}</div>`;
+  const tycheNote = !state.tyche
+    ? `<p class="bracket-tyche-warn">Load Tyche data for live bid/ask and arb levels (open Tyche tab or refresh).</p>`
+    : "";
+
+  board.innerHTML = `${tycheNote}${allCard ? `<div class="bracket-all-row">${allCard}</div>` : ""}
+    <div class="bracket-grid-wrap">
+      <div class="bracket-grid-heads">${headers}</div>
+      <div class="bracket-grid" style="--bracket-rows:${rowCount}">${cards}</div>
+    </div>`;
 
   board.querySelectorAll("[data-basket-id]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1196,8 +1291,8 @@ function renderBasketsTable(filter = "") {
         r.quoted_count < r.team_count
           ? `<span class="basket-quote-sub" title="${r.team_count - r.quoted_count} teams without Tyche quotes">${r.quoted_count}/${r.team_count} quoted</span>`
           : "";
-      const buyCls = r.buy_edge > 0 ? "edge-pos" : "";
-      const sellCls = r.sell_edge > 0 ? "edge-pos" : "";
+      const buyCls = r.buy_edge > 0 ? "edge-pos" : r.buy_edge < 0 ? "edge-neg" : "";
+      const sellCls = r.sell_edge > 0 ? "edge-pos" : r.sell_edge < 0 ? "edge-neg" : "";
       const sel = state.basketsSelectedId === r.id ? " basket-row-selected" : "";
       return `<tr class="${r.side ? `tyche-opp-${r.side}` : ""}${sel}" data-basket-id="${r.id}">
         <td><span class="basket-round">${r.round}</span></td>
