@@ -73,21 +73,54 @@ def _group_sum(teams: list[str], results: dict[str, GroupResult]) -> int:
     return sum(_group_pts(t, results) for t in teams)
 
 
-def _fixed_bounds(teams: list[str], results: dict[str, GroupResult]) -> tuple[int, int] | None:
-    """All 48 or all 32 KO teams: rank-point sum is fixed, only bonus varies."""
+def _locked_bonus_map(results: dict[str, GroupResult]) -> dict[str, float]:
+    """GF+GA bonus locked after group stage (split if tied)."""
+    goals_sum = {
+        t: gr.stats[t]["gf"] + gr.stats[t]["ga"]
+        for gr in results.values()
+        for t in gr.stats
+    }
+    if not goals_sum:
+        return {}
+    max_g = max(goals_sum.values())
+    winners = [t for t, v in goals_sum.items() if v == max_g]
+    share = BONUS_GOALS_POINTS / len(winners)
+    return {t: share for t in winners}
+
+
+def _team_bonus(team: str, locked_bonus: dict[str, float]) -> int:
+    return int(locked_bonus.get(team, 0))
+
+
+def _fixed_bounds(
+    teams: list[str],
+    results: dict[str, GroupResult],
+    locked_bonus: dict[str, float],
+) -> tuple[int, int] | None:
+    """All 48 or all 32 KO teams: rank-point sum and bonus are fixed after groups."""
     n = len(teams)
+    bonus_sum = sum(_team_bonus(t, locked_bonus) for t in teams)
     if n == 48:
         g = _group_sum(teams, results)
-        return g + _RANK_SUM_1_48, g + _RANK_SUM_1_48 + BONUS_GOALS_POINTS
+        total = g + _RANK_SUM_1_48 + bonus_sum
+        return total, total
     if n == 32:
         g = _group_sum(teams, results)
-        return g + _RANK_SUM_1_32, g + _RANK_SUM_1_32 + BONUS_GOALS_POINTS
+        total = g + _RANK_SUM_1_32 + bonus_sum
+        return total, total
     return None
 
 
-def _settle(team: str, stage: str, results: dict[str, GroupResult], *, for_max: bool, bonus: int) -> int:
+def _settle(
+    team: str,
+    stage: str,
+    results: dict[str, GroupResult],
+    locked_bonus: dict[str, float],
+    *,
+    for_max: bool,
+) -> int:
     elim = _ELIM_MAX if for_max else _ELIM_MIN
-    return _group_pts(team, results) + elim[stage] + bonus
+    return _group_pts(team, results) + elim[stage] + _team_bonus(team, locked_bonus)
 
 
 def _resolve(
@@ -95,6 +128,7 @@ def _resolve(
     chain: dict,
     r32_map: dict[int, tuple[str, str]],
     results: dict[str, GroupResult],
+    locked_bonus: dict[str, float],
     for_max: bool,
 ) -> list[tuple[dict[str, int], str | None]]:
     """All outcomes for subtree rooted at key. Returns (settled_points, winner)."""
@@ -104,61 +138,60 @@ def _resolve(
         t1, t2 = r32_map[int(k)]
         out: list[tuple[dict[str, int], str | None]] = []
         for winner, loser in ((t1, t2), (t2, t1)):
-            settled = {loser: _settle(loser, "r32", results, for_max=for_max, bonus=0)}
+            settled = {loser: _settle(loser, "r32", results, locked_bonus, for_max=for_max)}
             out.append((settled, winner))
         return out
 
     if k == "final":
         left_key, right_key = chain["final"]
         combined: list[tuple[dict[str, int], str | None]] = []
-        for s_a, w_a in _resolve(left_key, chain, r32_map, results, for_max):
-            for s_b, w_b in _resolve(right_key, chain, r32_map, results, for_max):
+        for s_a, w_a in _resolve(left_key, chain, r32_map, results, locked_bonus, for_max):
+            for s_b, w_b in _resolve(right_key, chain, r32_map, results, locked_bonus, for_max):
                 if w_a is None or w_b is None:
                     continue
                 for win, lose in ((w_a, w_b), (w_b, w_a)):
                     settled = {**s_a, **s_b}
-                    bonus = BONUS_GOALS_POINTS if for_max else 0
-                    settled[lose] = _settle(lose, "final", results, for_max=for_max, bonus=0)
-                    settled[win] = _settle(win, "win", results, for_max=for_max, bonus=bonus)
+                    settled[lose] = _settle(lose, "final", results, locked_bonus, for_max=for_max)
+                    settled[win] = _settle(win, "win", results, locked_bonus, for_max=for_max)
                     combined.append((settled, win))
         return combined
 
     if k.isdigit() and int(k) in SF_KEYS:
         left_key, right_key = chain[k]
         combined = []
-        for s_a, w_a in _resolve(left_key, chain, r32_map, results, for_max):
-            for s_b, w_b in _resolve(right_key, chain, r32_map, results, for_max):
+        for s_a, w_a in _resolve(left_key, chain, r32_map, results, locked_bonus, for_max):
+            for s_b, w_b in _resolve(right_key, chain, r32_map, results, locked_bonus, for_max):
                 if w_a is None or w_b is None:
                     continue
                 for win, lose in ((w_a, w_b), (w_b, w_a)):
                     settled = {**s_a, **s_b}
-                    settled[lose] = _settle(lose, "sf", results, for_max=for_max, bonus=0)
+                    settled[lose] = _settle(lose, "sf", results, locked_bonus, for_max=for_max)
                     combined.append((settled, win))
         return combined
 
     if k.isdigit() and int(k) in QF_KEYS:
         left_key, right_key = chain[k]
         combined = []
-        for s_a, w_a in _resolve(left_key, chain, r32_map, results, for_max):
-            for s_b, w_b in _resolve(right_key, chain, r32_map, results, for_max):
+        for s_a, w_a in _resolve(left_key, chain, r32_map, results, locked_bonus, for_max):
+            for s_b, w_b in _resolve(right_key, chain, r32_map, results, locked_bonus, for_max):
                 if w_a is None or w_b is None:
                     continue
                 for win, lose in ((w_a, w_b), (w_b, w_a)):
                     settled = {**s_a, **s_b}
-                    settled[lose] = _settle(lose, "qf", results, for_max=for_max, bonus=0)
+                    settled[lose] = _settle(lose, "qf", results, locked_bonus, for_max=for_max)
                     combined.append((settled, win))
         return combined
 
     if k.isdigit() and int(k) in R16_IDS:
         left_key, right_key = chain[k]
         combined = []
-        for s_a, w_a in _resolve(left_key, chain, r32_map, results, for_max):
-            for s_b, w_b in _resolve(right_key, chain, r32_map, results, for_max):
+        for s_a, w_a in _resolve(left_key, chain, r32_map, results, locked_bonus, for_max):
+            for s_b, w_b in _resolve(right_key, chain, r32_map, results, locked_bonus, for_max):
                 if w_a is None or w_b is None:
                     continue
                 for win, lose in ((w_a, w_b), (w_b, w_a)):
                     settled = {**s_a, **s_b}
-                    settled[lose] = _settle(lose, "r16", results, for_max=for_max, bonus=0)
+                    settled[lose] = _settle(lose, "r16", results, locked_bonus, for_max=for_max)
                     combined.append((settled, win))
         return combined
 
@@ -190,6 +223,7 @@ def _complete_basket_total(
     root_key: str | int,
     basket: set[str],
     results: dict[str, GroupResult],
+    locked_bonus: dict[str, float],
     *,
     for_max: bool,
 ) -> int:
@@ -200,14 +234,13 @@ def _complete_basket_total(
             continue
         if team == winner and stage_after is not None:
             nxt = _POST_WIN_MAX if for_max else _POST_WIN_MIN[stage_after]
-            bonus = BONUS_GOALS_POINTS if for_max and nxt == "win" else 0
-            pts[team] = _settle(team, nxt, results, for_max=for_max, bonus=bonus)
+            pts[team] = _settle(team, nxt, results, locked_bonus, for_max=for_max)
         elif team == winner and stage_after is None:
-            bonus = BONUS_GOALS_POINTS if for_max else 0
-            pts[team] = _settle(team, "win", results, for_max=for_max, bonus=bonus)
+            pts[team] = _settle(team, "win", results, locked_bonus, for_max=for_max)
         else:
-            # Should not happen for valid subtree outcomes
-            pts[team] = _group_pts(team, results) + (_ELIM_MAX["win"] if for_max else _ELIM_MIN["r32"])
+            pts[team] = _group_pts(team, results) + _team_bonus(team, locked_bonus) + (
+                _ELIM_MAX["win"] if for_max else _ELIM_MIN["r32"]
+            )
     return sum(pts[t] for t in basket)
 
 
@@ -217,9 +250,10 @@ def _joint_bounds(
     results: dict[str, GroupResult],
     chain: dict,
     r32_map: dict[int, tuple[str, str]],
+    locked_bonus: dict[str, float],
 ) -> tuple[int, int]:
     teams = sorted(set(teams))
-    fixed = _fixed_bounds(teams, results)
+    fixed = _fixed_bounds(teams, results, locked_bonus)
     if fixed:
         return fixed
 
@@ -227,11 +261,15 @@ def _joint_bounds(
     totals_min: list[int] = []
     totals_max: list[int] = []
 
-    for settled, winner in _resolve(root_key, chain, r32_map, results, for_max=False):
-        totals_min.append(_complete_basket_total(settled, winner, root_key, basket, results, for_max=False))
+    for settled, winner in _resolve(root_key, chain, r32_map, results, locked_bonus, for_max=False):
+        totals_min.append(
+            _complete_basket_total(settled, winner, root_key, basket, results, locked_bonus, for_max=False)
+        )
 
-    for settled, winner in _resolve(root_key, chain, r32_map, results, for_max=True):
-        totals_max.append(_complete_basket_total(settled, winner, root_key, basket, results, for_max=True))
+    for settled, winner in _resolve(root_key, chain, r32_map, results, locked_bonus, for_max=True):
+        totals_max.append(
+            _complete_basket_total(settled, winner, root_key, basket, results, locked_bonus, for_max=True)
+        )
 
     if not totals_min or not totals_max:
         g = _group_sum(teams, results)
@@ -255,6 +293,8 @@ def build_bracket_baskets(completed_path: Path | None = None) -> dict[str, Any]:
     results, thirds, third_slots = _group_state(completed_path)
     theos = _load_theos()
     chain = tourn["knockout_chain"]
+    locked_bonus = _locked_bonus_map(results)
+    bonus_teams = sorted(locked_bonus.keys())
 
     r32_map: dict[int, tuple[str, str]] = {}
     r32_nodes: dict[int, dict[str, Any]] = {}
@@ -273,7 +313,7 @@ def build_bracket_baskets(completed_path: Path | None = None) -> dict[str, Any]:
     def node_stats(teams: list[str], root_key: str | int) -> dict[str, Any]:
         teams = sorted(set(teams))
         theo = sum(theos.get(t, 0) for t in teams)
-        mn, mx = _joint_bounds(teams, root_key, results, chain, r32_map)
+        mn, mx = _joint_bounds(teams, root_key, results, chain, r32_map, locked_bonus)
         return {
             "teams": teams,
             "team_count": len(teams),
@@ -372,6 +412,8 @@ def build_bracket_baskets(completed_path: Path | None = None) -> dict[str, Any]:
             json.loads((completed_path or ROOT / "wc_data" / "completed_matches.json").read_text()).get("matches", [])
         ),
         "third_qualifiers": thirds,
+        "bonus_teams": bonus_teams,
+        "bonus_points": BONUS_GOALS_POINTS if len(bonus_teams) == 1 else None,
         "theo_source": "expected_points_current.json"
         if (ROOT / "output" / "expected_points_current.json").exists()
         else "expected_points.json",
