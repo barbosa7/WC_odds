@@ -1022,7 +1022,7 @@ tr.tyche-pos-aligned { box-shadow: inset 3px 0 0 var(--gold); }
 .bracket-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(9rem, 1fr));
-  grid-template-rows: repeat(var(--bracket-rows, 16), var(--bracket-row-h, 6.5rem));
+  grid-template-rows: repeat(var(--bracket-rows, 16), var(--bracket-row-h, 7.5rem));
   gap: 0 0.75rem;
   position: relative;
 }
@@ -1141,9 +1141,26 @@ tr.tyche-pos-aligned { box-shadow: inset 3px 0 0 var(--gold); }
 .bracket-side.buy { background: rgba(61, 214, 140, 0.2); color: var(--accent); }
 .bracket-side.sell { background: rgba(240, 113, 120, 0.2); color: var(--danger); }
 
+.bracket-node-theo {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--blue);
+}
+
+.bracket-quotes {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+.bracket-q.bid { color: var(--accent); }
+.bracket-q.ask { color: var(--danger); }
+.bracket-q-sep { margin: 0 0.15rem; opacity: 0.5; color: var(--text-muted); }
+.bracket-quotes.muted { font-style: italic; color: var(--text-muted); font-size: 0.68rem; }
+
 .bracket-settle {
   font-family: var(--mono);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: var(--text-muted);
 }
 
@@ -1152,10 +1169,22 @@ tr.tyche-pos-aligned { box-shadow: inset 3px 0 0 var(--gold); }
   flex-direction: column;
   gap: 0.02rem;
   line-height: 1.15;
+  padding: 0.08rem 0.2rem;
+  border-radius: 4px;
+}
+
+.bracket-arb-row.buy.arb-hit {
+  background: rgba(61, 214, 140, 0.12);
+  border: 1px solid rgba(61, 214, 140, 0.25);
+}
+
+.bracket-arb-row.sell.arb-hit {
+  background: rgba(240, 113, 120, 0.12);
+  border: 1px solid rgba(240, 113, 120, 0.25);
 }
 
 .bracket-level {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -1168,9 +1197,19 @@ tr.tyche-pos-aligned { box-shadow: inset 3px 0 0 var(--gold); }
   font-weight: 600;
 }
 
-.bracket-arb.pos { color: var(--accent); }
+.bracket-arb.buy.pos { color: var(--accent); }
+.bracket-arb.sell.pos { color: var(--danger); }
 .bracket-arb.flat { color: var(--text-muted); }
-.bracket-arb.na { color: var(--text-muted); font-weight: 400; font-style: italic; font-size: 0.65rem; }
+.bracket-arb.na { color: var(--text-muted); font-weight: 400; font-style: italic; font-size: 0.62rem; }
+
+.bracket-theo-edge {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+.bracket-theo-edge .te-buy { color: var(--accent); font-weight: 600; }
+.bracket-theo-edge .te-sell { color: var(--danger); font-weight: 600; }
 
 .basket-round {
   font-size: 0.78rem;
@@ -1189,7 +1228,7 @@ tr.tyche-pos-aligned { box-shadow: inset 3px 0 0 var(--gold); }
 .basket-row-selected { box-shadow: inset 3px 0 0 var(--blue); }
 
 .edge-pos { color: var(--accent); font-weight: 600; }
-.edge-neg { color: var(--text-muted); }
+.edge-sell { color: var(--danger); font-weight: 600; }
 
 #baskets-table th[data-sort-baskets] { cursor: pointer; }
 #baskets-table th[data-sort-baskets]:hover { color: var(--text); }
@@ -1202,6 +1241,6 @@ tr.tyche-pos-aligned { box-shadow: inset 3px 0 0 var(--gold); }
     grid-template-columns: repeat(5, minmax(7.5rem, 1fr));
   }
   .bracket-grid {
-    --bracket-row-h: 6rem;
+    --bracket-row-h: 7rem;
   }
 }
