@@ -247,7 +247,7 @@
           <div class="card-toolbar baskets-toolbar">
             <div>
               <h2>Bracket subtree baskets</h2>
-              <p class="hint" id="baskets-hint">Each knockout subtree is a basket of team finish-value contracts. Compare model theo vs Tyche bid/ask and settlement bounds.</p>
+              <p class="hint" id="baskets-hint">Settlement arb: buy when Σ ask ≤ min settle (can't lose). Sell when Σ bid ≥ max settle (can't lose).</p>
             </div>
             <div class="baskets-filters">
               <div class="tyche-filter-group" role="group" aria-label="Round filter">
@@ -261,8 +261,8 @@
               <div class="tyche-filter-group" role="group" aria-label="Opportunity filter">
                 <button type="button" class="tyche-filter-btn active" data-baskets-filter="all">All</button>
                 <button type="button" class="tyche-filter-btn" data-baskets-filter="opps">Opportunities</button>
-                <button type="button" class="tyche-filter-btn" data-baskets-filter="buy">Buy edge</button>
-                <button type="button" class="tyche-filter-btn" data-baskets-filter="sell">Sell edge</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-filter="buy">Buy arb</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-filter="sell">Sell arb</button>
               </div>
               <input type="search" id="search-baskets" placeholder="Search basket…" />
             </div>
@@ -278,10 +278,10 @@
                   <th data-sort-baskets="theo">Theo</th>
                   <th data-sort-baskets="bid_sum">Σ Bid</th>
                   <th data-sort-baskets="ask_sum">Σ Ask</th>
-                  <th data-sort-baskets="buy_edge">Buy edge</th>
-                  <th data-sort-baskets="sell_edge">Sell edge</th>
                   <th data-sort-baskets="min_settle">Min settle</th>
                   <th data-sort-baskets="max_settle">Max settle</th>
+                  <th data-sort-baskets="buy_arb_edge">Buy arb</th>
+                  <th data-sort-baskets="sell_arb_edge">Sell arb</th>
                   <th data-sort-baskets="side">Side</th>
                 </tr>
               </thead>

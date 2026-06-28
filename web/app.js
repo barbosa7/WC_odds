@@ -45,7 +45,7 @@ let state = {
   baskets: null,
   basketsFilter: "all",
   basketsRound: "all",
-  basketsSortKey: "buy_edge",
+  basketsSortKey: "buy_arb_edge",
   basketsSortAsc: false,
   basketsSelectedId: null,
 };
@@ -1017,15 +1017,24 @@ function computeBasketForTeams(teams) {
 function enrichBasketNode(node) {
   const basket = computeBasketForTeams(node.teams || []);
   const theo = Number(node.theo);
-  const buyEdge = basket.askCount > 0 ? roundTyche(theo - basket.askSum) : null;
-  const sellEdge = basket.bidCount > 0 ? roundTyche(basket.bidSum - theo) : null;
+  const minSettle = Number(node.min_settle);
+  const maxSettle = Number(node.max_settle);
+
+  const theoBuyEdge = basket.askCount > 0 ? roundTyche(theo - basket.askSum) : null;
+  const theoSellEdge = basket.bidCount > 0 ? roundTyche(basket.bidSum - theo) : null;
+
+  // Settlement arb: buy if ask <= min (worst case payout covers cost); sell if bid >= max (worst case payout below proceeds)
+  const buyArbEdge = basket.askCount > 0 ? roundTyche(minSettle - basket.askSum) : null;
+  const sellArbEdge = basket.bidCount > 0 ? roundTyche(basket.bidSum - maxSettle) : null;
+
   let side = null;
-  if (buyEdge != null && buyEdge > 0 && (sellEdge == null || sellEdge <= 0 || buyEdge >= sellEdge)) {
+  if (buyArbEdge != null && buyArbEdge > 0 && (sellArbEdge == null || sellArbEdge <= 0 || buyArbEdge >= sellArbEdge)) {
     side = "buy";
-  } else if (sellEdge != null && sellEdge > 0) {
+  } else if (sellArbEdge != null && sellArbEdge > 0) {
     side = "sell";
   }
-  const edge = side === "buy" ? buyEdge : side === "sell" ? sellEdge : null;
+  const edge = side === "buy" ? buyArbEdge : side === "sell" ? sellArbEdge : null;
+
   return {
     ...node,
     bid_sum: basket.bidCount > 0 ? basket.bidSum : null,
@@ -1034,8 +1043,14 @@ function enrichBasketNode(node) {
     bid_count: basket.bidCount,
     ask_count: basket.askCount,
     quoted_count: basket.quoted,
-    buy_edge: buyEdge,
-    sell_edge: sellEdge,
+    buy_arb_level: minSettle,
+    sell_arb_level: maxSettle,
+    buy_arb_edge: buyArbEdge,
+    sell_arb_edge: sellArbEdge,
+    theo_buy_edge: theoBuyEdge,
+    theo_sell_edge: theoSellEdge,
+    buy_edge: buyArbEdge,
+    sell_edge: sellArbEdge,
     side,
     edge,
   };
@@ -1078,13 +1093,13 @@ function renderBasketsSummary(rows) {
     </div>
     <div class="tyche-stat buy">
       <span class="tyche-stat-value">${buy.length}</span>
-      <span class="tyche-stat-label">Buy baskets</span>
-      <span class="tyche-stat-sub">Σ ask below theo</span>
+      <span class="tyche-stat-label">Buy arbs</span>
+      <span class="tyche-stat-sub">Σ ask below min settle</span>
     </div>
     <div class="tyche-stat sell">
       <span class="tyche-stat-value">${sell.length}</span>
-      <span class="tyche-stat-label">Sell baskets</span>
-      <span class="tyche-stat-sub">Σ bid above theo</span>
+      <span class="tyche-stat-label">Sell arbs</span>
+      <span class="tyche-stat-sub">Σ bid above max settle</span>
     </div>
     <div class="tyche-stat neutral">
       <span class="tyche-stat-value">${opps.length}</span>
@@ -1177,30 +1192,32 @@ function flattenBracketTree(tree, byId, byMatchId, out = []) {
   return out;
 }
 
-function fmtArb(v, prefix) {
-  if (v == null || Number.isNaN(v)) return `<span class="bracket-arb na">${prefix} —</span>`;
-  const pos = v > 0;
-  const cls = pos ? "pos" : v < 0 ? "neg" : "flat";
-  return `<span class="bracket-arb ${cls}">${prefix} ${v > 0 ? "+" : ""}${fmtPrice(v)}</span>`;
+function fmtSettleArbLine(levelLabel, level, market, edge) {
+  if (market == null) {
+    return `<div class="bracket-arb-row"><span class="bracket-level">${levelLabel} ${level}</span><span class="bracket-arb na">—</span></div>`;
+  }
+  const pos = edge != null && edge > 0;
+  const cls = pos ? "pos" : "flat";
+  const edgeTxt = edge != null && edge > 0 ? ` (+${fmtPrice(edge)})` : "";
+  return `<div class="bracket-arb-row"><span class="bracket-level">${levelLabel} ${level}</span><span class="bracket-arb ${cls}">${market}${edgeTxt}</span></div>`;
 }
 
 function renderBracketNodeCard(n, layout) {
   const sel = state.basketsSelectedId === n.id ? " selected" : "";
   const opp = n.side ? ` opp-${n.side}` : "";
   const span = layout.rowEnd - layout.rowStart + 1;
-  const quotes =
-    n.bid_sum != null || n.ask_sum != null
-      ? `<span class="bracket-quotes"><span class="bracket-q bid">${fmtBasketSum(n.bid_sum ?? "—")}</span><span class="bracket-q-sep">/</span><span class="bracket-q ask">${fmtBasketSum(n.ask_sum ?? "—")}</span></span>`
-      : `<span class="bracket-quotes muted">Bid/ask —</span>`;
-  return `<div class="bracket-slot" data-col="${layout.col}" style="--col:${layout.col};--row-start:${layout.rowStart};--row-span:${span}">
-    <button type="button" class="bracket-node${sel}${opp}" data-basket-id="${n.id}" title="${n.label} · ${n.team_count} teams">
+  const compact = span === 1 ? " compact" : "";
+  const askTxt = n.ask_sum != null ? fmtBasketSum(n.ask_sum) : null;
+  const bidTxt = n.bid_sum != null ? fmtBasketSum(n.bid_sum) : null;
+  return `<div class="bracket-slot${compact}" data-col="${layout.col}" data-span="${span}" style="--col:${layout.col};--row-start:${layout.rowStart};--row-span:${span}">
+    <button type="button" class="bracket-node${sel}${opp}${compact}" data-basket-id="${n.id}" title="${n.label} · min ${n.min_settle} · max ${n.max_settle}">
       <span class="bracket-node-head">
         <span class="bracket-node-label">${basketShortLabel(n)}</span>
         ${n.side ? `<span class="bracket-side ${n.side}">${n.side.toUpperCase()}</span>` : ""}
       </span>
-      <span class="bracket-node-theo">Theo ${fmtBasketSum(n.theo)}</span>
-      ${quotes}
-      <span class="bracket-arbs">${fmtArb(n.buy_edge, "Buy")}${fmtArb(n.sell_edge, "Sell")}</span>
+      <span class="bracket-settle">Min ${n.min_settle} · Max ${n.max_settle}</span>
+      ${fmtSettleArbLine("Buy ≤", n.buy_arb_level, askTxt != null ? `Ask ${askTxt}` : null, n.buy_arb_edge)}
+      ${fmtSettleArbLine("Sell ≥", n.sell_arb_level, bidTxt != null ? `Bid ${bidTxt}` : null, n.sell_arb_edge)}
     </button>
   </div>`;
 }
@@ -1228,14 +1245,14 @@ function renderBracketBoard(rows) {
   const allCard = allNode
     ? `<button type="button" class="bracket-node bracket-all${state.basketsSelectedId === "all" ? " selected" : ""}${allNode.side ? ` opp-${allNode.side}` : ""}" data-basket-id="all">
         <span class="bracket-node-head"><span class="bracket-node-label">Full tournament (48)</span>${allNode.side ? `<span class="bracket-side ${allNode.side}">${allNode.side.toUpperCase()}</span>` : ""}</span>
-        <span class="bracket-node-theo">Theo ${fmtBasketSum(allNode.theo)}</span>
-        <span class="bracket-quotes"><span class="bracket-q bid">${fmtBasketSum(allNode.bid_sum ?? "—")}</span><span class="bracket-q-sep">/</span><span class="bracket-q ask">${fmtBasketSum(allNode.ask_sum ?? "—")}</span></span>
-        <span class="bracket-arbs">${fmtArb(allNode.buy_edge, "Buy")}${fmtArb(allNode.sell_edge, "Sell")}</span>
+        <span class="bracket-settle">Min ${allNode.min_settle} · Max ${allNode.max_settle}</span>
+        ${fmtSettleArbLine("Buy ≤", allNode.buy_arb_level, allNode.ask_sum != null ? `Ask ${fmtBasketSum(allNode.ask_sum)}` : null, allNode.buy_arb_edge)}
+        ${fmtSettleArbLine("Sell ≥", allNode.sell_arb_level, allNode.bid_sum != null ? `Bid ${fmtBasketSum(allNode.bid_sum)}` : null, allNode.sell_arb_edge)}
       </button>`
     : "";
 
   const tycheNote = !state.tyche
-    ? `<p class="bracket-tyche-warn">Load Tyche data for live bid/ask and arb levels (open Tyche tab or refresh).</p>`
+    ? `<p class="bracket-tyche-warn">Load Tyche data for live bid/ask (open Tyche tab or refresh). Settlement bounds are always shown.</p>`
     : "";
 
   board.innerHTML = `${tycheNote}${allCard ? `<div class="bracket-all-row">${allCard}</div>` : ""}
@@ -1294,8 +1311,8 @@ function renderBasketsTable(filter = "") {
         r.quoted_count < r.team_count
           ? `<span class="basket-quote-sub" title="${r.team_count - r.quoted_count} teams without Tyche quotes">${r.quoted_count}/${r.team_count} quoted</span>`
           : "";
-      const buyCls = r.buy_edge > 0 ? "edge-pos" : r.buy_edge < 0 ? "edge-neg" : "";
-      const sellCls = r.sell_edge > 0 ? "edge-pos" : r.sell_edge < 0 ? "edge-neg" : "";
+      const buyCls = r.buy_arb_edge > 0 ? "edge-pos" : "";
+      const sellCls = r.sell_arb_edge > 0 ? "edge-pos" : "";
       const sel = state.basketsSelectedId === r.id ? " basket-row-selected" : "";
       return `<tr class="${r.side ? `tyche-opp-${r.side}` : ""}${sel}" data-basket-id="${r.id}">
         <td><span class="basket-round">${r.round}</span></td>
@@ -1304,10 +1321,10 @@ function renderBasketsTable(filter = "") {
         <td class="num">${fmtBasketSum(r.theo)}</td>
         <td class="num">${r.bid_sum != null ? fmtBasketSum(r.bid_sum) : "—"}</td>
         <td class="num">${r.ask_sum != null ? fmtBasketSum(r.ask_sum) : "—"}</td>
-        <td class="num ${buyCls}">${r.buy_edge != null ? (r.buy_edge > 0 ? "+" : "") + fmtPrice(r.buy_edge) : "—"}</td>
-        <td class="num ${sellCls}">${r.sell_edge != null ? (r.sell_edge > 0 ? "+" : "") + fmtPrice(r.sell_edge) : "—"}</td>
         <td class="num">${r.min_settle}</td>
         <td class="num">${r.max_settle}</td>
+        <td class="num ${buyCls}">${r.buy_arb_edge != null ? (r.buy_arb_edge > 0 ? "+" : "") + fmtPrice(r.buy_arb_edge) : "—"}</td>
+        <td class="num ${sellCls}">${r.sell_arb_edge != null ? (r.sell_arb_edge > 0 ? "+" : "") + fmtPrice(r.sell_arb_edge) : "—"}</td>
         <td>${side}</td>
       </tr>`;
     })
@@ -1324,13 +1341,12 @@ function renderBasketsTable(filter = "") {
 function renderBasketsFooter() {
   const footer = document.getElementById("baskets-footer");
   if (!footer || !state.baskets) return;
-  const src = state.baskets.theo_source || "expected_points.json";
   const tycheNote = state.tyche
     ? state.tycheLive
       ? "Tyche quotes live"
       : "Tyche quotes from snapshot"
-    : "No Tyche data — bid/ask unavailable";
-  footer.textContent = `Theo from ${src} · ${tycheNote} · Buy edge = theo − Σ ask · Sell edge = Σ bid − theo · Min/max = locked group pts + best/worst remaining KO path`;
+    : "No Tyche quotes loaded";
+  footer.textContent = `${tycheNote} · Buy arb when Σ ask ≤ min settle (edge = min − ask) · Sell arb when Σ bid ≥ max settle (edge = bid − max) · Bounds from locked group results + remaining KO paths`;
 }
 
 function renderBasketsPanel() {
