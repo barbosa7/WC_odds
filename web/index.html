@@ -38,6 +38,7 @@
         <button class="tab" data-tab="calibration" role="tab">Odds vs model</button>
         <button class="tab" data-tab="matches" role="tab">Match odds</button>
         <button class="tab" data-tab="tyche" role="tab">Tyche market</button>
+        <button class="tab" data-tab="baskets" role="tab">Bracket baskets</button>
       </nav>
     </header>
 
@@ -237,6 +238,57 @@
             </table>
           </div>
           <p class="hint tyche-footer" id="tyche-footer"></p>
+        </div>
+      </section>
+
+      <section id="panel-baskets" class="panel">
+        <div class="baskets-summary" id="baskets-summary"></div>
+        <div class="card">
+          <div class="card-toolbar baskets-toolbar">
+            <div>
+              <h2>Bracket subtree baskets</h2>
+              <p class="hint" id="baskets-hint">Each knockout subtree is a basket of team finish-value contracts. Compare model theo vs Tyche bid/ask and settlement bounds.</p>
+            </div>
+            <div class="baskets-filters">
+              <div class="tyche-filter-group" role="group" aria-label="Round filter">
+                <button type="button" class="tyche-filter-btn active" data-baskets-round="all">All rounds</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-round="R32">R32</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-round="R16">R16</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-round="QF">QF</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-round="SF">SF</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-round="Final">Final</button>
+              </div>
+              <div class="tyche-filter-group" role="group" aria-label="Opportunity filter">
+                <button type="button" class="tyche-filter-btn active" data-baskets-filter="all">All</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-filter="opps">Opportunities</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-filter="buy">Buy edge</button>
+                <button type="button" class="tyche-filter-btn" data-baskets-filter="sell">Sell edge</button>
+              </div>
+              <input type="search" id="search-baskets" placeholder="Search basket…" />
+            </div>
+          </div>
+          <div class="bracket-board" id="bracket-board" aria-label="Knockout bracket baskets"></div>
+          <div class="table-scroll">
+            <table class="data-table" id="baskets-table">
+              <thead>
+                <tr>
+                  <th data-sort-baskets="round">Round</th>
+                  <th data-sort-baskets="label">Basket</th>
+                  <th data-sort-baskets="team_count">Teams</th>
+                  <th data-sort-baskets="theo">Theo</th>
+                  <th data-sort-baskets="bid_sum">Σ Bid</th>
+                  <th data-sort-baskets="ask_sum">Σ Ask</th>
+                  <th data-sort-baskets="buy_edge">Buy edge</th>
+                  <th data-sort-baskets="sell_edge">Sell edge</th>
+                  <th data-sort-baskets="min_settle">Min settle</th>
+                  <th data-sort-baskets="max_settle">Max settle</th>
+                  <th data-sort-baskets="side">Side</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="hint baskets-footer" id="baskets-footer"></p>
         </div>
       </section>
     </main>

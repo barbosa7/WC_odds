@@ -12,6 +12,7 @@ const API = {
   tycheLocal: "/api/tyche-opportunities",
   tycheFallback: "./data/tychemkt_opportunities.json",
   matchEvents: "./data/match_events_predictions.json",
+  bracketBaskets: "./data/bracket_baskets.json",
 };
 
 let state = {
@@ -41,6 +42,12 @@ let state = {
   tycheSortKey: "edge",
   tycheSortAsc: false,
   matchPredictions: null,
+  baskets: null,
+  basketsFilter: "all",
+  basketsRound: "all",
+  basketsSortKey: "buy_edge",
+  basketsSortAsc: false,
+  basketsSelectedId: null,
 };
 
 const RANKINGS_COLS = {
@@ -987,6 +994,386 @@ async function loadTycheData(force = false) {
   if (refreshBtn) refreshBtn.disabled = false;
   renderTycheSummary();
   renderTycheTable(document.getElementById("search-tyche")?.value || "");
+  if (state.baskets) renderBasketsPanel();
+}
+
+function tycheTeamLookup() {
+  const map = new Map();
+  for (const row of state.tyche?.items || []) {
+    if (row.kind !== "team") continue;
+    const team = normaliseTycheTeam(row.team ?? row.title);
+    map.set(team, row);
+  }
+  return map;
+}
+
+function computeBasketForTeams(teams) {
+  const lookup = tycheTeamLookup();
+  const items = teams.map((t) => lookup.get(normaliseTycheTeam(t))).filter(Boolean);
+  const basket = computeTycheBasket(items);
+  return { ...basket, quoted: items.length, total: teams.length };
+}
+
+function enrichBasketNode(node) {
+  const basket = computeBasketForTeams(node.teams || []);
+  const theo = Number(node.theo);
+  const buyEdge = basket.askCount > 0 ? roundTyche(theo - basket.askSum) : null;
+  const sellEdge = basket.bidCount > 0 ? roundTyche(basket.bidSum - theo) : null;
+  let side = null;
+  if (buyEdge != null && buyEdge > 0 && (sellEdge == null || sellEdge <= 0 || buyEdge >= sellEdge)) {
+    side = "buy";
+  } else if (sellEdge != null && sellEdge > 0) {
+    side = "sell";
+  }
+  const edge = side === "buy" ? buyEdge : side === "sell" ? sellEdge : null;
+  return {
+    ...node,
+    bid_sum: basket.bidCount > 0 ? basket.bidSum : null,
+    ask_sum: basket.askCount > 0 ? basket.askSum : null,
+    mark_sum: basket.markCount ? basket.markSum : null,
+    bid_count: basket.bidCount,
+    ask_count: basket.askCount,
+    quoted_count: basket.quoted,
+    buy_edge: buyEdge,
+    sell_edge: sellEdge,
+    side,
+    edge,
+  };
+}
+
+function enrichedBaskets() {
+  if (!state.baskets?.nodes) return [];
+  return state.baskets.nodes.map(enrichBasketNode);
+}
+
+function basketShortLabel(node) {
+  if (node.round === "R32") {
+    const parts = node.label.split(" vs ");
+    if (parts.length === 2) return `${parts[0].slice(0, 3)}–${parts[1].slice(0, 3)}`;
+  }
+  if (node.round === "All") return "All 48";
+  if (node.round === "Final") return "Final";
+  if (node.round === "SF") return node.label.replace("Semi-final ", "SF ");
+  if (node.round === "QF") return node.label;
+  if (node.round === "R16") return node.label.replace("Winner(", "").replace(") vs Winner(", "–").replace(")", "");
+  return node.label;
+}
+
+function renderBasketsSummary(rows) {
+  const el = document.getElementById("baskets-summary");
+  if (!el) return;
+  if (!state.baskets) {
+    el.innerHTML = `<div class="tyche-stat neutral" style="grid-column:1/-1"><span class="tyche-stat-label">No bracket basket data — run scripts/build_bracket_baskets.py</span></div>`;
+    return;
+  }
+  const opps = rows.filter((r) => r.side);
+  const buy = rows.filter((r) => r.side === "buy");
+  const sell = rows.filter((r) => r.side === "sell");
+  const allNode = rows.find((r) => r.id === "all");
+  el.innerHTML = `
+    <div class="tyche-stat neutral">
+      <span class="tyche-stat-value">${rows.length}</span>
+      <span class="tyche-stat-label">Bracket baskets</span>
+      <span class="tyche-stat-sub">All → R32 → … → Final</span>
+    </div>
+    <div class="tyche-stat buy">
+      <span class="tyche-stat-value">${buy.length}</span>
+      <span class="tyche-stat-label">Buy baskets</span>
+      <span class="tyche-stat-sub">Σ ask below theo</span>
+    </div>
+    <div class="tyche-stat sell">
+      <span class="tyche-stat-value">${sell.length}</span>
+      <span class="tyche-stat-label">Sell baskets</span>
+      <span class="tyche-stat-sub">Σ bid above theo</span>
+    </div>
+    <div class="tyche-stat neutral">
+      <span class="tyche-stat-value">${opps.length}</span>
+      <span class="tyche-stat-label">With edge</span>
+      <span class="tyche-stat-sub">${state.baskets.n_matches_completed ?? "?"} group matches locked</span>
+    </div>
+    ${
+      allNode
+        ? `<div class="tyche-stat basket mark">
+      <span class="tyche-stat-value">${fmtBasketSum(allNode.theo)}</span>
+      <span class="tyche-stat-label">Full basket theo</span>
+      <span class="tyche-stat-sub">Min ${allNode.min_settle} · Max ${allNode.max_settle}</span>
+    </div>`
+        : ""
+    }
+  `;
+}
+
+const BRACKET_COL = { leaf: 0, r16: 1, qf: 2, sf: 3, final: 4 };
+const QF_KEY_INDEX = { 97: 0, 98: 1, 99: 2, 100: 3 };
+const SF_KEY_INDEX = { 101: 0, 102: 1 };
+
+function buildBracketLayoutTree() {
+  const chain = state.tournament?.knockout_chain;
+  if (!chain) return null;
+
+  function expand(key) {
+    if (typeof key === "number" && key >= 73 && key <= 88) {
+      return { type: "leaf", matchId: key };
+    }
+    const k = String(key);
+    if (k === "final") {
+      const [a, b] = chain.final;
+      return { type: "final", children: [expand(a), expand(b)] };
+    }
+    const pair = chain[k];
+    const n = Number(k);
+    if (n >= 101) {
+      return { type: "sf", sfIndex: SF_KEY_INDEX[n], children: [expand(pair[0]), expand(pair[1])] };
+    }
+    if (n >= 97) {
+      return { type: "qf", qfIndex: QF_KEY_INDEX[n], children: [expand(pair[0]), expand(pair[1])] };
+    }
+    if (n >= 90) {
+      return { type: "r16", r16Id: n, children: [expand(pair[0]), expand(pair[1])] };
+    }
+    return null;
+  }
+
+  const tree = expand("final");
+  assignBracketRows(tree);
+  return tree;
+}
+
+function assignBracketRows(tree, counter = { i: 0 }) {
+  if (tree.type === "leaf") {
+    tree.rowStart = tree.rowEnd = counter.i++;
+    return;
+  }
+  assignBracketRows(tree.children[0], counter);
+  assignBracketRows(tree.children[1], counter);
+  tree.rowStart = tree.children[0].rowStart;
+  tree.rowEnd = tree.children[1].rowEnd;
+}
+
+function basketNodeForTree(tree, byId, byMatchId) {
+  if (tree.type === "leaf") return byMatchId[tree.matchId];
+  if (tree.type === "r16") return byId[`r16-${tree.r16Id}`];
+  if (tree.type === "qf") return byId[`qf-${tree.qfIndex}`];
+  if (tree.type === "sf") return byId[`sf-${tree.sfIndex}`];
+  if (tree.type === "final") return byId.final;
+  return null;
+}
+
+function flattenBracketTree(tree, byId, byMatchId, out = []) {
+  if (tree.type === "leaf") {
+    const node = basketNodeForTree(tree, byId, byMatchId);
+    if (node) out.push({ node, col: BRACKET_COL.leaf, rowStart: tree.rowStart, rowEnd: tree.rowEnd });
+    return out;
+  }
+  flattenBracketTree(tree.children[0], byId, byMatchId, out);
+  flattenBracketTree(tree.children[1], byId, byMatchId, out);
+  const node = basketNodeForTree(tree, byId, byMatchId);
+  if (node) {
+    out.push({ node, col: BRACKET_COL[tree.type], rowStart: tree.rowStart, rowEnd: tree.rowEnd });
+  }
+  return out;
+}
+
+function fmtArb(v, prefix) {
+  if (v == null || Number.isNaN(v)) return `<span class="bracket-arb na">${prefix} —</span>`;
+  const pos = v > 0;
+  const cls = pos ? "pos" : v < 0 ? "neg" : "flat";
+  return `<span class="bracket-arb ${cls}">${prefix} ${v > 0 ? "+" : ""}${fmtPrice(v)}</span>`;
+}
+
+function renderBracketNodeCard(n, layout) {
+  const sel = state.basketsSelectedId === n.id ? " selected" : "";
+  const opp = n.side ? ` opp-${n.side}` : "";
+  const span = layout.rowEnd - layout.rowStart + 1;
+  const quotes =
+    n.bid_sum != null || n.ask_sum != null
+      ? `<span class="bracket-quotes"><span class="bracket-q bid">${fmtBasketSum(n.bid_sum ?? "—")}</span><span class="bracket-q-sep">/</span><span class="bracket-q ask">${fmtBasketSum(n.ask_sum ?? "—")}</span></span>`
+      : `<span class="bracket-quotes muted">Bid/ask —</span>`;
+  return `<div class="bracket-slot" data-col="${layout.col}" style="--col:${layout.col};--row-start:${layout.rowStart};--row-span:${span}">
+    <button type="button" class="bracket-node${sel}${opp}" data-basket-id="${n.id}" title="${n.label} · ${n.team_count} teams">
+      <span class="bracket-node-head">
+        <span class="bracket-node-label">${basketShortLabel(n)}</span>
+        ${n.side ? `<span class="bracket-side ${n.side}">${n.side.toUpperCase()}</span>` : ""}
+      </span>
+      <span class="bracket-node-theo">Theo ${fmtBasketSum(n.theo)}</span>
+      ${quotes}
+      <span class="bracket-arbs">${fmtArb(n.buy_edge, "Buy")}${fmtArb(n.sell_edge, "Sell")}</span>
+    </button>
+  </div>`;
+}
+
+function renderBracketBoard(rows) {
+  const board = document.getElementById("bracket-board");
+  if (!board || !state.baskets) return;
+
+  const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
+  const byMatchId = Object.fromEntries(rows.filter((r) => r.match_id).map((r) => [r.match_id, r]));
+  const tree = buildBracketLayoutTree();
+
+  if (!tree) {
+    board.innerHTML = `<p class="hint">Bracket layout unavailable — missing tournament data.</p>`;
+    return;
+  }
+
+  const slots = flattenBracketTree(tree, byId, byMatchId);
+  const rowCount = tree.rowEnd + 1;
+  const colHeads = ["R32", "R16", "QF", "SF", "Final"];
+  const headers = colHeads.map((h) => `<span class="bracket-col-head">${h}</span>`).join("");
+  const cards = slots.map((s) => renderBracketNodeCard(s.node, s)).join("");
+
+  const allNode = byId.all;
+  const allCard = allNode
+    ? `<button type="button" class="bracket-node bracket-all${state.basketsSelectedId === "all" ? " selected" : ""}${allNode.side ? ` opp-${allNode.side}` : ""}" data-basket-id="all">
+        <span class="bracket-node-head"><span class="bracket-node-label">Full tournament (48)</span>${allNode.side ? `<span class="bracket-side ${allNode.side}">${allNode.side.toUpperCase()}</span>` : ""}</span>
+        <span class="bracket-node-theo">Theo ${fmtBasketSum(allNode.theo)}</span>
+        <span class="bracket-quotes"><span class="bracket-q bid">${fmtBasketSum(allNode.bid_sum ?? "—")}</span><span class="bracket-q-sep">/</span><span class="bracket-q ask">${fmtBasketSum(allNode.ask_sum ?? "—")}</span></span>
+        <span class="bracket-arbs">${fmtArb(allNode.buy_edge, "Buy")}${fmtArb(allNode.sell_edge, "Sell")}</span>
+      </button>`
+    : "";
+
+  const tycheNote = !state.tyche
+    ? `<p class="bracket-tyche-warn">Load Tyche data for live bid/ask and arb levels (open Tyche tab or refresh).</p>`
+    : "";
+
+  board.innerHTML = `${tycheNote}${allCard ? `<div class="bracket-all-row">${allCard}</div>` : ""}
+    <div class="bracket-grid-wrap">
+      <div class="bracket-grid-heads">${headers}</div>
+      <div class="bracket-grid" style="--bracket-rows:${rowCount}">${cards}</div>
+    </div>`;
+
+  board.querySelectorAll("[data-basket-id]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.basketsSelectedId = state.basketsSelectedId === btn.dataset.basketId ? null : btn.dataset.basketId;
+      renderBasketsPanel();
+    });
+  });
+}
+
+function renderBasketsTable(filter = "") {
+  const tbody = document.querySelector("#baskets-table tbody");
+  if (!tbody) return;
+  const q = filter.toLowerCase();
+  let rows = enrichedBaskets();
+
+  if (state.basketsRound !== "all") rows = rows.filter((r) => r.round === state.basketsRound);
+  if (state.basketsFilter === "opps") rows = rows.filter((r) => r.side);
+  else if (state.basketsFilter === "buy") rows = rows.filter((r) => r.side === "buy");
+  else if (state.basketsFilter === "sell") rows = rows.filter((r) => r.side === "sell");
+  if (q) rows = rows.filter((r) => r.label.toLowerCase().includes(q) || r.teams.some((t) => t.toLowerCase().includes(q)));
+  if (state.basketsSelectedId) rows = rows.filter((r) => r.id === state.basketsSelectedId);
+
+  const key = state.basketsSortKey;
+  const dir = state.basketsSortAsc ? 1 : -1;
+  rows.sort((a, b) => {
+    const av = a[key];
+    const bv = b[key];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === "string") return dir * av.localeCompare(bv);
+    return dir * (av - bv);
+  });
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="11" class="tyche-empty">${state.baskets ? "No baskets match filters" : "Load bracket_baskets.json first"}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows
+    .map((r) => {
+      const side =
+        r.side === "buy"
+          ? `<span class="tyche-side buy">BUY</span>`
+          : r.side === "sell"
+            ? `<span class="tyche-side sell">SELL</span>`
+            : `<span class="tyche-side none">—</span>`;
+      const quoteSub =
+        r.quoted_count < r.team_count
+          ? `<span class="basket-quote-sub" title="${r.team_count - r.quoted_count} teams without Tyche quotes">${r.quoted_count}/${r.team_count} quoted</span>`
+          : "";
+      const buyCls = r.buy_edge > 0 ? "edge-pos" : r.buy_edge < 0 ? "edge-neg" : "";
+      const sellCls = r.sell_edge > 0 ? "edge-pos" : r.sell_edge < 0 ? "edge-neg" : "";
+      const sel = state.basketsSelectedId === r.id ? " basket-row-selected" : "";
+      return `<tr class="${r.side ? `tyche-opp-${r.side}` : ""}${sel}" data-basket-id="${r.id}">
+        <td><span class="basket-round">${r.round}</span></td>
+        <td class="basket-label">${r.label}${quoteSub}</td>
+        <td class="num">${r.team_count}</td>
+        <td class="num">${fmtBasketSum(r.theo)}</td>
+        <td class="num">${r.bid_sum != null ? fmtBasketSum(r.bid_sum) : "—"}</td>
+        <td class="num">${r.ask_sum != null ? fmtBasketSum(r.ask_sum) : "—"}</td>
+        <td class="num ${buyCls}">${r.buy_edge != null ? (r.buy_edge > 0 ? "+" : "") + fmtPrice(r.buy_edge) : "—"}</td>
+        <td class="num ${sellCls}">${r.sell_edge != null ? (r.sell_edge > 0 ? "+" : "") + fmtPrice(r.sell_edge) : "—"}</td>
+        <td class="num">${r.min_settle}</td>
+        <td class="num">${r.max_settle}</td>
+        <td>${side}</td>
+      </tr>`;
+    })
+    .join("");
+
+  tbody.querySelectorAll("tr[data-basket-id]").forEach((tr) => {
+    tr.addEventListener("click", () => {
+      state.basketsSelectedId = state.basketsSelectedId === tr.dataset.basketId ? null : tr.dataset.basketId;
+      renderBasketsPanel();
+    });
+  });
+}
+
+function renderBasketsFooter() {
+  const footer = document.getElementById("baskets-footer");
+  if (!footer || !state.baskets) return;
+  const src = state.baskets.theo_source || "expected_points.json";
+  const tycheNote = state.tyche
+    ? state.tycheLive
+      ? "Tyche quotes live"
+      : "Tyche quotes from snapshot"
+    : "No Tyche data — bid/ask unavailable";
+  footer.textContent = `Theo from ${src} · ${tycheNote} · Buy edge = theo − Σ ask · Sell edge = Σ bid − theo · Min/max = locked group pts + best/worst remaining KO path`;
+}
+
+function renderBasketsPanel() {
+  const rows = enrichedBaskets();
+  renderBasketsSummary(rows);
+  renderBracketBoard(rows);
+  renderBasketsTable(document.getElementById("search-baskets")?.value || "");
+  renderBasketsFooter();
+}
+
+function setupBasketsPanel() {
+  document.querySelectorAll("[data-baskets-round]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.basketsRound = btn.dataset.basketsRound;
+      document.querySelectorAll("[data-baskets-round]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.basketsRound === state.basketsRound);
+      });
+      renderBasketsPanel();
+    });
+  });
+
+  document.querySelectorAll("[data-baskets-filter]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.basketsFilter = btn.dataset.basketsFilter;
+      document.querySelectorAll("[data-baskets-filter]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.basketsFilter === state.basketsFilter);
+      });
+      renderBasketsPanel();
+    });
+  });
+
+  document.getElementById("search-baskets")?.addEventListener("input", (e) => {
+    renderBasketsTable(e.target.value);
+  });
+
+  document.querySelectorAll("#baskets-table th[data-sort-baskets]").forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.sortBaskets;
+      if (state.basketsSortKey === key) state.basketsSortAsc = !state.basketsSortAsc;
+      else {
+        state.basketsSortKey = key;
+        state.basketsSortAsc = key === "label" || key === "round";
+      }
+      renderBasketsTable(document.getElementById("search-baskets")?.value || "");
+    });
+  });
 }
 
 async function loadData() {
@@ -1033,6 +1420,14 @@ async function loadData() {
     /* optional match multiplier theos */
   }
 
+  let baskets = null;
+  try {
+    const r = await fetch(API.bracketBaskets, { credentials: "same-origin" });
+    if (r.ok) baskets = await r.json();
+  } catch (_) {
+    /* optional bracket baskets */
+  }
+
   state.results = results;
   state.resultsOdds = resultsOdds;
   state.resultsCurrent = resultsCurrent;
@@ -1040,6 +1435,7 @@ async function loadData() {
   state.hasCompare = !!resultsOdds;
   state.hasCurrent = !!resultsCurrent;
   state.matchPredictions = matchPredictions;
+  state.baskets = baskets;
   state.tournament = tournament;
   state.odds = odds;
   state.teamToGroup = {};
@@ -1865,6 +2261,9 @@ function setupTabs() {
           renderTycheTable(document.getElementById("search-tyche")?.value || "");
         });
       }
+      if (tab.dataset.tab === "baskets") {
+        loadTycheData(false).then(() => renderBasketsPanel());
+      }
     });
   });
 }
@@ -1936,6 +2335,7 @@ async function init() {
     setupSort();
     setupSearch();
     setupTychePanel();
+    setupBasketsPanel();
     document.getElementById("team-select")?.addEventListener("change", (e) => {
       renderTeamDetail(e.target.value);
     });

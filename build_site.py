@@ -26,6 +26,7 @@ OPTIONAL = {
     "expected_points_current_odds_only.json": ROOT / "output" / "expected_points_current_odds_only.json",
     "tychemkt_opportunities.json": ROOT / "output" / "tychemkt_opportunities.json",
     "match_events_predictions.json": ROOT / "output" / "match_events_predictions.json",
+    "bracket_baskets.json": ROOT / "output" / "bracket_baskets.json",
 }
 
 
@@ -35,6 +36,17 @@ def run_simulation(n_sims: int) -> None:
         check=True,
         cwd=ROOT,
     )
+
+
+def build_bracket_baskets_file() -> None:
+    import json
+
+    from bracket_baskets import build_bracket_baskets
+
+    payload = build_bracket_baskets()
+    out = ROOT / "output" / "bracket_baskets.json"
+    out.write_text(json.dumps(payload, indent=2))
+    print(f"Built bracket baskets → {out} ({len(payload['nodes'])} nodes)")
 
 
 def build(*, run_sim: bool = False, n_sims: int = 25_000) -> None:
@@ -47,6 +59,11 @@ def build(*, run_sim: bool = False, n_sims: int = 25_000) -> None:
         print("Run: python run.py")
         print("Or rebuild with: python build_site.py --run-simulation")
         sys.exit(1)
+
+    try:
+        build_bracket_baskets_file()
+    except Exception as exc:
+        print(f"Warning: bracket baskets not built ({exc})")
 
     if DIST.exists():
         shutil.rmtree(DIST)
