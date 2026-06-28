@@ -11,6 +11,10 @@
     "D",
     "I"
   ],
+  "bonus_teams": [
+    "Norway"
+  ],
+  "bonus_points": 15,
   "theo_source": "expected_points_current.json",
   "nodes": [
     {
@@ -69,7 +73,7 @@
       ],
       "team_count": 48,
       "theo": 1015.04,
-      "min_settle": 1000,
+      "min_settle": 1015,
       "max_settle": 1015
     },
     {
@@ -85,7 +89,7 @@
       "team_count": 2,
       "theo": 46.73,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-76",
@@ -100,7 +104,7 @@
       "team_count": 2,
       "theo": 70.66,
       "min_settle": 50,
-      "max_settle": 140
+      "max_settle": 125
     },
     {
       "id": "r32-74",
@@ -115,7 +119,7 @@
       "team_count": 2,
       "theo": 55.13,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-75",
@@ -130,7 +134,7 @@
       "team_count": 2,
       "theo": 73.46,
       "min_settle": 50,
-      "max_settle": 140
+      "max_settle": 125
     },
     {
       "id": "r32-78",
@@ -144,7 +148,7 @@
       ],
       "team_count": 2,
       "theo": 62.21,
-      "min_settle": 40,
+      "min_settle": 55,
       "max_settle": 130
     },
     {
@@ -160,7 +164,7 @@
       "team_count": 2,
       "theo": 63.36,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-79",
@@ -175,7 +179,7 @@
       "team_count": 2,
       "theo": 50.95,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-80",
@@ -190,7 +194,7 @@
       "team_count": 2,
       "theo": 61.44,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-82",
@@ -205,7 +209,7 @@
       "team_count": 2,
       "theo": 62.73,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-81",
@@ -220,7 +224,7 @@
       "team_count": 2,
       "theo": 47.21,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-84",
@@ -235,7 +239,7 @@
       "team_count": 2,
       "theo": 72.45,
       "min_settle": 50,
-      "max_settle": 140
+      "max_settle": 125
     },
     {
       "id": "r32-83",
@@ -250,7 +254,7 @@
       "team_count": 2,
       "theo": 65.57,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-85",
@@ -265,7 +269,7 @@
       "team_count": 2,
       "theo": 52.75,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-88",
@@ -280,7 +284,7 @@
       "team_count": 2,
       "theo": 46.45,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r32-86",
@@ -295,7 +299,7 @@
       "team_count": 2,
       "theo": 68.76,
       "min_settle": 50,
-      "max_settle": 140
+      "max_settle": 125
     },
     {
       "id": "r32-87",
@@ -310,7 +314,7 @@
       "team_count": 2,
       "theo": 50.18,
       "min_settle": 40,
-      "max_settle": 130
+      "max_settle": 115
     },
     {
       "id": "r16-90",
@@ -330,7 +334,7 @@
       "team_count": 4,
       "theo": 120.19,
       "min_settle": 105,
-      "max_settle": 180
+      "max_settle": 165
     },
     {
       "id": "r16-89",
@@ -350,7 +354,7 @@
       "team_count": 4,
       "theo": 118.49,
       "min_settle": 95,
-      "max_settle": 170
+      "max_settle": 155
     },
     {
       "id": "r16-91",
@@ -369,7 +373,7 @@
       ],
       "team_count": 4,
       "theo": 132.87,
-      "min_settle": 105,
+      "min_settle": 120,
       "max_settle": 180
     },
     {
@@ -390,7 +394,7 @@
       "team_count": 4,
       "theo": 112.39,
       "min_settle": 95,
-      "max_settle": 170
+      "max_settle": 155
     },
     {
       "id": "r16-94",
@@ -410,7 +414,7 @@
       "team_count": 4,
       "theo": 109.94,
       "min_settle": 95,
-      "max_settle": 170
+      "max_settle": 155
     },
     {
       "id": "r16-93",
@@ -430,7 +434,7 @@
       "team_count": 4,
       "theo": 141.21,
       "min_settle": 115,
-      "max_settle": 190
+      "max_settle": 175
     },
     {
       "id": "r16-96",
@@ -450,7 +454,7 @@
       "team_count": 4,
       "theo": 112.02,
       "min_settle": 95,
-      "max_settle": 170
+      "max_settle": 155
     },
     {
       "id": "r16-95",
@@ -470,7 +474,7 @@
       "team_count": 4,
       "theo": 102.93,
       "min_settle": 95,
-      "max_settle": 170
+      "max_settle": 155
     },
     {
       "id": "qf-0",
@@ -493,7 +497,7 @@
       "team_count": 8,
       "theo": 232.58,
       "min_settle": 210,
-      "max_settle": 275
+      "max_settle": 260
     },
     {
       "id": "qf-1",
@@ -515,7 +519,7 @@
       ],
       "team_count": 8,
       "theo": 274.08,
-      "min_settle": 230,
+      "min_settle": 245,
       "max_settle": 295
     },
     {
@@ -539,7 +543,7 @@
       "team_count": 8,
       "theo": 221.96,
       "min_settle": 200,
-      "max_settle": 265
+      "max_settle": 250
     },
     {
       "id": "qf-3",
@@ -562,7 +566,7 @@
       "team_count": 8,
       "theo": 221.42,
       "min_settle": 200,
-      "max_settle": 265
+      "max_settle": 250
     },
     {
       "id": "sf-0",
@@ -593,7 +597,7 @@
       "team_count": 16,
       "theo": 454.54,
       "min_settle": 440,
-      "max_settle": 490
+      "max_settle": 475
     },
     {
       "id": "sf-1",
@@ -623,7 +627,7 @@
       ],
       "team_count": 16,
       "theo": 495.5,
-      "min_settle": 460,
+      "min_settle": 475,
       "max_settle": 510
     },
     {
@@ -670,7 +674,7 @@
       ],
       "team_count": 32,
       "theo": 950.04,
-      "min_settle": 935,
+      "min_settle": 950,
       "max_settle": 950
     }
   ],
