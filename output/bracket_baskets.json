@@ -72,7 +72,7 @@
         "Uzbekistan"
       ],
       "team_count": 48,
-      "theo": 1015.04,
+      "theo": 1015.02,
       "min_settle": 1015,
       "max_settle": 1015
     },
@@ -87,7 +87,7 @@
         "South Africa"
       ],
       "team_count": 2,
-      "theo": 46.73,
+      "theo": 46.67,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -102,7 +102,7 @@
         "Japan"
       ],
       "team_count": 2,
-      "theo": 70.66,
+      "theo": 74.08,
       "min_settle": 50,
       "max_settle": 125
     },
@@ -117,7 +117,7 @@
         "Paraguay"
       ],
       "team_count": 2,
-      "theo": 55.13,
+      "theo": 54.91,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -132,7 +132,7 @@
         "Netherlands"
       ],
       "team_count": 2,
-      "theo": 73.46,
+      "theo": 69.33,
       "min_settle": 50,
       "max_settle": 125
     },
@@ -147,7 +147,7 @@
         "Norway"
       ],
       "team_count": 2,
-      "theo": 62.21,
+      "theo": 63.17,
       "min_settle": 55,
       "max_settle": 130
     },
@@ -162,7 +162,7 @@
         "Sweden"
       ],
       "team_count": 2,
-      "theo": 63.36,
+      "theo": 62.6,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -177,7 +177,7 @@
         "Mexico"
       ],
       "team_count": 2,
-      "theo": 50.95,
+      "theo": 50.2,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -192,7 +192,7 @@
         "England"
       ],
       "team_count": 2,
-      "theo": 61.44,
+      "theo": 59.57,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -207,7 +207,7 @@
         "Senegal"
       ],
       "team_count": 2,
-      "theo": 62.73,
+      "theo": 58.23,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -222,7 +222,7 @@
         "United States"
       ],
       "team_count": 2,
-      "theo": 47.21,
+      "theo": 46.21,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -237,7 +237,7 @@
         "Spain"
       ],
       "team_count": 2,
-      "theo": 72.45,
+      "theo": 75.95,
       "min_settle": 50,
       "max_settle": 125
     },
@@ -252,7 +252,7 @@
         "Portugal"
       ],
       "team_count": 2,
-      "theo": 65.57,
+      "theo": 54.56,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -267,7 +267,7 @@
         "Switzerland"
       ],
       "team_count": 2,
-      "theo": 52.75,
+      "theo": 52.85,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -282,7 +282,7 @@
         "Egypt"
       ],
       "team_count": 2,
-      "theo": 46.45,
+      "theo": 44.86,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -297,7 +297,7 @@
         "Cape Verde"
       ],
       "team_count": 2,
-      "theo": 68.76,
+      "theo": 86.43,
       "min_settle": 50,
       "max_settle": 125
     },
@@ -312,7 +312,7 @@
         "Ghana"
       ],
       "team_count": 2,
-      "theo": 50.18,
+      "theo": 50.4,
       "min_settle": 40,
       "max_settle": 115
     },
@@ -332,7 +332,7 @@
         "South Africa"
       ],
       "team_count": 4,
-      "theo": 120.19,
+      "theo": 116.0,
       "min_settle": 105,
       "max_settle": 165
     },
@@ -352,7 +352,7 @@
         "Sweden"
       ],
       "team_count": 4,
-      "theo": 118.49,
+      "theo": 117.51,
       "min_settle": 95,
       "max_settle": 155
     },
@@ -372,7 +372,7 @@
         "Norway"
       ],
       "team_count": 4,
-      "theo": 132.87,
+      "theo": 137.25,
       "min_settle": 120,
       "max_settle": 180
     },
@@ -392,7 +392,7 @@
         "Mexico"
       ],
       "team_count": 4,
-      "theo": 112.39,
+      "theo": 109.77,
       "min_settle": 95,
       "max_settle": 155
     },
@@ -412,7 +412,7 @@
         "Spain"
       ],
       "team_count": 4,
-      "theo": 138.02,
+      "theo": 130.51,
       "min_settle": 105,
       "max_settle": 165
     },
@@ -432,7 +432,7 @@
         "United States"
       ],
       "team_count": 4,
-      "theo": 109.94,
+      "theo": 104.44,
       "min_settle": 95,
       "max_settle": 155
     },
@@ -452,7 +452,7 @@
         "Egypt"
       ],
       "team_count": 4,
-      "theo": 115.21,
+      "theo": 131.29,
       "min_settle": 105,
       "max_settle": 165
     },
@@ -472,7 +472,7 @@
         "Switzerland"
       ],
       "team_count": 4,
-      "theo": 102.93,
+      "theo": 103.25,
       "min_settle": 95,
       "max_settle": 155
     },
@@ -495,7 +495,7 @@
         "Sweden"
       ],
       "team_count": 8,
-      "theo": 238.68,
+      "theo": 233.51,
       "min_settle": 210,
       "max_settle": 260
     },
@@ -518,7 +518,7 @@
         "United States"
       ],
       "team_count": 8,
-      "theo": 247.96,
+      "theo": 234.95,
       "min_settle": 210,
       "max_settle": 260
     },
@@ -541,7 +541,7 @@
         "Norway"
       ],
       "team_count": 8,
-      "theo": 245.26,
+      "theo": 247.02,
       "min_settle": 225,
       "max_settle": 275
     },
@@ -564,7 +564,7 @@
         "Switzerland"
       ],
       "team_count": 8,
-      "theo": 218.14,
+      "theo": 234.54,
       "min_settle": 210,
       "max_settle": 260
     },
@@ -595,7 +595,7 @@
         "United States"
       ],
       "team_count": 16,
-      "theo": 486.64,
+      "theo": 468.46,
       "min_settle": 450,
       "max_settle": 485
     },
@@ -626,7 +626,7 @@
         "Switzerland"
       ],
       "team_count": 16,
-      "theo": 463.4,
+      "theo": 481.56,
       "min_settle": 465,
       "max_settle": 500
     },
@@ -673,7 +673,7 @@
         "United States"
       ],
       "team_count": 32,
-      "theo": 950.04,
+      "theo": 950.02,
       "min_settle": 950,
       "max_settle": 950
     }

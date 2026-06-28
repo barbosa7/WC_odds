@@ -31,6 +31,7 @@ class ConditionalContext:
     played: dict[str, set[tuple[int, int, int]]] = field(default_factory=dict)
     stats_by_group: dict[str, dict[str, dict[str, int]]] = field(default_factory=dict)
     engine_sequence: list[tuple[str, str, int, int]] = field(default_factory=list)
+    r32_winners: dict[int, str] = field(default_factory=dict)
 
 
 def build_fixture_index(
@@ -145,11 +146,19 @@ def load_completed_matches(path: Path, tourn: dict[str, Any] | None = None) -> C
     matches = [r[0] for r in resolved]
     engine_sequence = [(r[1], r[2], r[3], r[4]) for r in resolved]
 
+    r32_winners: dict[int, str] = {}
+    for idx, entry in enumerate(raw.get("knockout", []), start=1):
+        mid = int(entry["id"])
+        if "winner" not in entry:
+            raise ValueError(f"Knockout match {idx} (id {mid}): missing winner")
+        r32_winners[mid] = norm_team(entry["winner"])
+
     return ConditionalContext(
         matches=matches,
         played=played,
         stats_by_group=stats_by_group,
         engine_sequence=engine_sequence,
+        r32_winners=r32_winners,
     )
 
 

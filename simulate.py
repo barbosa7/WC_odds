@@ -319,8 +319,13 @@ def _run_knockout_bracket(
     third_slots: dict[str, str],
     play_round,
     play_final,
+    *,
+    r32_winners: dict[int, str] | None = None,
 ) -> dict[str, Any]:
-    r32_pairs = []
+    chain = tourn["knockout_chain"]
+    locked = r32_winners or {}
+
+    r32_w, r32_l = [], []
     for m in tourn["r32"]:
         home = team_from_ref(m["home"], state, third_slots, m.get("slot"))
         away = (
@@ -328,31 +333,27 @@ def _run_knockout_bracket(
             if m["away"] == "3RD"
             else team_from_ref(m["away"], state, third_slots, m.get("slot"))
         )
-        r32_pairs.append((home, away))
-
-    r32_w, r32_l = play_round(r32_pairs)
+        mid = m["id"]
+        if mid in locked:
+            w = locked[mid]
+            l = away if w == home else home
+        else:
+            w, l = play_final(home, away)
+        r32_w.append(w)
+        r32_l.append(l)
     w = {m["id"]: r32_w[i] for i, m in enumerate(tourn["r32"])}
 
-    def pair(mid: int) -> tuple[str, str]:
-        a, b = tourn["knockout_chain"][str(mid)]
-        return w[a], w[b]
+    def stage(match_ids: tuple[int, ...], prev: dict[int, str]) -> tuple[dict[int, str], list[str]]:
+        pairs = [(prev[chain[str(mid)][0]], prev[chain[str(mid)][1]]) for mid in match_ids]
+        winners, losers = play_round(pairs)
+        return dict(zip(match_ids, winners)), losers
 
-    r16_pairs = [pair(mid) for mid in (90, 89, 91, 92, 94, 93, 96, 95)]
-    r16_w, r16_l = play_round(r16_pairs)
-    w16 = dict(zip((90, 89, 91, 92, 94, 93, 96, 95), r16_w))
+    w16, r16_l = stage((90, 89, 91, 92, 93, 94, 95, 96), w)
+    wqf, qf_l = stage((97, 98, 99, 100), w16)
+    wsf, sf_l = stage((101, 102), wqf)
 
-    qf_pairs = [
-        (w16[90], w16[92]),
-        (w16[91], w16[93]),
-        (w16[94], w16[96]),
-        (w16[89], w16[95]),
-    ]
-    qf_w, qf_l = play_round(qf_pairs)
-
-    sf_pairs = [(qf_w[0], qf_w[2]), (qf_w[1], qf_w[3])]
-    sf_w, sf_l = play_round(sf_pairs)
-
-    final_w, final_l = play_final(sf_w[0], sf_w[1])
+    fa, fb = chain["final"]
+    final_w, final_l = play_final(wsf[fa], wsf[fb])
     bronze_w, bronze_l = play_final(sf_l[0], sf_l[1])
 
     return {
@@ -399,6 +400,7 @@ def run_single_sim_odds(
         third_slots,
         play_round=lambda pairs: play_knockout_round(pairs, strengths, rng),
         play_final=lambda a, b: play_match(a, b, strengths, rng),
+        r32_winners=conditional.r32_winners if conditional else None,
     )
     ranks, bonus_teams = _build_ranks_and_bonus(state, ko)
     return _score_simulation(state, ranks, bonus_teams)
@@ -442,6 +444,7 @@ def run_single_sim_ml(
         third_slots,
         play_round=lambda pairs: play_knockout_round_ml(pairs, predictor, engine, rng),
         play_final=lambda a, b: predictor.simulate_knockout(engine, a, b, rng),
+        r32_winners=conditional.r32_winners if conditional else None,
     )
     ranks, bonus_teams = _build_ranks_and_bonus(state, ko)
     return _score_simulation(state, ranks, bonus_teams)
@@ -535,9 +538,11 @@ def run_monte_carlo(
     if conditional:
         from wc_results import completed_matches_summary
 
-        sources.append(
-            f"conditional on {len(conditional.matches)} completed group match(es)"
-        )
+        n_ko = len(conditional.r32_winners)
+        src = f"conditional on {len(conditional.matches)} completed group match(es)"
+        if n_ko:
+            src += f" + {n_ko} locked R32 result(s)"
+        sources.append(src)
 
     for _ in range(n_sims):
         res = sim_fn()
