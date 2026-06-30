@@ -1,5 +1,5 @@
 {
-  "model": "Tweedie product + Poisson marginals + mean-scale cal (2018 OOS)",
+  "model": "Tweedie product + Poisson marginals + Elo + matchday + mean-scale cal (2018 OOS)",
   "n_train_matches": 345,
   "competitions": {
     "European Championship": 153,
@@ -9,58 +9,59 @@
     "tweedie_power": 1.9,
     "tweedie_alpha": 0.5,
     "poisson_alpha": 0.2,
-    "cal_scale": 1.0807316050714675
+    "cal_scale": 1.0610782338953941,
+    "wc_sample_weight": 2.0
   },
   "holdout": {
     "wc2022_holdout": {
       "n": 64,
-      "mae": 72.8,
-      "bias": 1.1,
-      "mdape": 0.614,
-      "corr": 0.167,
-      "spearman": 0.125,
-      "rmse_log": 1.801,
-      "mean_pred": 91.8,
+      "mae": 73.1,
+      "bias": 1.2,
+      "mdape": 0.64,
+      "corr": 0.121,
+      "spearman": 0.147,
+      "rmse_log": 1.795,
+      "mean_pred": 91.9,
       "mean_actual": 90.7
     },
     "wc2022_raw_tweedie": {
       "n": 64,
-      "mae": 70.8,
-      "bias": -5.7,
-      "mdape": 0.635,
-      "corr": 0.167,
-      "spearman": 0.125,
-      "rmse_log": 1.768,
-      "mean_pred": 84.9,
+      "mae": 71.3,
+      "bias": -4.1,
+      "mdape": 0.649,
+      "corr": 0.121,
+      "spearman": 0.147,
+      "rmse_log": 1.769,
+      "mean_pred": 86.6,
       "mean_actual": 90.7
     },
     "calibration_fit": "WC 2018 OOS mean-scale",
-    "cal_scale": 1.0807,
+    "cal_scale": 1.0611,
     "train_matches": 230
   },
   "walk_forward_wc": [
     {
       "test_season": 2018,
       "n": 64,
-      "mae": 58.1,
+      "mae": 58.0,
       "bias": -0.0,
-      "mdape": 0.592,
-      "corr": 0.024,
-      "spearman": 0.124,
-      "rmse_log": 1.274,
+      "mdape": 0.583,
+      "corr": 0.025,
+      "spearman": 0.068,
+      "rmse_log": 1.285,
       "mean_pred": 88.0,
       "mean_actual": 88.0
     },
     {
       "test_season": 2022,
       "n": 64,
-      "mae": 72.8,
-      "bias": 1.1,
-      "mdape": 0.614,
-      "corr": 0.167,
-      "spearman": 0.125,
-      "rmse_log": 1.801,
-      "mean_pred": 91.8,
+      "mae": 73.1,
+      "bias": 1.2,
+      "mdape": 0.64,
+      "corr": 0.121,
+      "spearman": 0.147,
+      "rmse_log": 1.795,
+      "mean_pred": 91.9,
       "mean_actual": 90.7
     }
   ],
@@ -79,6 +80,18 @@
     "ref_cards_pg",
     "exp_cards_ref",
     "knockout",
-    "is_euro"
-  ]
+    "is_euro",
+    "matchday_2",
+    "matchday_3",
+    "elo_home",
+    "elo_away",
+    "elo_diff",
+    "abs_elo_diff",
+    "elo_avg"
+  ],
+  "data_sources": {
+    "fbref": "cards/corners/goals",
+    "fjelstul": "matchday + referee backfill (WC men's)",
+    "elo": "kaggle + international_train chronological Elo"
+  }
 }

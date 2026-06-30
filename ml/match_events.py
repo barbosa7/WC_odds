@@ -14,6 +14,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from ml.constants import norm_team
+from ml.elo_history import build_elo_engine, elo_features, load_international_history
+from ml.fjelstul import enrich_match_stats
+from ml.features import FeatureEngine
 from ml.fbref import _norm_referee, add_match_totals, load_match_stats
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +31,7 @@ WC2018_KICKOFF = pd.Timestamp("2018-06-14")
 TWEEDIE_POWER = 1.9
 TWEEDIE_ALPHA = 0.5
 POISSON_ALPHA = 0.2
+WC_SAMPLE_WEIGHT = 2.0
 
 KNOCKOUT_ROUNDS = {
     "Round of 16", "Quarter-finals", "Semi-finals", "Third-place match", "Final",
@@ -133,6 +137,18 @@ def _ref_cards_prior(referee: str | None, profiles: dict[str, RefereeProfile]) -
     return DEFAULT_REF_CARDS
 
 
+def _matchday_dummies(matchday: float | int | None) -> tuple[float, float]:
+    if matchday is None:
+        return 0.0, 0.0
+    try:
+        if pd.isna(matchday):
+            return 0.0, 0.0
+    except (TypeError, ValueError):
+        pass
+    md = int(float(matchday))
+    return float(md == 2), float(md == 3)
+
+
 def _row_features(
     home: str,
     away: str,
@@ -142,11 +158,21 @@ def _row_features(
     referee: str | None = None,
     ref_profiles: dict[str, RefereeProfile] | None = None,
     competition: str = "World Cup",
+    matchday: float | int | None = None,
+    elo_feats: dict[str, float] | None = None,
 ) -> dict[str, float]:
     h = profiles.get(norm_team(home), TeamEventProfile())
     a = profiles.get(norm_team(away), TeamEventProfile())
     ref_pg = _ref_cards_prior(referee, ref_profiles or {})
     team_cards = h.cards_pg + a.cards_pg
+    md2, md3 = _matchday_dummies(matchday)
+    elo = elo_feats or {
+        "elo_home": 1500.0,
+        "elo_away": 1500.0,
+        "elo_diff": 0.0,
+        "abs_elo_diff": 0.0,
+        "elo_avg": 1500.0,
+    }
     return {
         "h_gf": h.goals_for_pg,
         "h_ga": h.goals_against_pg,
@@ -163,6 +189,9 @@ def _row_features(
         "exp_cards_ref": 0.5 * team_cards + 0.5 * ref_pg,
         "knockout": _is_knockout(round_name),
         "is_euro": _is_euro(competition),
+        "matchday_2": md2,
+        "matchday_3": md3,
+        **elo,
         "h_matches": h.matches,
         "a_matches": a.matches,
     }
@@ -174,46 +203,121 @@ FEATURE_COLS = [
     "exp_goals", "exp_corners", "exp_cards",
     "ref_cards_pg", "exp_cards_ref",
     "knockout", "is_euro",
+    "matchday_2", "matchday_3",
+    "elo_home", "elo_away", "elo_diff", "abs_elo_diff", "elo_avg",
 ]
 
 
-def build_training_frame(
-    df: pd.DataFrame,
+def _result_from_scores(hs: float, as_: float) -> str:
+    if hs > as_:
+        return "H"
+    if hs < as_:
+        return "A"
+    return "D"
+
+
+def _update_elo_from_event(elo: FeatureEngine, m: pd.Series) -> None:
+    if pd.isna(m.get("home_score")) or pd.isna(m.get("away_score")):
+        return
+    comp = str(m.get("competition", "World Cup"))
+    from ml.elo_history import COMP_TO_TOURNAMENT
+
+    elo.update(
+        m["home_team"], m["away_team"], pd.Timestamp(m["date"]).strftime("%Y-%m-%d"),
+        _result_from_scores(float(m["home_score"]), float(m["away_score"])),
+        float(m["home_score"]), float(m["away_score"]),
+        neutral=True,
+        tournament=COMP_TO_TOURNAMENT.get(comp, comp),
+    )
+
+
+def _walk_event_rows(
+    event_df: pd.DataFrame,
     *,
     train_before: pd.Timestamp | None = None,
-) -> tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    df = add_match_totals(df.sort_values("date").reset_index(drop=True))
+    label_game_ids: set[str] | None = None,
+) -> tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray | None, list[str]]:
+    """Chronological feature rows with Elo + matchday; optional sample weights."""
+    df = enrich_match_stats(add_match_totals(event_df.sort_values("date").reset_index(drop=True)))
     if train_before is not None:
         df = df[df["date"] < train_before].reset_index(drop=True)
 
+    intl = load_international_history()
+    if train_before is not None:
+        intl = intl[intl["date"] < train_before]
+
+    if label_game_ids is None:
+        label_game_ids = set(df["game_id"].astype(str))
+
+    timeline: list[tuple[pd.Timestamp, str, pd.Series]] = []
+    for _, m in intl.iterrows():
+        timeline.append((m["date"], "intl", m))
+    for _, m in df.iterrows():
+        timeline.append((pd.Timestamp(m["date"]), "event", m))
+    timeline.sort(key=lambda x: (x[0], 0 if x[1] == "intl" else 1))
+
+    elo = FeatureEngine()
     profiles: dict[str, TeamEventProfile] = {}
     ref_profiles: dict[str, RefereeProfile] = {}
     rows: list[dict] = []
+    weights: list[float] = []
+    game_ids: list[str] = []
     y_prod, y_g, y_c, y_k = [], [], [], []
 
-    for _, m in df.iterrows():
-        if pd.isna(m["total_goals"]):
-            continue
-        feats = _row_features(
-            m["home_team"], m["away_team"], m["round"], profiles,
-            referee=m.get("referee"), ref_profiles=ref_profiles,
-            competition=m.get("competition", "World Cup"),
-        )
-        rows.append(feats)
-        y_prod.append(float(m["gxcxc"]))
-        y_g.append(float(m["total_goals"]))
-        y_c.append(float(m["total_corners"]))
-        y_k.append(float(m["total_cards"]))
-        _update_profiles_from_match(profiles, m)
-        _update_referee_profile(ref_profiles, m)
+    for _, kind, m in timeline:
+        if kind == "event" and str(m["game_id"]) in label_game_ids:
+            if pd.isna(m["total_goals"]):
+                pass
+            else:
+                e = elo_features(elo, m["home_team"], m["away_team"], m["date"])
+                feats = _row_features(
+                    m["home_team"], m["away_team"], m["round"], profiles,
+                    referee=m.get("referee"), ref_profiles=ref_profiles,
+                    competition=m.get("competition", "World Cup"),
+                    matchday=m.get("matchday"),
+                    elo_feats=e,
+                )
+                rows.append(feats)
+                game_ids.append(str(m["game_id"]))
+                y_prod.append(float(m["gxcxc"]))
+                y_g.append(float(m["total_goals"]))
+                y_c.append(float(m["total_corners"]))
+                y_k.append(float(m["total_cards"]))
+                w = WC_SAMPLE_WEIGHT if str(m.get("competition", "World Cup")) == "World Cup" else 1.0
+                weights.append(w)
 
+        if kind == "intl":
+            elo.update(
+                m["home_team"], m["away_team"], m["date"].strftime("%Y-%m-%d"),
+                m["result"],
+                float(m["home_score"]), float(m["away_score"]),
+                neutral=bool(m.get("neutral", False)),
+                tournament=str(m.get("tournament", "Friendly")),
+            )
+        else:
+            _update_elo_from_event(elo, m)
+            _update_profiles_from_match(profiles, m)
+            _update_referee_profile(ref_profiles, m)
+
+    w_arr = np.array(weights, dtype=float) if weights else None
     return (
         pd.DataFrame(rows),
         np.array(y_prod, dtype=float),
         np.array(y_g, dtype=float),
         np.array(y_c, dtype=float),
         np.array(y_k, dtype=float),
+        w_arr,
+        game_ids,
     )
+
+
+def build_training_frame(
+    df: pd.DataFrame,
+    *,
+    train_before: pd.Timestamp | None = None,
+) -> tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray | None]:
+    X, y, y_g, y_c, y_k, w, _ = _walk_event_rows(df, train_before=train_before)
+    return X, y, y_g, y_c, y_k, w
 
 
 def _poisson_mc_product(
@@ -226,18 +330,25 @@ def _poisson_mc_product(
     return float(np.mean(g * c * k))
 
 
-def _fit_pipelines(x: np.ndarray, y: np.ndarray, y_g: np.ndarray, y_c: np.ndarray, y_k: np.ndarray):
+def _fit_pipelines(
+    x: np.ndarray,
+    y: np.ndarray,
+    y_g: np.ndarray,
+    y_c: np.ndarray,
+    y_k: np.ndarray,
+    sample_weight: np.ndarray | None = None,
+):
     pois_g = Pipeline([("s", StandardScaler()), ("m", PoissonRegressor(alpha=POISSON_ALPHA, max_iter=800))])
     pois_c = Pipeline([("s", StandardScaler()), ("m", PoissonRegressor(alpha=POISSON_ALPHA, max_iter=800))])
     pois_k = Pipeline([("s", StandardScaler()), ("m", PoissonRegressor(alpha=POISSON_ALPHA, max_iter=800))])
-    pois_g.fit(x, y_g)
-    pois_c.fit(x, y_c)
-    pois_k.fit(x, y_k)
+    pois_g.fit(x, y_g, m__sample_weight=sample_weight)
+    pois_c.fit(x, y_c, m__sample_weight=sample_weight)
+    pois_k.fit(x, y_k, m__sample_weight=sample_weight)
     tweedie = Pipeline([
         ("s", StandardScaler()),
         ("m", TweedieRegressor(power=TWEEDIE_POWER, alpha=TWEEDIE_ALPHA, max_iter=800)),
     ])
-    tweedie.fit(x, y)
+    tweedie.fit(x, y, m__sample_weight=sample_weight)
     return pois_g, pois_c, pois_k, tweedie
 
 
@@ -251,6 +362,7 @@ class MatchEventsModel:
     feature_cols: list[str]
     profiles: dict[str, TeamEventProfile]
     ref_profiles: dict[str, RefereeProfile]
+    elo_engine: FeatureEngine
     params: dict = field(default_factory=dict)
 
     def _raw_product(self, x: np.ndarray) -> float:
@@ -284,12 +396,18 @@ class MatchEventsModel:
         *,
         referee: str | None = None,
         competition: str = "World Cup",
+        matchday: int | None = None,
+        date: str | None = None,
     ) -> dict[str, float]:
         home, away = norm_team(home), norm_team(away)
+        pred_date = date or "2026-06-15"
+        e = elo_features(self.elo_engine, home, away, pred_date)
         feats = _row_features(
             home, away, round_name, self.profiles,
             referee=referee, ref_profiles=self.ref_profiles,
             competition=competition,
+            matchday=matchday,
+            elo_feats=e,
         )
         return self.predict_row(feats)
 
@@ -300,15 +418,17 @@ def train_match_events_model(
     train_before: pd.Timestamp | None = None,
     cal_scale: float = 1.0,
 ) -> MatchEventsModel:
-    X, y, y_g, y_c, y_k = build_training_frame(df, train_before=train_before)
+    X, y, y_g, y_c, y_k, sample_weight = build_training_frame(df, train_before=train_before)
     if len(X) < 20:
         raise ValueError(f"Need ≥20 labeled matches, got {len(X)}")
 
     x_arr = X[FEATURE_COLS].values
-    pois_g, pois_c, pois_k, tweedie = _fit_pipelines(x_arr, y, y_g, y_c, y_k)
+    pois_g, pois_c, pois_k, tweedie = _fit_pipelines(x_arr, y, y_g, y_c, y_k, sample_weight)
 
-    profiles = build_team_profiles(df)
-    ref_profiles = build_referee_profiles(df)
+    enriched = enrich_match_stats(add_match_totals(df))
+    profiles = build_team_profiles(enriched)
+    ref_profiles = build_referee_profiles(enriched)
+    elo_engine = build_elo_engine(event_df=enriched)
 
     return MatchEventsModel(
         poisson_goals=pois_g,
@@ -319,11 +439,13 @@ def train_match_events_model(
         feature_cols=FEATURE_COLS,
         profiles=profiles,
         ref_profiles=ref_profiles,
+        elo_engine=elo_engine,
         params={
             "tweedie_power": TWEEDIE_POWER,
             "tweedie_alpha": TWEEDIE_ALPHA,
             "poisson_alpha": POISSON_ALPHA,
             "cal_scale": cal_scale,
+            "wc_sample_weight": WC_SAMPLE_WEIGHT,
         },
     )
 
@@ -333,27 +455,31 @@ def _walk_collect(
     history_df: pd.DataFrame,
     test_df: pd.DataFrame,
 ) -> pd.DataFrame:
-    profiles = build_team_profiles(history_df)
-    ref_profiles = build_referee_profiles(history_df)
+    history = enrich_match_stats(add_match_totals(history_df))
+    test = enrich_match_stats(add_match_totals(test_df.sort_values("date")))
+    test_ids = set(test["game_id"].astype(str))
+
+    combined = pd.concat([history, test], ignore_index=True)
+    X, _, _, _, _, _, labeled_ids = _walk_event_rows(combined, label_game_ids=test_ids)
+    feat_by_gid = {gid: X.iloc[i].to_dict() for i, gid in enumerate(labeled_ids)}
+
     rows = []
-    for _, m in add_match_totals(test_df.sort_values("date")).iterrows():
+    for _, m in test.iterrows():
         if pd.isna(m["total_goals"]):
             continue
-        feats = _row_features(
-            m["home_team"], m["away_team"], m["round"], profiles,
-            referee=m.get("referee"), ref_profiles=ref_profiles,
-            competition=m.get("competition", "World Cup"),
-        )
+        gid = str(m["game_id"])
+        feats = feat_by_gid.get(gid)
+        if feats is None:
+            continue
         p = model.predict_row(feats)
         rows.append({
             "home": m["home_team"], "away": m["away_team"],
+            "matchday": m.get("matchday"),
             "actual": float(m["gxcxc"]),
             "predicted": p["expected_gxcxc"],
             "raw": p["raw_gxcxc"],
             **{k: p[k] for k in ("exp_goals", "exp_corners", "exp_cards")},
         })
-        _update_profiles_from_match(profiles, m)
-        _update_referee_profile(ref_profiles, m)
     return pd.DataFrame(rows)
 
 
@@ -459,13 +585,18 @@ def train_and_save(df: pd.DataFrame | None = None) -> dict:
         return obj
 
     meta = _safe({
-        "model": "Tweedie product + Poisson marginals + mean-scale cal (2018 OOS)",
+        "model": "Tweedie product + Poisson marginals + Elo + matchday + mean-scale cal (2018 OOS)",
         "n_train_matches": int(len(df)),
         "competitions": {str(k): int(v) for k, v in df.groupby("competition").size().items()},
         "params": {**model.params, "cal_scale": scale},
         "holdout": holdout,
         "walk_forward_wc": walk,
         "feature_cols": FEATURE_COLS,
+        "data_sources": {
+            "fbref": "cards/corners/goals",
+            "fjelstul": "matchday + referee backfill (WC men's)",
+            "elo": "kaggle + international_train chronological Elo",
+        },
     })
     META_PATH.write_text(json.dumps(meta, indent=2))
     EVAL_PATH.write_text(json.dumps(meta, indent=2))

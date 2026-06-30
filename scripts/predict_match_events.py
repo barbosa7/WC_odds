@@ -64,6 +64,7 @@ def main() -> None:
             fx["home"], fx["away"], "Group stage",
             competition="World Cup",
             referee=ref,
+            matchday=fx["matchday"],
         )
         ref_norm = _norm_referee(ref) if ref else None
         ref_hist = model.ref_profiles.get(ref_norm) if ref_norm else None
